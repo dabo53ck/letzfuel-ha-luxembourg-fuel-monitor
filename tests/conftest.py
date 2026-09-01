@@ -8,24 +8,6 @@ from datetime import timedelta
 from decimal import Decimal
 
 import pytest
-
-# `pytest-homeassistant-custom-component` pins a Home Assistant version whose test
-# cleanup flags HA's own legitimate `_run_safe_shutdown_loop` import-executor
-# thread the first time an integration is loaded. Upstream HA later allow-listed
-# that thread name; hide it from the harness's thread enumeration here so the
-# check matches newer HA behaviour.
-_real_thread_enumerate = threading.enumerate
-
-
-def _thread_enumerate_without_ha_shutdown_loop() -> list[threading.Thread]:
-    return [
-        t
-        for t in _real_thread_enumerate()
-        if "_run_safe_shutdown_loop" not in t.name
-    ]
-
-
-threading.enumerate = _thread_enumerate_without_ha_shutdown_loop  # type: ignore[assignment]
 from homeassistant.config_entries import ConfigEntryState
 from homeassistant.core import HomeAssistant
 from homeassistant.util import dt as dt_util
@@ -47,6 +29,22 @@ from custom_components.lux_fuel_monitor.providers.petrol_lu import SOURCE_URL
 from .helpers import build_petrol_lu_html
 
 D = Decimal
+
+# `pytest-homeassistant-custom-component` pins a Home Assistant version whose test
+# cleanup flags HA's own legitimate `_run_safe_shutdown_loop` import-executor
+# thread the first time an integration is loaded. Upstream HA later allow-listed
+# that thread name; hide it from the harness's thread enumeration so the check
+# matches newer HA behaviour.
+_real_thread_enumerate = threading.enumerate
+
+
+def _thread_enumerate_without_ha_shutdown_loop() -> list[threading.Thread]:
+    return [
+        t for t in _real_thread_enumerate() if "_run_safe_shutdown_loop" not in t.name
+    ]
+
+
+threading.enumerate = _thread_enumerate_without_ha_shutdown_loop  # type: ignore[assignment]
 
 
 @pytest.fixture(autouse=True)
