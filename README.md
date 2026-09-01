@@ -1,4 +1,4 @@
-<img src="custom_components/letzfuel_ha/brand/icon.svg" alt="" width="96" align="right">
+<img src="custom_components/letzfuel_ha/brand/icon.png" alt="" width="96" align="right">
 
 # LëtzFuel HA &ndash; Luxembourg Fuel Monitor
 

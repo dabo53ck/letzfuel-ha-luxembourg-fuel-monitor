@@ -3,27 +3,28 @@
 The mark: a fuel droplet in the Luxembourg flag colours (red / white / light blue)
 holding a speedometer needle — "Luxembourg fuel, read live".
 
-| File | Purpose |
+| File | |
 | --- | --- |
-| `icon.svg` | Source for the square app icon |
-| `logo.svg` | Source for the wordmark (outline the text before exporting — see below) |
+| `icon.svg` / `icon.png` (256) / `icon@2x.png` (512) | Square app icon |
+| `logo.svg` / `logo.png` / `logo@2x.png` | Wordmark ("LëtzFuel HA" + descriptor) |
 
-## Producing the PNGs
-
-Home Assistant loads integration icons **only** from the
-[`home-assistant/brands`](https://github.com/home-assistant/brands) repository, as
-trimmed transparent PNGs. Generate them (no design tool needed):
+The PNGs are committed and were rendered from the SVGs with
+[resvg](https://github.com/RazrFalcon/resvg). Regenerate after editing an SVG:
 
 ```sh
-npx svgexport icon.svg icon.png    256:256
-npx svgexport icon.svg icon@2x.png 512:512
-# wordmark: open logo.svg in Inkscape, Path > Object to Path, save, then
-npx svgexport logo.svg logo.png    "svg{}" 1000:280
-npx svgexport logo.svg logo@2x.png "svg{}" 2000:560
+resvg -w 256 -h 256 icon.svg icon.png
+resvg -w 512 -h 512 icon.svg icon@2x.png
+resvg -h 256        logo.svg logo.png
+resvg -h 512        logo.svg logo@2x.png
 ```
 
-Then open a PR on `home-assistant/brands` adding them under
-`custom_integrations/letzfuel_ha/`.
+`logo.png` uses whatever bold sans the renderer finds (the SVG asks for Bricolage
+Grotesque, then falls back); good enough for the README / HACS card.
 
-Dropping the same `icon.png` / `icon@2x.png` next to this file also satisfies the
-HACS validation action's brand check in the meantime.
+## Getting the icon into the Home Assistant UI
+
+Home Assistant loads integration icons **only** from
+[`home-assistant/brands`](https://github.com/home-assistant/brands). Open a PR there
+adding `icon.png` + `icon@2x.png` (and `logo.png` / `logo@2x.png`) under
+`custom_integrations/letzfuel_ha/`. Until it merges, the device page just shows the
+default puzzle-piece icon.
