@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="42 44 760 188" role="img" aria-label="LëtzFuel HA - Luxembourg Fuel Monitor">
+  <!-- Dark-theme variant. Convert the <text> to outlines before exporting for brands. -->
+  <g transform="translate(24 40) scale(0.78)">
+    <clipPath id="drop">
+      <path d="M128 30c22 54 68 92 68 132a68 68 0 0 1-136 0C60 122 106 84 128 30Z"/>
+    </clipPath>
+    <g clip-path="url(#drop)">
+      <rect x="36" y="20" width="184" height="76" fill="#E8112D"/>
+      <rect x="36" y="96" width="184" height="56" fill="#FFFFFF"/>
+      <rect x="36" y="152" width="184" height="92" fill="#3FB6E4"/>
+    </g>
+    <path d="M128 30c22 54 68 92 68 132a68 68 0 0 1-136 0C60 122 106 84 128 30Z"
+          fill="none" stroke="#F2ECEA" stroke-width="10"/>
+    <line x1="128" y1="131" x2="128" y2="142" stroke="#191512" stroke-width="7" stroke-linecap="round"/>
+    <line x1="128" y1="184" x2="156" y2="150" stroke="#191512" stroke-width="11" stroke-linecap="round"/>
+    <circle cx="128" cy="184" r="10" fill="#FFFFFF"/>
+    <circle cx="128" cy="184" r="4.5" fill="#191512"/>
+  </g>
+  <rect x="238" y="66" width="4" height="150" rx="2" fill="#FF4B5D"/>
+  <text x="272" y="150" font-family="'Bricolage Grotesque','Trebuchet MS',sans-serif"
+        font-size="78" font-weight="700" fill="#F2ECEA">LëtzFuel HA</text>
+  <text x="274" y="196" font-family="'IBM Plex Sans','Segoe UI',sans-serif"
+        font-size="22" font-weight="600" letter-spacing="6" fill="#9E938D">LUXEMBOURG FUEL MONITOR</text>
+</svg>

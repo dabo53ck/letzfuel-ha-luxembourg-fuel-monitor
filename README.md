@@ -1,6 +1,9 @@
 <div align="center">
 
-<img src="custom_components/letzfuel_ha/brand/logo.png" alt="LëtzFuel HA – Luxembourg Fuel Monitor" width="640">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="custom_components/letzfuel_ha/brand/dark_logo.png">
+  <img src="custom_components/letzfuel_ha/brand/logo.png" alt="LëtzFuel HA – Luxembourg Fuel Monitor" width="640">
+</picture>
 
 **Luxembourg's regulated maximum fuel prices, trends and refuelling insights for Home Assistant.**
 
