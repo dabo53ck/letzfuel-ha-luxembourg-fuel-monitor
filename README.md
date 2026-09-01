@@ -43,7 +43,7 @@ answers:
 | **Services** | `calculate_fill_cost`, `calculate_trip_cost` (response services) |
 | **History** | On setup, past prices are imported into Home Assistant long-term statistics |
 | **Robustness** | Diagnostics, repair issues when the source is stale or unparseable |
-| **i18n** | English, French, German |
+| **i18n** | English, French, German, Luxembourgish |
 
 ---
 

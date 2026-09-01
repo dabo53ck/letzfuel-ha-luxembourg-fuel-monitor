@@ -1,0 +1,153 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "LëtzFuel HA",
+        "description": "D'reglementéiert Maximalpräisser fir Kraaftstoff zu Lëtzebuerg verfollegen. D'Präisser kommen vun petrol.lu (Groupement Pétrolier Luxembourgeois).",
+        "data": {
+          "tracked_fuels": "Kraaftstoffer déi ze verfollegen sinn",
+          "primary_fuel": "Haaptkraaftstoff (fir d'Gefier- an d'Empfehlungssensoren)"
+        }
+      },
+      "vehicle": {
+        "title": "Äert Gefier (optional)",
+        "description": "Gitt Är Tankgréisst un fir d'Sensoren fir d'Käschte vun engem vollen Tank an fir d'Nozetanken. Loosst et eidel fir z'iwwersprangen.",
+        "data": {
+          "tank_size": "Tankgréisst",
+          "current_level_pct": "Aktuellen Tankfëllstand"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "D'Quell fir d'Kraaftstoffpräisser konnt net erreecht ginn. Iwwerpréift Är Verbindung a probéiert et nach eng Kéier.",
+      "parse_error": "D'Quell fir d'Kraaftstoffpräisser gouf erreecht, mä hiren Inhalt konnt net gelies ginn. Maacht wgl. en Issue op."
+    },
+    "abort": {
+      "single_instance_allowed": "LëtzFuel HA ass scho konfiguréiert."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "LëtzFuel HA Astellungen",
+        "data": {
+          "update_interval_hours": "Aktualiséierungsintervall",
+          "evening_check_time": "Auerzäit vum Owescheck (fänkt d'Verëffentlechung géint 18:00 op; probéiert nom +10 an +20 Min. nach eng Kéier)",
+          "trend_window_days": "Trendfënster",
+          "price_display": "Präisdarstellung",
+          "tracked_fuels": "Kraaftstoffer déi ze verfollegen sinn",
+          "primary_fuel": "Haaptkraaftstoff",
+          "tank_size": "Tankgréisst",
+          "history_import_enabled": "Präishistorie an d'Laangzäitstatistike importéieren",
+          "history_import_months": "Importdéift vun der Historie"
+        }
+      }
+    }
+  },
+  "selector": {
+    "fuel_type": {
+      "options": {
+        "diesel": "Diesel",
+        "sp95": "SP95 (E10)",
+        "sp98": "SP98"
+      }
+    },
+    "price_display": {
+      "options": {
+        "incl_vat": "Mat TVA",
+        "excl_vat": "Ouni TVA"
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "price": { "name": "{fuel} Präis" },
+      "change": { "name": "{fuel} Ännerung" },
+      "trend": {
+        "name": "{fuel} Trend",
+        "state": {
+          "rising": "Klëmmt",
+          "falling": "Fällt",
+          "stable": "Stabil"
+        }
+      },
+      "price_tomorrow": { "name": "{fuel} Präis muer" },
+      "refuel_recommendation": {
+        "name": "Tankempfehlung",
+        "state": {
+          "refuel_today": "Haut tanken",
+          "wait": "Waarden",
+          "no_change": "Keng Ännerung",
+          "unknown": "Onbekannt"
+        }
+      },
+      "last_price_update": { "name": "Läscht Präisaktualiséierung" },
+      "days_since_last_change": { "name": "Deeg zënter der leschter Ännerung" },
+      "full_tank_cost": { "name": "Käschte fir e vollen Tank" },
+      "refill_cost": { "name": "Käschte fir nozetanken" },
+      "full_tank_cost_change": { "name": "Ännerung vun de Käschte fir e vollen Tank" }
+    },
+    "binary_sensor": {
+      "price_change_pending": { "name": "Präisännerung steet un" }
+    },
+    "number": {
+      "current_fuel_level": { "name": "Aktuellen Tankfëllstand" }
+    }
+  },
+  "services": {
+    "calculate_fill_cost": {
+      "name": "Tankkäschte berechnen",
+      "description": "D'Käschte berechnen fir eng bestëmmten Unzuel u Liter zum aktuellen (oder ugekënnegte) Präis nozetanken.",
+      "fields": {
+        "liters": {
+          "name": "Liter",
+          "description": "Wéivill Liter derbäigetankt ginn."
+        },
+        "fuel_type": {
+          "name": "Zort Kraaftstoff",
+          "description": "Kraaftstoff deen ze berechnen ass. Standard ass den agestallten Haaptkraaftstoff."
+        },
+        "use_tomorrow_price": {
+          "name": "Muerege Präis benotzen",
+          "description": "Wann verfügbar, de ugekënnegte Präis fir muer amplaz vun deem vun haut benotzen."
+        }
+      }
+    },
+    "calculate_trip_cost": {
+      "name": "Faartkäschte berechnen",
+      "description": "D'Kraaftstoffkäschte vun enger Faart aus der Distanz an dem Verbrauch vum Gefier schätzen.",
+      "fields": {
+        "distance_km": {
+          "name": "Distanz",
+          "description": "Faartdistanz a Kilometer."
+        },
+        "consumption_l_100km": {
+          "name": "Verbrauch",
+          "description": "Duerchschnëttleche Verbrauch a Liter pro 100 km."
+        },
+        "fuel_type": {
+          "name": "Zort Kraaftstoff",
+          "description": "Kraaftstoff deen ze berechnen ass. Standard ass den agestallten Haaptkraaftstoff."
+        }
+      }
+    }
+  },
+  "exceptions": {
+    "not_configured": {
+      "message": "LëtzFuel HA ass nach net ariichtegt."
+    },
+    "fuel_not_available": {
+      "message": "Keng Präisdaten fir {fuel} verfügbar."
+    }
+  },
+  "issues": {
+    "stale_data": {
+      "title": "D'Kraaftstoffpräisser sinn net méi aktuell",
+      "description": "De läschte verëffentlechte Präis ass {age_days} Deeg al an d'Quell kann net aktualiséiert ginn. Iwwerpréift d'Präissäit an d'Logbicher vun der Integratioun."
+    },
+    "parse_error": {
+      "title": "D'Quell fir d'Kraaftstoffpräisser kann net gelies ginn",
+      "description": "D'Präissäit gouf erreecht, mä konnt net analyséiert ginn ({error}). D'Layout vun der Säit huet sech vläicht geännert – maacht wgl. en Issue op."
+    }
+  }
+}

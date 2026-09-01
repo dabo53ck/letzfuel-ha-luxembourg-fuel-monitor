@@ -8,7 +8,7 @@ Luxembourg's regulated maximum fuel prices, trends and refuelling insights for H
 - Optional vehicle sensors: full-tank cost, refill cost, cost impact of a price change
 - `calculate_fill_cost` and `calculate_trip_cost` services
 - Price history imported into Home Assistant long-term statistics on setup
-- English / French / German
+- English / French / German / Luxembourgish
 
 Data from the public [petrol.lu prices page](https://www.petrol.lu/en/official-prices/).
 Not affiliated with GPL, petrol.lu or the Luxembourg government. Verify at the pump.
