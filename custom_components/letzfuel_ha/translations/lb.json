@@ -3,15 +3,15 @@
     "step": {
       "user": {
         "title": "LëtzFuel HA",
-        "description": "D'reglementéiert Maximalpräisser fir Kraaftstoff zu Lëtzebuerg verfollegen. D'Präisser kommen vun petrol.lu (Groupement Pétrolier Luxembourgeois).",
+        "description": "D'reglementéiert maximal Verkafspräisser fir Pëtrol zu Lëtzebuerg verfollegen. D'Präisser komme vun petrol.lu (Groupement Pétrolier Luxembourgeois).",
         "data": {
-          "tracked_fuels": "Kraaftstoffer déi ze verfollegen sinn",
-          "primary_fuel": "Haaptkraaftstoff (fir d'Gefier- an d'Empfehlungssensoren)"
+          "tracked_fuels": "D'Pëtrol Zorten déi ze verfollege sinn",
+          "primary_fuel": "Haapt Pëtrol's Zort (fir d'Gefier- an d'Recommendatiounen)"
         }
       },
       "vehicle": {
         "title": "Äert Gefier (optional)",
-        "description": "Gitt Är Tankgréisst un fir d'Sensoren fir d'Käschte vun engem vollen Tank an fir d'Nozetanken. Loosst et eidel fir z'iwwersprangen.",
+        "description": "Gitt Är Tankgréisst u fir d'Sensore fir d'Käschte vun engem vollen Tank a fir d'Notanken. Loosst et eidel fir z'iwwersprangen.",
         "data": {
           "tank_size": "Tankgréisst",
           "current_level_pct": "Aktuellen Tankfëllstand"
@@ -19,8 +19,8 @@
       }
     },
     "error": {
-      "cannot_connect": "D'Quell fir d'Kraaftstoffpräisser konnt net erreecht ginn. Iwwerpréift Är Verbindung a probéiert et nach eng Kéier.",
-      "parse_error": "D'Quell fir d'Kraaftstoffpräisser gouf erreecht, mä hiren Inhalt konnt net gelies ginn. Maacht wgl. en Issue op."
+      "cannot_connect": "D'Quell fir d'Pëtrolspräisser konnt net erreecht ginn. Iwwerpréift Är Verbindung a probéiert et nach eng Kéier.",
+      "parse_error": "D'Quell fir d'Pëtrolspräisser gouf erreecht, mä hiren Inhalt konnt net gelies ginn. Maacht wgl. en Issue op."
     },
     "abort": {
       "single_instance_allowed": "LëtzFuel HA ass scho konfiguréiert."
@@ -32,14 +32,14 @@
         "title": "LëtzFuel HA Astellungen",
         "data": {
           "update_interval_hours": "Aktualiséierungsintervall",
-          "evening_check_time": "Auerzäit vum Owescheck (fänkt d'Verëffentlechung géint 18:00 op; probéiert nom +10 an +20 Min. nach eng Kéier)",
+          "evening_check_time": "Auerzäit vum Owescheck (fänkt d'Verëffentlechung géint 18:00 op; probéiert no +10 an +20 Min. nach eng Kéier)",
           "trend_window_days": "Trendfënster",
-          "price_display": "Präisdarstellung",
-          "tracked_fuels": "Kraaftstoffer déi ze verfollegen sinn",
-          "primary_fuel": "Haaptkraaftstoff",
+          "price_display": "Präisduerstellung",
+          "tracked_fuels": "Pëtrol Zorten déi ze verfollegen sinn",
+          "primary_fuel": "Haapt Pëtrol's Zort",
           "tank_size": "Tankgréisst",
           "history_import_enabled": "Präishistorie an d'Laangzäitstatistike importéieren",
-          "history_import_months": "Importdéift vun der Historie"
+          "history_import_months": "Importdéift vum Historique"
         }
       }
     }
@@ -97,25 +97,25 @@
   "services": {
     "calculate_fill_cost": {
       "name": "Tankkäschte berechnen",
-      "description": "D'Käschte berechnen fir eng bestëmmten Unzuel u Liter zum aktuellen (oder ugekënnegte) Präis nozetanken.",
+      "description": "D'Käschte berechne fir eng bestëmmten Unzuel u Liter zum aktuellen (oder ugekënnegte) Präis nozetanken.",
       "fields": {
         "liters": {
           "name": "Liter",
           "description": "Wéivill Liter derbäigetankt ginn."
         },
         "fuel_type": {
-          "name": "Zort Kraaftstoff",
-          "description": "Kraaftstoff deen ze berechnen ass. Standard ass den agestallten Haaptkraaftstoff."
+          "name": "Zort Pëtrol",
+          "description": "Pëtrol deen ze berechnen ass. Standard ass déi agestallten Haapt Pëtrol's Zort."
         },
         "use_tomorrow_price": {
           "name": "Muerege Präis benotzen",
-          "description": "Wann verfügbar, de ugekënnegte Präis fir muer amplaz vun deem vun haut benotzen."
+          "description": "Wann disponibel, de ugekënnegte Präis fir muer amplaz vun deem vun haut benotzen."
         }
       }
     },
     "calculate_trip_cost": {
       "name": "Faartkäschte berechnen",
-      "description": "D'Kraaftstoffkäschte vun enger Faart aus der Distanz an dem Verbrauch vum Gefier schätzen.",
+      "description": "D'Pëtrolskäschten vun enger Faart aus der Distanz an dem Verbrauch vum Gefier schätzen.",
       "fields": {
         "distance_km": {
           "name": "Distanz",
@@ -126,15 +126,15 @@
           "description": "Duerchschnëttleche Verbrauch a Liter pro 100 km."
         },
         "fuel_type": {
-          "name": "Zort Kraaftstoff",
-          "description": "Kraaftstoff deen ze berechnen ass. Standard ass den agestallten Haaptkraaftstoff."
+          "name": "Zort Pëtrol",
+          "description": "Pëtrol deen ze berechnen ass. Standard ass déi agestallten Haapt Pëtrol's Zort."
         }
       }
     }
   },
   "exceptions": {
     "not_configured": {
-      "message": "LëtzFuel HA ass nach net ariichtegt."
+      "message": "LëtzFuel HA ass nach net ageriicht."
     },
     "fuel_not_available": {
       "message": "Keng Präisdaten fir {fuel} verfügbar."
@@ -142,11 +142,11 @@
   },
   "issues": {
     "stale_data": {
-      "title": "D'Kraaftstoffpräisser sinn net méi aktuell",
+      "title": "D'Pëtrolspräisser sinn net méi aktuell",
       "description": "De läschte verëffentlechte Präis ass {age_days} Deeg al an d'Quell kann net aktualiséiert ginn. Iwwerpréift d'Präissäit an d'Logbicher vun der Integratioun."
     },
     "parse_error": {
-      "title": "D'Quell fir d'Kraaftstoffpräisser kann net gelies ginn",
+      "title": "D'Quell fir d'Pëtrolspräisser kann net gelies ginn",
       "description": "D'Präissäit gouf erreecht, mä konnt net analyséiert ginn ({error}). D'Layout vun der Säit huet sech vläicht geännert – maacht wgl. en Issue op."
     }
   }
