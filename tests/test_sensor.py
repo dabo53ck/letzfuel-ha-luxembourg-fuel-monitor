@@ -82,6 +82,9 @@ async def test_recommendation_and_pending(
     )
     assert hass.states.get(f"{BPREFIX}price_change_pending").state == STATE_ON
 
+    await hass.config_entries.async_unload(entry.entry_id)
+    await hass.async_block_till_done()
+
 
 async def test_vehicle_sensors(hass: HomeAssistant, init_integration_vehicle) -> None:
     full_tank = hass.states.get(f"{PREFIX}full_tank_cost")

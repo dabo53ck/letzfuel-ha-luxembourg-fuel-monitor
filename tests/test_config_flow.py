@@ -43,6 +43,10 @@ async def test_user_flow_happy_path(hass: HomeAssistant, mock_petrol_lu) -> None
     assert result["data"][CONF_TANK_SIZE] == 55
     assert result["data"][CONF_PRIMARY_FUEL] == FuelType.DIESEL.value
 
+    await hass.async_block_till_done()
+    await hass.config_entries.async_unload(result["result"].entry_id)
+    await hass.async_block_till_done()
+
 
 async def test_user_flow_cannot_connect(
     hass: HomeAssistant, aioclient_mock

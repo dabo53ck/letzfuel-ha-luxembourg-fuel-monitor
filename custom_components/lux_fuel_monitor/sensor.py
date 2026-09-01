@@ -15,7 +15,7 @@ from homeassistant.components.sensor import (
 )
 from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import StateType
 from homeassistant.util import dt as dt_util
 
@@ -442,7 +442,7 @@ VEHICLE_SENSORS: tuple[LuxFuelSensorDescription, ...] = (
 async def async_setup_entry(
     hass: HomeAssistant,
     entry: LuxFuelConfigEntry,
-    async_add_entities: AddConfigEntryEntitiesCallback,
+    async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Create the sensor entities for a config entry."""
     coordinator = entry.runtime_data

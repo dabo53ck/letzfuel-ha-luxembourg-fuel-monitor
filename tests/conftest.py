@@ -7,6 +7,7 @@ from datetime import timedelta
 from decimal import Decimal
 
 import pytest
+from homeassistant.config_entries import ConfigEntryState
 from homeassistant.core import HomeAssistant
 from homeassistant.util import dt as dt_util
 from pytest_homeassistant_custom_component.common import MockConfigEntry
@@ -117,23 +118,29 @@ def config_entry_with_vehicle() -> MockConfigEntry:
     )
 
 
+async def _setup_and_teardown(hass: HomeAssistant, entry: MockConfigEntry):
+    entry.add_to_hass(hass)
+    assert await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+    yield entry
+    if entry.state is ConfigEntryState.LOADED:
+        await hass.config_entries.async_unload(entry.entry_id)
+        await hass.async_block_till_done()
+
+
 @pytest.fixture
 async def init_integration(
     hass: HomeAssistant, mock_petrol_lu, config_entry: MockConfigEntry
-) -> MockConfigEntry:
-    """Set up the integration and return the config entry."""
-    config_entry.add_to_hass(hass)
-    assert await hass.config_entries.async_setup(config_entry.entry_id)
-    await hass.async_block_till_done()
-    return config_entry
+):
+    """Set up the integration and return the config entry (unloaded on teardown)."""
+    async for entry in _setup_and_teardown(hass, config_entry):
+        yield entry
 
 
 @pytest.fixture
 async def init_integration_vehicle(
     hass: HomeAssistant, mock_petrol_lu, config_entry_with_vehicle: MockConfigEntry
-) -> MockConfigEntry:
+):
     """Set up the integration with a configured vehicle tank."""
-    config_entry_with_vehicle.add_to_hass(hass)
-    assert await hass.config_entries.async_setup(config_entry_with_vehicle.entry_id)
-    await hass.async_block_till_done()
-    return config_entry_with_vehicle
+    async for entry in _setup_and_teardown(hass, config_entry_with_vehicle):
+        yield entry

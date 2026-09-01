@@ -6,7 +6,7 @@ from typing import Any
 
 from homeassistant.components.binary_sensor import BinarySensorEntity
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .coordinator import LuxFuelConfigEntry
 from .entity import LuxFuelEntity
@@ -15,7 +15,7 @@ from .entity import LuxFuelEntity
 async def async_setup_entry(
     hass: HomeAssistant,
     entry: LuxFuelConfigEntry,
-    async_add_entities: AddConfigEntryEntitiesCallback,
+    async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up the pending-change binary sensor."""
     async_add_entities([PriceChangePendingBinarySensor(entry.runtime_data)])
