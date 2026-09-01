@@ -16,4 +16,7 @@ updates:
     groups:
       test-deps:
         patterns: ["*"]
+    # HA version is deliberately unpinned here; the floor is tested in CI.
+    ignore:
+      - dependency-name: homeassistant
     open-pull-requests-limit: 5
