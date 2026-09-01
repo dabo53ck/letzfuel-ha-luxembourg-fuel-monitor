@@ -1,13 +1,13 @@
 [project]
 name = "home-assistant-luxembourg-fuel-monitor"
-version = "0.1.0"
+version = "0.2.0"
 description = "Luxembourg official maximum fuel prices, trends and refuelling insights for Home Assistant."
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.13"
 license = { text = "MIT" }
 
 [tool.ruff]
-target-version = "py312"
+target-version = "py313"
 line-length = 88
 src = ["custom_components"]
 
@@ -25,7 +25,7 @@ known-first-party = ["custom_components.lux_fuel_monitor"]
 
 [tool.mypy]
 # Advisory only (run locally); not a CI gate.
-python_version = "3.12"
+python_version = "3.13"
 follow_imports = "silent"
 ignore_missing_imports = true
 warn_unused_ignores = false

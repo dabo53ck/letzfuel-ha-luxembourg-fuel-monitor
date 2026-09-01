@@ -4,6 +4,8 @@ Thanks for helping improve Luxembourg Fuel Monitor.
 
 ## Development setup
 
+Requires Python 3.13+ (matching Home Assistant 2025.12+).
+
 ```bash
 python -m venv .venv
 source .venv/bin/activate          # Windows: .venv\Scripts\activate

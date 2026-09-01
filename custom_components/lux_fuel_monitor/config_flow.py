@@ -86,10 +86,11 @@ class LuxFuelConfigFlow(ConfigFlow, domain=DOMAIN):
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
-        """Step 1: choose fuels + primary fuel; verify the source is reachable."""
-        if self._async_current_entries():
-            return self.async_abort(reason="single_instance_allowed")
+        """Step 1: choose fuels + primary fuel; verify the source is reachable.
 
+        Only one entry is allowed; ``single_config_entry`` in the manifest makes
+        Home Assistant abort a second attempt with ``single_instance_allowed``.
+        """
         errors: dict[str, str] = {}
         if user_input is not None:
             provider = get_provider(

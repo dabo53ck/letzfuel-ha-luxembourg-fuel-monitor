@@ -42,6 +42,10 @@ answers:
 
 ---
 
+## Requirements
+
+Home Assistant **2025.12** or newer.
+
 ## Installation
 
 ### HACS (recommended)

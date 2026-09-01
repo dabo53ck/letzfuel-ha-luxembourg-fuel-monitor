@@ -1,6 +1,5 @@
-homeassistant>=2024.12.0
-pytest-homeassistant-custom-component>=0.13.190
+# Test against the declared minimum Home Assistant line (see hacs.json).
+homeassistant>=2025.12.0,<2026.0.0
+pytest-homeassistant-custom-component
 pytest-cov>=5.0.0
 beautifulsoup4>=4.12.0
-ruff>=0.6.0
-mypy>=1.11.0
