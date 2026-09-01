@@ -1,6 +1,6 @@
 [project]
 name = "letzfuel-ha-luxembourg-fuel-monitor"
-version = "0.4.0"
+version = "0.4.1"
 description = "Luxembourg regulated maximum fuel prices, trends and refuelling insights for Home Assistant."
 readme = "README.md"
 requires-python = ">=3.13"
