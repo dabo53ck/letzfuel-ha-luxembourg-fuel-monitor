@@ -55,11 +55,12 @@ async def test_recommendation_and_pending(
     hass: HomeAssistant, mock_petrol_lu, price_entries
 ) -> None:
     today = dt_util.now().date()
-    entries = price_entries + [
+    entries = [
+        *price_entries,
         (
             today + timedelta(days=1),
             {FuelType.DIESEL: (Decimal("1.920"), Decimal("1.641"))},
-        )
+        ),
     ]
     mock_petrol_lu(entries)
 

@@ -206,7 +206,11 @@ def _recommendation_attrs(
         return {"primary_fuel": coordinator.primary_fuel.value}
     today = coordinator.display_price(fp.current)
     tomorrow = coordinator.display_price(fp.upcoming) if fp.upcoming else None
-    delta = round(tomorrow - today, 4) if tomorrow is not None else None
+    delta = (
+        round(tomorrow - today, 4)
+        if tomorrow is not None and today is not None
+        else None
+    )
     saving = (
         round(abs(delta) * coordinator.tank_size, 2)
         if delta is not None and coordinator.tank_size

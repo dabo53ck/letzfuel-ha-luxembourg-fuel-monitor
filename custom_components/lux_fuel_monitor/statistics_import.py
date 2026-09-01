@@ -35,18 +35,16 @@ async def async_import_history_statistics(
 
     # Imported here so the integration loads even if the recorder component is
     # unavailable (e.g. minimal test setups).
-    from homeassistant.components.recorder.models import (  # noqa: PLC0415
+    from homeassistant.components.recorder.models import (
         StatisticData,
         StatisticMetaData,
     )
-    from homeassistant.components.recorder.statistics import (  # noqa: PLC0415
-        async_import_statistics,
-    )
+    from homeassistant.components.recorder.statistics import async_import_statistics
 
     since = dt_util.now().date() - timedelta(days=max(months, 1) * 31)
     try:
         history = await coordinator.provider.async_get_history(since)
-    except Exception as err:  # noqa: BLE001 - best-effort background task
+    except Exception as err:
         _LOGGER.warning("History import skipped: could not fetch history: %s", err)
         return
 

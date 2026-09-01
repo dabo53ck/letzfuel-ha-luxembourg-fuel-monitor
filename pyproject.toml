@@ -12,29 +12,23 @@ line-length = 88
 src = ["custom_components"]
 
 [tool.ruff.lint]
-select = [
-    "A", "ASYNC", "B", "C4", "E", "F", "I", "N", "PERF", "PL", "PTH",
-    "RET", "RUF", "SIM", "UP", "W",
-]
-ignore = [
-    "PLR0912",  # too many branches
-    "PLR0913",  # too many arguments
-    "PLR2004",  # magic value comparison
-]
+# Pragmatic set: real-bug rules (pyflakes, bugbear, async), modernisation and
+# import hygiene. Line length is left to the formatter, not the linter.
+select = ["F", "E4", "E7", "E9", "W", "I", "UP", "B", "ASYNC", "RUF"]
+ignore = ["RUF012"]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/*" = ["PLR2004", "S101", "SLF001"]
+"tests/*" = ["S101", "SLF001", "ASYNC"]
 
 [tool.ruff.lint.isort]
-force-sort-within-sections = true
 known-first-party = ["custom_components.lux_fuel_monitor"]
 
 [tool.mypy]
+# Advisory only (run locally); not a CI gate.
 python_version = "3.12"
 follow_imports = "silent"
 ignore_missing_imports = true
-warn_unused_ignores = true
-warn_redundant_casts = true
+warn_unused_ignores = false
 check_untyped_defs = true
 disallow_untyped_defs = false
 

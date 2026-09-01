@@ -141,7 +141,7 @@
   "issues": {
     "stale_data": {
       "title": "Fuel prices are out of date",
-      "description": "The newest published price is {age_days} days old and the source cannot be refreshed. Check https://www.petrol.lu/en/official-prices/ and the integration logs."
+      "description": "The newest published price is {age_days} days old and the source cannot be refreshed. Check the official price page and the integration logs."
     },
     "parse_error": {
       "title": "Cannot read the fuel price source",

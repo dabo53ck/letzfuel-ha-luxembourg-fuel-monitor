@@ -95,7 +95,7 @@ class PetrolLuProvider(FuelProvider):
                         f"petrol.lu returned HTTP {response.status}"
                     )
                 return await response.text()
-        except (ClientError, asyncio.TimeoutError) as err:
+        except (ClientError, TimeoutError) as err:
             raise ProviderConnectionError(f"Could not reach petrol.lu: {err}") from err
 
 
@@ -103,7 +103,7 @@ def _parse_history(html: str) -> list[PricePoint]:
     """Parse the official price table out of the page HTML."""
     # Imported lazily so the module imports without the requirement installed
     # (e.g. during tooling that only reads manifests).
-    from bs4 import BeautifulSoup  # noqa: PLC0415
+    from bs4 import BeautifulSoup
 
     soup = BeautifulSoup(html, "html.parser")
     table = _find_price_table(soup)

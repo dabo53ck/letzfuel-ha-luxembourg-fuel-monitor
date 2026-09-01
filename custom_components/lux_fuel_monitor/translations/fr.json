@@ -141,7 +141,7 @@
   "issues": {
     "stale_data": {
       "title": "Les prix des carburants ne sont pas à jour",
-      "description": "Le prix publié le plus récent date de {age_days} jours et la source ne peut pas être actualisée. Consultez https://www.petrol.lu/fr/prix-officiels/ et les journaux de l'intégration."
+      "description": "Le prix publié le plus récent date de {age_days} jours et la source ne peut pas être actualisée. Consultez la page officielle des prix et les journaux de l'intégration."
     },
     "parse_error": {
       "title": "Impossible de lire la source des prix",

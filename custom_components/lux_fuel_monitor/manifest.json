@@ -1,6 +1,7 @@
 {
   "domain": "lux_fuel_monitor",
   "name": "Luxembourg Fuel Monitor",
+  "after_dependencies": ["recorder"],
   "codeowners": ["@dabo53ck"],
   "config_flow": true,
   "documentation": "https://github.com/dabo53ck/home-assistant-luxembourg-fuel-monitor",

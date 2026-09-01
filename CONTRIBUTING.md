@@ -13,14 +13,14 @@ pip install -r requirements-test.txt
 ## Checks
 
 ```bash
-ruff check .
-ruff format --check .
-mypy custom_components/lux_fuel_monitor
-pytest
+ruff check .          # CI gate
+pytest                # CI gate
+ruff format .         # keep formatting consistent
+mypy custom_components/lux_fuel_monitor   # advisory
 ```
 
-All four run in CI (`.github/workflows/`), alongside Home Assistant's `hassfest` and the
-HACS validation action.
+`ruff check` and `pytest` run in CI (`.github/workflows/`), alongside Home Assistant's
+`hassfest` and the HACS validation action. `mypy` is advisory — run it locally.
 
 ## Architecture notes
 

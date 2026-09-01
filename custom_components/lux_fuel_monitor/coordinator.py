@@ -278,12 +278,8 @@ class LuxFuelCoordinator(DataUpdateCoordinator[PriceSet]):
             CONF_TRACKED_FUELS,
             [f.value for f in DEFAULT_TRACKED_FUELS],
         )
-        resolved: list[FuelType] = []
-        for value in raw:
-            try:
-                resolved.append(FuelType(value))
-            except ValueError:  # noqa: PERF203
-                continue
+        valid = {f.value for f in FuelType}
+        resolved = [FuelType(value) for value in raw if value in valid]
         return resolved or list(DEFAULT_TRACKED_FUELS)
 
     @property

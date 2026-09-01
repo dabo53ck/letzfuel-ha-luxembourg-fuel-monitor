@@ -141,7 +141,7 @@
   "issues": {
     "stale_data": {
       "title": "Kraftstoffpreise sind veraltet",
-      "description": "Der neueste veröffentlichte Preis ist {age_days} Tage alt und die Quelle kann nicht aktualisiert werden. Prüfen Sie https://www.petrol.lu/en/official-prices/ und die Integrationsprotokolle."
+      "description": "Der neueste veröffentlichte Preis ist {age_days} Tage alt und die Quelle kann nicht aktualisiert werden. Prüfen Sie die offizielle Preisseite und die Integrationsprotokolle."
     },
     "parse_error": {
       "title": "Preisquelle kann nicht gelesen werden",
