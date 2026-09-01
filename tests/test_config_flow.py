@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from unittest.mock import patch
+
 import aiohttp
 from homeassistant.config_entries import SOURCE_USER
 from homeassistant.core import HomeAssistant
@@ -36,16 +38,17 @@ async def test_user_flow_happy_path(hass: HomeAssistant, mock_petrol_lu) -> None
     assert result["type"] is FlowResultType.FORM
     assert result["step_id"] == "vehicle"
 
-    result = await hass.config_entries.flow.async_configure(
-        result["flow_id"], {CONF_TANK_SIZE: 55}
-    )
+    with patch(
+        "custom_components.lux_fuel_monitor.async_setup_entry", return_value=True
+    ):
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"], {CONF_TANK_SIZE: 55}
+        )
+        await hass.async_block_till_done()
+
     assert result["type"] is FlowResultType.CREATE_ENTRY
     assert result["data"][CONF_TANK_SIZE] == 55
     assert result["data"][CONF_PRIMARY_FUEL] == FuelType.DIESEL.value
-
-    await hass.async_block_till_done()
-    await hass.config_entries.async_unload(result["result"].entry_id)
-    await hass.async_block_till_done()
 
 
 async def test_user_flow_cannot_connect(

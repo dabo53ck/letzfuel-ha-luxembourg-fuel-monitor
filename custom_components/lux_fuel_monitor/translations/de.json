@@ -63,7 +63,7 @@
   "entity": {
     "sensor": {
       "price": { "name": "{fuel} Preis" },
-      "change": { "name": "{fuel} Preisänderung" },
+      "change": { "name": "{fuel} Änderung" },
       "trend": {
         "name": "{fuel} Trend",
         "state": {

@@ -19,6 +19,10 @@ jobs:
   hacs:
     name: HACS
     runs-on: ubuntu-latest
+    # Advisory: the HACS action fetches repo files through the GitHub API and
+    # cannot read them on a PRIVATE repository (the hacsjson / integration_manifest
+    # checks return "None"). Make this a hard gate once the repo is public.
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: hacs/action@main
