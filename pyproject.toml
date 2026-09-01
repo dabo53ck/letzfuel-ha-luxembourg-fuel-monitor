@@ -1,6 +1,6 @@
 [project]
 name = "home-assistant-luxembourg-fuel-monitor"
-version = "0.2.0"
+version = "0.3.0"
 description = "Luxembourg official maximum fuel prices, trends and refuelling insights for Home Assistant."
 readme = "README.md"
 requires-python = ">=3.13"

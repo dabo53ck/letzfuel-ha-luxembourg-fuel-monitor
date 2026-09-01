@@ -11,5 +11,5 @@
   "loggers": ["custom_components.lux_fuel_monitor"],
   "requirements": ["beautifulsoup4>=4.12.0"],
   "single_config_entry": true,
-  "version": "0.2.0"
+  "version": "0.3.0"
 }

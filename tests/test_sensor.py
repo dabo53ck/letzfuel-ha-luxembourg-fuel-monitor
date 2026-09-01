@@ -42,13 +42,18 @@ async def test_change_sensor(hass: HomeAssistant, init_integration) -> None:
     assert state.attributes["percentage_change"] is not None
 
 
-async def test_trend_sensor_disabled_by_default(
+async def test_trend_and_tomorrow_default_to_primary_fuel_only(
     hass: HomeAssistant, init_integration
 ) -> None:
+    """trend / price_tomorrow are enabled only for the primary fuel (diesel)."""
     registry = er.async_get(hass)
-    entry = registry.async_get(f"{PREFIX}diesel_trend")
-    assert entry is not None
-    assert entry.disabled_by is er.RegistryEntryDisabler.INTEGRATION
+
+    for key in ("trend", "price_tomorrow"):
+        primary = registry.async_get(f"{PREFIX}diesel_{key}")
+        other = registry.async_get(f"{PREFIX}sp95_e10_{key}")
+        assert primary is not None and primary.disabled_by is None
+        assert other is not None
+        assert other.disabled_by is er.RegistryEntryDisabler.INTEGRATION
 
 
 async def test_recommendation_and_pending(

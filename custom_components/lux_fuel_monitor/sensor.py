@@ -47,6 +47,9 @@ class LuxFuelSensorDescription(SensorEntityDescription):
     available_fn: AvailFn | None = None
     per_fuel: bool = False
     needs_tank: bool = False
+    #: Enabled by default only for the configured primary fuel (disabled for the
+    #: other tracked fuels). Ignored for non per-fuel sensors.
+    primary_only_default: bool = False
 
 
 # --- helpers -------------------------------------------------------------
@@ -369,7 +372,7 @@ PER_FUEL_SENSORS: tuple[LuxFuelSensorDescription, ...] = (
         per_fuel=True,
         device_class=SensorDeviceClass.ENUM,
         options=list(TREND_STATES),
-        entity_registry_enabled_default=False,
+        primary_only_default=True,
         value_fn=_trend_value,
         attributes_fn=_trend_attrs,
     ),
@@ -379,7 +382,7 @@ PER_FUEL_SENSORS: tuple[LuxFuelSensorDescription, ...] = (
         per_fuel=True,
         native_unit_of_measurement=UNIT_EUR_PER_LITER,
         suggested_display_precision=3,
-        entity_registry_enabled_default=False,
+        primary_only_default=True,
         value_fn=_tomorrow_value,
         attributes_fn=_tomorrow_attrs,
     ),
@@ -490,6 +493,11 @@ class LuxFuelSensor(LuxFuelEntity, SensorEntity):
         self._attr_unique_id = f"{coordinator.config_entry.entry_id}_{suffix}"
         if fuel is not None:
             self._attr_translation_placeholders = {"fuel": FUEL_LABELS[fuel]}
+        if description.primary_only_default:
+            # On for the favourite fuel only; the other fuels' copies start off.
+            self._attr_entity_registry_enabled_default = (
+                fuel is not None and fuel == coordinator.primary_fuel
+            )
 
     @property
     def native_value(self) -> StateType | datetime:

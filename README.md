@@ -93,6 +93,8 @@ All configuration is through the UI.
 
 Entity IDs are prefixed with the device name, e.g. `sensor.luxembourg_fuel_monitor_diesel_price`.
 Sensors marked *disabled by default* can be enabled from the entity settings.
+`*_trend` and `*_price_tomorrow` are enabled by default **only for the primary
+fuel**; the other tracked fuels' copies start disabled.
 
 > **Language note:** entity names are translated, so on a non-English Home
 > Assistant the auto-generated entity IDs follow that language — e.g. on a German
@@ -107,8 +109,8 @@ Sensors marked *disabled by default* can be enabled from the entity settings.
 | --- | --- | --- |
 | `sensor.*_<fuel>_price` | current max price, €/L | `currency`, `effective_date`, `price_incl_vat`, `price_excl_vat`, `vat_rate`, `previous_price`, `previous_effective_date`, `price_since`, `next_price`, `next_effective_date`, `source`, `source_url` |
 | `sensor.*_<fuel>_change` | signed €/L move at last change | `current_price`, `previous_price`, `percentage_change`, `change_date`, `days_at_current_price` |
-| `sensor.*_<fuel>_trend` *(disabled by default)* | `rising` / `falling` / `stable` | `trend_strength` (€/L per week), `trend_window_days`, `samples_used`, `window_start`, `window_end` |
-| `sensor.*_<fuel>_price_tomorrow` *(disabled by default)* | announced next-day price or *unknown* | `effective_date`, `change_vs_today`, `direction` |
+| `sensor.*_<fuel>_trend` *(primary fuel on by default)* | `rising` / `falling` / `stable` | `trend_strength` (€/L per week), `trend_window_days`, `samples_used`, `window_start`, `window_end` |
+| `sensor.*_<fuel>_price_tomorrow` *(primary fuel on by default)* | announced next-day price or *unknown* | `effective_date`, `change_vs_today`, `direction` |
 
 ### Global
 
