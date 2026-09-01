@@ -1,4 +1,4 @@
-"""DataUpdateCoordinator for the Luxembourg Fuel Monitor."""
+"""DataUpdateCoordinator for the LëtzFuel HA."""
 
 from __future__ import annotations
 

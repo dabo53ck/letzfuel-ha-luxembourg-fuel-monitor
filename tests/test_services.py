@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from homeassistant.core import HomeAssistant
 
-from custom_components.lux_fuel_monitor.const import (
+from custom_components.letzfuel_ha.const import (
     DOMAIN,
     SERVICE_CALCULATE_FILL_COST,
     SERVICE_CALCULATE_TRIP_COST,

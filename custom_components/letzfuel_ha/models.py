@@ -1,4 +1,4 @@
-"""Data models for the Luxembourg Fuel Monitor integration."""
+"""Data models for the LëtzFuel HA integration."""
 
 from __future__ import annotations
 

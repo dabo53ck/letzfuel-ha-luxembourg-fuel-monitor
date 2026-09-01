@@ -1,4 +1,4 @@
-"""Fixtures for the Luxembourg Fuel Monitor tests."""
+"""Fixtures for the LëtzFuel HA tests."""
 
 from __future__ import annotations
 
@@ -13,7 +13,7 @@ from homeassistant.util import dt as dt_util
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 from pytest_homeassistant_custom_component.test_util.aiohttp import AiohttpClientMocker
 
-from custom_components.lux_fuel_monitor.const import (
+from custom_components.letzfuel_ha.const import (
     CONF_PRIMARY_FUEL,
     CONF_PROVIDER,
     CONF_TANK_SIZE,
@@ -22,8 +22,8 @@ from custom_components.lux_fuel_monitor.const import (
     DOMAIN,
     OPT_HISTORY_IMPORT_ENABLED,
 )
-from custom_components.lux_fuel_monitor.models import FuelType
-from custom_components.lux_fuel_monitor.providers.petrol_lu import SOURCE_URL
+from custom_components.letzfuel_ha.models import FuelType
+from custom_components.letzfuel_ha.providers.petrol_lu import SOURCE_URL
 
 from .helpers import build_petrol_lu_html
 
@@ -91,7 +91,7 @@ def config_entry() -> MockConfigEntry:
     """A loaded-ready config entry (history import disabled for tests)."""
     return MockConfigEntry(
         domain=DOMAIN,
-        title="Luxembourg Fuel Monitor",
+        title="LëtzFuel HA",
         data={
             CONF_PROVIDER: DEFAULT_PROVIDER,
             CONF_TRACKED_FUELS: [f.value for f in FuelType],
@@ -106,7 +106,7 @@ def config_entry_with_vehicle() -> MockConfigEntry:
     """Config entry that also configures a 50 L tank at 40%."""
     return MockConfigEntry(
         domain=DOMAIN,
-        title="Luxembourg Fuel Monitor",
+        title="LëtzFuel HA",
         data={
             CONF_PROVIDER: DEFAULT_PROVIDER,
             CONF_TRACKED_FUELS: [f.value for f in FuelType],

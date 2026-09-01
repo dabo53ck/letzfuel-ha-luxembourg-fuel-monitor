@@ -29,8 +29,8 @@ _LOGGER = logging.getLogger(__name__)
 
 SOURCE_URL = "https://www.petrol.lu/en/official-prices/"
 _USER_AGENT = (
-    "HomeAssistant-LuxFuelMonitor/0.1 "
-    "(+https://github.com/dabo53ck/home-assistant-luxembourg-fuel-monitor)"
+    "HomeAssistant-LetzFuelHA/0.4 "
+    "(+https://github.com/dabo53ck/letzfuel-ha-luxembourg-fuel-monitor)"
 )
 _REQUEST_TIMEOUT = 30
 _CACHE_TTL = 300  # seconds

@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import date
 from decimal import Decimal
 
-from custom_components.lux_fuel_monitor.models import FuelType
+from custom_components.letzfuel_ha.models import FuelType
 
 _COLUMNS = (FuelType.SP98, FuelType.SP95, FuelType.DIESEL)
 

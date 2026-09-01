@@ -2,7 +2,7 @@
   "config": {
     "step": {
       "user": {
-        "title": "Luxembourg Fuel Monitor",
+        "title": "LëtzFuel HA",
         "description": "Suivez les prix maximaux officiels des carburants au Luxembourg. Les prix proviennent de petrol.lu (Groupement Pétrolier Luxembourgeois).",
         "data": {
           "tracked_fuels": "Carburants à suivre",
@@ -23,13 +23,13 @@
       "parse_error": "La source des prix a été jointe mais son contenu n'a pas pu être lu. Merci d'ouvrir un ticket."
     },
     "abort": {
-      "single_instance_allowed": "Luxembourg Fuel Monitor est déjà configuré."
+      "single_instance_allowed": "LëtzFuel HA est déjà configuré."
     }
   },
   "options": {
     "step": {
       "init": {
-        "title": "Paramètres de Luxembourg Fuel Monitor",
+        "title": "Paramètres de LëtzFuel HA",
         "data": {
           "update_interval_hours": "Intervalle de mise à jour",
           "evening_check_time": "Heure du contrôle du soir (capte la publication vers 18h00 ; réessais à +10 et +20 min)",
@@ -134,7 +134,7 @@
   },
   "exceptions": {
     "not_configured": {
-      "message": "Luxembourg Fuel Monitor n'est pas encore configuré."
+      "message": "LëtzFuel HA n'est pas encore configuré."
     },
     "fuel_not_available": {
       "message": "Aucune donnée de prix disponible pour {fuel}."

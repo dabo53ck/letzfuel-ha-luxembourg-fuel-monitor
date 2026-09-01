@@ -7,11 +7,11 @@ from decimal import Decimal
 
 from homeassistant.util import dt as dt_util
 
-from custom_components.lux_fuel_monitor.analytics import (
+from custom_components.letzfuel_ha.analytics import (
     compute_trend,
     refuel_recommendation,
 )
-from custom_components.lux_fuel_monitor.const import (
+from custom_components.letzfuel_ha.const import (
     RECOMMENDATION_NO_CHANGE,
     RECOMMENDATION_REFUEL_TODAY,
     RECOMMENDATION_UNKNOWN,
@@ -20,7 +20,7 @@ from custom_components.lux_fuel_monitor.const import (
     TREND_RISING,
     TREND_STABLE,
 )
-from custom_components.lux_fuel_monitor.models import FuelPrices, FuelType, PricePoint
+from custom_components.letzfuel_ha.models import FuelPrices, FuelType, PricePoint
 
 
 def _points(values: list[float]):

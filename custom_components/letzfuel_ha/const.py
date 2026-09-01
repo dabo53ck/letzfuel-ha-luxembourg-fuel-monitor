@@ -1,4 +1,4 @@
-"""Constants for the Luxembourg Fuel Monitor integration."""
+"""Constants for the LëtzFuel HA integration."""
 
 from __future__ import annotations
 
@@ -6,7 +6,7 @@ from typing import Final
 
 from .models import FuelType
 
-DOMAIN: Final = "lux_fuel_monitor"
+DOMAIN: Final = "letzfuel_ha"
 
 # --- Providers -------------------------------------------------------------
 DEFAULT_PROVIDER: Final = "petrol_lu"

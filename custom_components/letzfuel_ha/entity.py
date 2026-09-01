@@ -1,4 +1,4 @@
-"""Shared entity base for Luxembourg Fuel Monitor."""
+"""Shared entity base for LëtzFuel HA."""
 
 from __future__ import annotations
 
@@ -20,9 +20,9 @@ class LuxFuelEntity(CoordinatorEntity[LuxFuelCoordinator]):
         self._attr_attribution = coordinator.provider.attribution
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, coordinator.config_entry.entry_id)},
-            name="Luxembourg Fuel Monitor",
-            manufacturer="Groupement Pétrolier Luxembourgeois",
-            model="Official maximum prices",
+            name="LëtzFuel HA",
+            manufacturer="LëtzFuel HA",
+            model="Luxembourg official maximum fuel prices",
             configuration_url=coordinator.provider.source_url,
             entry_type=DeviceEntryType.SERVICE,
         )

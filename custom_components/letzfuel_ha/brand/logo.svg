@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 280" role="img" aria-label="Luxembourg Fuel Monitor">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1040 280" role="img" aria-label="LëtzFuel HA - Luxembourg Fuel Monitor">
   <!-- NOTE: convert the <text> below to outlines (Inkscape: Path > Object to Path)
        before exporting logo.png / logo@2x.png for home-assistant/brands. -->
   <g transform="translate(24 40) scale(0.78)">
@@ -23,9 +23,9 @@
     <circle cx="128" cy="184" r="10" fill="#FFFFFF"/>
     <circle cx="128" cy="184" r="4.5" fill="#191512"/>
   </g>
-  <rect x="238" y="70" width="4" height="150" rx="2" fill="#E8112D"/>
-  <text x="274" y="126" font-family="'IBM Plex Sans','Segoe UI',sans-serif"
-        font-size="34" font-weight="600" letter-spacing="9" fill="#6B6460">LUXEMBOURG</text>
-  <text x="272" y="208" font-family="'Bricolage Grotesque','Trebuchet MS',sans-serif"
-        font-size="82" font-weight="700" fill="#1B1613">Fuel Monitor</text>
+  <rect x="238" y="66" width="4" height="150" rx="2" fill="#E8112D"/>
+  <text x="272" y="150" font-family="'Bricolage Grotesque','Trebuchet MS',sans-serif"
+        font-size="78" font-weight="700" fill="#1B1613">LëtzFuel HA</text>
+  <text x="274" y="196" font-family="'IBM Plex Sans','Segoe UI',sans-serif"
+        font-size="22" font-weight="600" letter-spacing="6" fill="#6B6460">LUXEMBOURG FUEL MONITOR</text>
 </svg>

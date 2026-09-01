@@ -1,4 +1,4 @@
-"""Diagnostics for Luxembourg Fuel Monitor."""
+"""Diagnostics for LëtzFuel HA."""
 
 from __future__ import annotations
 

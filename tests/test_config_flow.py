@@ -9,7 +9,7 @@ from homeassistant.config_entries import SOURCE_USER
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResultType
 
-from custom_components.lux_fuel_monitor.const import (
+from custom_components.letzfuel_ha.const import (
     CONF_PRIMARY_FUEL,
     CONF_TANK_SIZE,
     CONF_TRACKED_FUELS,
@@ -17,8 +17,8 @@ from custom_components.lux_fuel_monitor.const import (
     OPT_TREND_WINDOW_DAYS,
     OPT_UPDATE_INTERVAL_HOURS,
 )
-from custom_components.lux_fuel_monitor.models import FuelType
-from custom_components.lux_fuel_monitor.providers.petrol_lu import SOURCE_URL
+from custom_components.letzfuel_ha.models import FuelType
+from custom_components.letzfuel_ha.providers.petrol_lu import SOURCE_URL
 
 
 async def test_user_flow_happy_path(hass: HomeAssistant, mock_petrol_lu) -> None:
@@ -39,7 +39,7 @@ async def test_user_flow_happy_path(hass: HomeAssistant, mock_petrol_lu) -> None
     assert result["step_id"] == "vehicle"
 
     with patch(
-        "custom_components.lux_fuel_monitor.async_setup_entry", return_value=True
+        "custom_components.letzfuel_ha.async_setup_entry", return_value=True
     ):
         result = await hass.config_entries.flow.async_configure(
             result["flow_id"], {CONF_TANK_SIZE: 55}

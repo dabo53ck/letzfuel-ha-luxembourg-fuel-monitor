@@ -9,11 +9,11 @@ import pytest
 from homeassistant.core import HomeAssistant
 from homeassistant.util import dt as dt_util
 
-from custom_components.lux_fuel_monitor.const import (
+from custom_components.letzfuel_ha.const import (
     EVENT_PRICE_CHANGE_ANNOUNCED,
     EVENT_PRICE_CHANGED,
 )
-from custom_components.lux_fuel_monitor.models import (
+from custom_components.letzfuel_ha.models import (
     FuelPrices,
     FuelType,
     PricePoint,

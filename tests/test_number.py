@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from homeassistant.core import HomeAssistant
 
-NUMBER = "number.luxembourg_fuel_monitor_current_fuel_level"
-REFILL = "sensor.luxembourg_fuel_monitor_refill_cost"
+NUMBER = "number.letzfuel_ha_current_fuel_level"
+REFILL = "sensor.letzfuel_ha_refill_cost"
 
 
 async def test_number_created_only_with_tank(

@@ -18,14 +18,14 @@ body:
   - type: input
     id: integration_version
     attributes:
-      label: Luxembourg Fuel Monitor version
+      label: LëtzFuel HA version
     validations:
       required: true
   - type: textarea
     id: logs
     attributes:
       label: Relevant logs
-      description: Settings → System → Logs, filtered to `lux_fuel_monitor`.
+      description: Settings → System → Logs, filtered to `letzfuel_ha`.
       render: text
   - type: textarea
     id: diagnostics

@@ -1,4 +1,4 @@
-"""Config and options flow for Luxembourg Fuel Monitor."""
+"""Config and options flow for LëtzFuel HA."""
 
 from __future__ import annotations
 
@@ -60,7 +60,7 @@ from .providers import (
 )
 
 _FUEL_OPTIONS = [f.value for f in FuelType]
-_TITLE = "Luxembourg Fuel Monitor"
+_TITLE = "LëtzFuel HA"
 
 
 def _fuel_select(*, multiple: bool) -> SelectSelector:

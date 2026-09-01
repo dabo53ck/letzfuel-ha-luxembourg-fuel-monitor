@@ -1,4 +1,4 @@
-"""Sensor platform for Luxembourg Fuel Monitor."""
+"""Sensor platform for LëtzFuel HA."""
 
 from __future__ import annotations
 
@@ -40,7 +40,7 @@ AvailFn = Callable[[LuxFuelCoordinator, "FuelType | None"], bool]
 
 @dataclass(frozen=True, kw_only=True)
 class LuxFuelSensorDescription(SensorEntityDescription):
-    """Describes a Luxembourg Fuel Monitor sensor."""
+    """Describes a LëtzFuel HA sensor."""
 
     value_fn: ValueFn
     attributes_fn: AttrsFn | None = None
@@ -475,7 +475,7 @@ async def async_setup_entry(
 
 
 class LuxFuelSensor(LuxFuelEntity, SensorEntity):
-    """A single Luxembourg Fuel Monitor sensor, driven by its description."""
+    """A single LëtzFuel HA sensor, driven by its description."""
 
     entity_description: LuxFuelSensorDescription
 

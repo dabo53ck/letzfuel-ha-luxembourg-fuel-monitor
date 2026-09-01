@@ -9,12 +9,12 @@ from pathlib import Path
 import pytest
 from homeassistant.util import dt as dt_util
 
-from custom_components.lux_fuel_monitor.models import FuelType
-from custom_components.lux_fuel_monitor.providers.base import (
+from custom_components.letzfuel_ha.models import FuelType
+from custom_components.letzfuel_ha.providers.base import (
     ProviderParseError,
     build_price_set,
 )
-from custom_components.lux_fuel_monitor.providers.petrol_lu import (
+from custom_components.letzfuel_ha.providers.petrol_lu import (
     PetrolLuProvider,
     _parse_decimal,
     _parse_history,

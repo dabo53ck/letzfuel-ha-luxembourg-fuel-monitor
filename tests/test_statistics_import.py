@@ -8,8 +8,8 @@ from unittest.mock import patch
 
 from homeassistant.core import HomeAssistant
 
-from custom_components.lux_fuel_monitor.models import FuelType, PricePoint
-from custom_components.lux_fuel_monitor.statistics_import import (
+from custom_components.letzfuel_ha.models import FuelType, PricePoint
+from custom_components.letzfuel_ha.statistics_import import (
     _daily_statistics,
     async_import_history_statistics,
 )
@@ -51,10 +51,10 @@ async def test_history_import_targets_real_sensors(
     metadatas = [call.args[1] for call in mock_import.call_args_list]
     stat_ids = {meta["statistic_id"] for meta in metadatas}
 
-    assert "sensor.luxembourg_fuel_monitor_diesel_price" in stat_ids
+    assert "sensor.letzfuel_ha_diesel_price" in stat_ids
     for meta in metadatas:
         assert meta["source"] == "recorder"
-        assert meta["statistic_id"].startswith("sensor.luxembourg_fuel_monitor_")
+        assert meta["statistic_id"].startswith("sensor.letzfuel_ha_")
         assert meta["unit_of_measurement"] == "€/L"
         assert meta["mean_type"] is not None
 

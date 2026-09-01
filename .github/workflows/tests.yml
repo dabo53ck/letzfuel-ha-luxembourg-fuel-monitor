@@ -30,4 +30,4 @@ jobs:
       - run: >
           pip install "${{ matrix.ha_constraint }}"
           pytest-homeassistant-custom-component pytest-cov beautifulsoup4
-      - run: pytest --cov=custom_components/lux_fuel_monitor --cov-report=term-missing
+      - run: pytest --cov=custom_components/letzfuel_ha --cov-report=term-missing

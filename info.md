@@ -1,4 +1,4 @@
-# Luxembourg Fuel Monitor
+# LëtzFuel HA
 
 Luxembourg's official maximum fuel prices, trends and refuelling insights for Home Assistant.
 

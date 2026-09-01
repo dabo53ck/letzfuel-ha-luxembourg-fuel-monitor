@@ -1,1 +1,1 @@
-"""Tests for the Luxembourg Fuel Monitor integration."""
+"""Tests for the LëtzFuel HA integration."""

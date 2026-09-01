@@ -2,7 +2,7 @@
   "config": {
     "step": {
       "user": {
-        "title": "Luxembourg Fuel Monitor",
+        "title": "LëtzFuel HA",
         "description": "Verfolgen Sie die amtlichen Höchstpreise für Kraftstoffe in Luxemburg. Die Preise stammen von petrol.lu (Groupement Pétrolier Luxembourgeois).",
         "data": {
           "tracked_fuels": "Zu verfolgende Kraftstoffe",
@@ -23,13 +23,13 @@
       "parse_error": "Die Preisquelle wurde erreicht, ihr Inhalt konnte aber nicht gelesen werden. Bitte einen Fehlerbericht öffnen."
     },
     "abort": {
-      "single_instance_allowed": "Luxembourg Fuel Monitor ist bereits eingerichtet."
+      "single_instance_allowed": "LëtzFuel HA ist bereits eingerichtet."
     }
   },
   "options": {
     "step": {
       "init": {
-        "title": "Einstellungen für Luxembourg Fuel Monitor",
+        "title": "Einstellungen für LëtzFuel HA",
         "data": {
           "update_interval_hours": "Aktualisierungsintervall",
           "evening_check_time": "Uhrzeit der Abendprüfung (erfasst die Veröffentlichung um ca. 18:00; Wiederholungen nach +10 und +20 Min.)",
@@ -134,7 +134,7 @@
   },
   "exceptions": {
     "not_configured": {
-      "message": "Luxembourg Fuel Monitor ist noch nicht eingerichtet."
+      "message": "LëtzFuel HA ist noch nicht eingerichtet."
     },
     "fuel_not_available": {
       "message": "Keine Preisdaten für {fuel} verfügbar."

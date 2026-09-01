@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from homeassistant.core import HomeAssistant
 
-from custom_components.lux_fuel_monitor.diagnostics import (
+from custom_components.letzfuel_ha.diagnostics import (
     async_get_config_entry_diagnostics,
 )
 

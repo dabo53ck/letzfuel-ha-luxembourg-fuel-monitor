@@ -1,6 +1,6 @@
-<img src="custom_components/lux_fuel_monitor/brand/icon.svg" alt="" width="96" align="right">
+<img src="custom_components/letzfuel_ha/brand/icon.svg" alt="" width="96" align="right">
 
-# Luxembourg Fuel Monitor
+# LëtzFuel HA &ndash; Luxembourg Fuel Monitor
 
 **Luxembourg's official maximum fuel prices, trends and refuelling insights for Home Assistant.**
 
@@ -35,7 +35,7 @@ answers:
 | **Daily change** | `sensor.*_change` — signed €/L move at the last price change, with percentage and dates |
 | **Trend** | `sensor.*_trend` — `rising` / `falling` / `stable` over a configurable window |
 | **Next-day awareness** | `binary_sensor.price_change_pending`, `sensor.*_price_tomorrow`, `sensor.refuel_recommendation` |
-| **Events** | `lux_fuel_monitor_price_change_announced` and `lux_fuel_monitor_price_changed` for automations |
+| **Events** | `letzfuel_ha_price_change_announced` and `letzfuel_ha_price_changed` for automations |
 | **Vehicle analytics** | full-tank / refill / cost-change sensors + a live `number` slider for the fuel level (when a tank size is set) |
 | **Services** | `calculate_fill_cost`, `calculate_trip_cost` (response services) |
 | **History** | On setup, past prices are imported into Home Assistant long-term statistics |
@@ -53,14 +53,14 @@ Home Assistant **2025.12** or newer.
 ### HACS (recommended)
 
 1. HACS → **Integrations** → menu → **Custom repositories**.
-2. Add `https://github.com/dabo53ck/home-assistant-luxembourg-fuel-monitor` as an
+2. Add `https://github.com/dabo53ck/letzfuel-ha-luxembourg-fuel-monitor` as an
    **Integration**.
-3. Install **Luxembourg Fuel Monitor** and restart Home Assistant.
-4. **Settings → Devices & Services → Add Integration → Luxembourg Fuel Monitor**.
+3. Install **LëtzFuel HA** and restart Home Assistant.
+4. **Settings → Devices & Services → Add Integration → LëtzFuel HA**.
 
 ### Manual
 
-Copy `custom_components/lux_fuel_monitor` into your Home Assistant `config/custom_components`
+Copy `custom_components/letzfuel_ha` into your Home Assistant `config/custom_components`
 directory and restart.
 
 ---
@@ -96,14 +96,14 @@ re-adding the integration:
 
 ## Entity reference
 
-Entity IDs are prefixed with the device name, e.g. `sensor.luxembourg_fuel_monitor_diesel_price`.
+Entity IDs are prefixed with the device name, e.g. `sensor.letzfuel_ha_diesel_price`.
 Sensors marked *disabled by default* can be enabled from the entity settings.
 `*_trend` and `*_price_tomorrow` are enabled by default **only for the primary
 fuel**; the other tracked fuels' copies start disabled.
 
 > **Language note:** entity names are translated, so on a non-English Home
 > Assistant the auto-generated entity IDs follow that language — e.g. on a German
-> system the diesel price sensor is `sensor.luxembourg_fuel_monitor_diesel_preis`,
+> system the diesel price sensor is `sensor.letzfuel_ha_diesel_preis`,
 > the change sensor `..._diesel_anderung`, the recommendation `..._tankempfehlung`.
 > The examples below use the English IDs; check **Developer Tools → States** (or
 > rename the entities) for yours.
@@ -142,7 +142,7 @@ or refuelling.
 
 ## Services
 
-### `lux_fuel_monitor.calculate_fill_cost`
+### `letzfuel_ha.calculate_fill_cost`
 
 | Field | Required | Description |
 | --- | --- | --- |
@@ -152,7 +152,7 @@ or refuelling.
 
 Returns `{ cost, liters, price_per_liter, fuel_type, effective_date, currency }`.
 
-### `lux_fuel_monitor.calculate_trip_cost`
+### `letzfuel_ha.calculate_trip_cost`
 
 | Field | Required | Description |
 | --- | --- | --- |
@@ -166,11 +166,11 @@ Returns `{ liters_needed, cost, price_per_liter, fuel_type, currency }`.
 
 ## Events
 
-`lux_fuel_monitor_price_change_announced` fires when a next-day price is published that
+`letzfuel_ha_price_change_announced` fires when a next-day price is published that
 differs from today:
 
 ```yaml
-event_type: lux_fuel_monitor_price_change_announced
+event_type: letzfuel_ha_price_change_announced
 data:
   provider: "petrol.lu (Groupement Pétrolier Luxembourgeois)"
   changes:
@@ -182,7 +182,7 @@ data:
       effective_date: "2026-09-02"
 ```
 
-`lux_fuel_monitor_price_changed` fires the day a new price actually takes effect (same
+`letzfuel_ha_price_changed` fires the day a new price actually takes effect (same
 shape, `old_price` / `new_price`).
 
 ---
@@ -196,7 +196,7 @@ automation:
   - alias: "Fuel: refuel tonight?"
     trigger:
       - trigger: event
-        event_type: lux_fuel_monitor_price_change_announced
+        event_type: letzfuel_ha_price_change_announced
     condition:
       - condition: template
         value_template: >
@@ -221,13 +221,13 @@ automation:
   - alias: "Fuel: big diesel change"
     trigger:
       - trigger: numeric_state
-        entity_id: sensor.luxembourg_fuel_monitor_diesel_change
+        entity_id: sensor.letzfuel_ha_diesel_change
         above: 0.03
     action:
       - action: notify.family
         data:
           message: >
-            Diesel changed by {{ states('sensor.luxembourg_fuel_monitor_diesel_change') }} €/L.
+            Diesel changed by {{ states('sensor.letzfuel_ha_diesel_change') }} €/L.
 ```
 
 **Daily 07:00 fuel summary**
@@ -242,9 +242,9 @@ automation:
       - action: notify.family
         data:
           message: >
-            Diesel {{ states('sensor.luxembourg_fuel_monitor_diesel_price') }} €/L
-            ({{ states('sensor.luxembourg_fuel_monitor_diesel_trend') }}).
-            Full tank: €{{ states('sensor.luxembourg_fuel_monitor_full_tank_cost') }}.
+            Diesel {{ states('sensor.letzfuel_ha_diesel_price') }} €/L
+            ({{ states('sensor.letzfuel_ha_diesel_trend') }}).
+            Full tank: €{{ states('sensor.letzfuel_ha_full_tank_cost') }}.
 ```
 
 **Refill-cost budget alert**
@@ -254,12 +254,12 @@ automation:
   - alias: "Fuel: refill over budget"
     trigger:
       - trigger: numeric_state
-        entity_id: sensor.luxembourg_fuel_monitor_refill_cost
+        entity_id: sensor.letzfuel_ha_refill_cost
         above: 70
     action:
       - action: notify.me
         data:
-          message: "A refill now would cost €{{ states('sensor.luxembourg_fuel_monitor_refill_cost') }}."
+          message: "A refill now would cost €{{ states('sensor.letzfuel_ha_refill_cost') }}."
 ```
 
 ---
@@ -277,7 +277,7 @@ history graph and these helpers have data from before you installed it:
 sensor:
   - platform: statistics
     name: "Diesel 30-day average"
-    entity_id: sensor.luxembourg_fuel_monitor_diesel_price
+    entity_id: sensor.letzfuel_ha_diesel_price
     state_characteristic: mean
     max_age:
       days: 30
@@ -315,10 +315,10 @@ _Placeholders — add real screenshots before publishing._
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md). In short: `pip install -r requirements-test.txt`,
-then `ruff check .`, `mypy custom_components/lux_fuel_monitor`, and `pytest`.
+then `ruff check .`, `mypy custom_components/letzfuel_ha`, and `pytest`.
 
 Adding another Luxembourg source means implementing one `FuelProvider` subclass in
-`custom_components/lux_fuel_monitor/providers/` and registering it — nothing else changes.
+`custom_components/letzfuel_ha/providers/` and registering it — nothing else changes.
 
 ## License
 
@@ -327,7 +327,7 @@ Adding another Luxembourg source means implementing one `FuelProvider` subclass 
 <!-- badges -->
 [hacs-badge]: https://img.shields.io/badge/HACS-Custom-41BDF5.svg
 [hacs-url]: https://github.com/hacs/integration
-[validate-badge]: https://github.com/dabo53ck/home-assistant-luxembourg-fuel-monitor/actions/workflows/validate.yml/badge.svg
-[validate-url]: https://github.com/dabo53ck/home-assistant-luxembourg-fuel-monitor/actions/workflows/validate.yml
-[tests-badge]: https://github.com/dabo53ck/home-assistant-luxembourg-fuel-monitor/actions/workflows/tests.yml/badge.svg
-[tests-url]: https://github.com/dabo53ck/home-assistant-luxembourg-fuel-monitor/actions/workflows/tests.yml
+[validate-badge]: https://github.com/dabo53ck/letzfuel-ha-luxembourg-fuel-monitor/actions/workflows/validate.yml/badge.svg
+[validate-url]: https://github.com/dabo53ck/letzfuel-ha-luxembourg-fuel-monitor/actions/workflows/validate.yml
+[tests-badge]: https://github.com/dabo53ck/letzfuel-ha-luxembourg-fuel-monitor/actions/workflows/tests.yml/badge.svg
+[tests-url]: https://github.com/dabo53ck/letzfuel-ha-luxembourg-fuel-monitor/actions/workflows/tests.yml

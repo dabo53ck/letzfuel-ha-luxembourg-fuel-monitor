@@ -11,7 +11,7 @@ from homeassistant.helpers import entity_registry as er
 from homeassistant.util import dt as dt_util
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.lux_fuel_monitor.const import (
+from custom_components.letzfuel_ha.const import (
     CONF_PRIMARY_FUEL,
     CONF_PROVIDER,
     CONF_TRACKED_FUELS,
@@ -20,10 +20,10 @@ from custom_components.lux_fuel_monitor.const import (
     OPT_HISTORY_IMPORT_ENABLED,
     RECOMMENDATION_REFUEL_TODAY,
 )
-from custom_components.lux_fuel_monitor.models import FuelType
+from custom_components.letzfuel_ha.models import FuelType
 
-PREFIX = "sensor.luxembourg_fuel_monitor_"
-BPREFIX = "binary_sensor.luxembourg_fuel_monitor_"
+PREFIX = "sensor.letzfuel_ha_"
+BPREFIX = "binary_sensor.letzfuel_ha_"
 
 
 async def test_price_sensor(hass: HomeAssistant, init_integration) -> None:

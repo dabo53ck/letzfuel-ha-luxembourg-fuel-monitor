@@ -1,6 +1,6 @@
 # Contributing
 
-Thanks for helping improve Luxembourg Fuel Monitor.
+Thanks for helping improve LëtzFuel HA.
 
 ## Development setup
 
@@ -18,7 +18,7 @@ pip install -r requirements-test.txt
 ruff check .          # CI gate
 pytest                # CI gate
 ruff format .         # keep formatting consistent
-mypy custom_components/lux_fuel_monitor   # advisory
+mypy custom_components/letzfuel_ha   # advisory
 ```
 
 `ruff check` and `pytest` run in CI (`.github/workflows/`), alongside Home Assistant's

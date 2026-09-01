@@ -1,6 +1,6 @@
 [project]
-name = "home-assistant-luxembourg-fuel-monitor"
-version = "0.3.0"
+name = "letzfuel-ha-luxembourg-fuel-monitor"
+version = "0.4.0"
 description = "Luxembourg official maximum fuel prices, trends and refuelling insights for Home Assistant."
 readme = "README.md"
 requires-python = ">=3.13"
@@ -21,7 +21,7 @@ ignore = ["RUF012"]
 "tests/*" = ["S101", "SLF001", "ASYNC"]
 
 [tool.ruff.lint.isort]
-known-first-party = ["custom_components.lux_fuel_monitor"]
+known-first-party = ["custom_components.letzfuel_ha"]
 
 [tool.mypy]
 # Advisory only (run locally); not a CI gate.

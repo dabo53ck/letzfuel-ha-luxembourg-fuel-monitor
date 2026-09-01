@@ -1,4 +1,4 @@
-"""Services for Luxembourg Fuel Monitor.
+"""Services for LëtzFuel HA.
 
 Both services are response-only helpers for automations and scripts: they compute
 a cost from the currently published prices and return it.

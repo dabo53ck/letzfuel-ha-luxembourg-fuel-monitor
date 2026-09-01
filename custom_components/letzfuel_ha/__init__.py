@@ -1,4 +1,4 @@
-"""The Luxembourg Fuel Monitor integration."""
+"""The LëtzFuel HA integration."""
 
 from __future__ import annotations
 
@@ -27,7 +27,7 @@ PLATFORMS: list[Platform] = [
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: LuxFuelConfigEntry) -> bool:
-    """Set up Luxembourg Fuel Monitor from a config entry."""
+    """Set up LëtzFuel HA from a config entry."""
     coordinator = LuxFuelCoordinator(hass, entry)
     await coordinator.async_config_entry_first_refresh()
     entry.runtime_data = coordinator
@@ -47,7 +47,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: LuxFuelConfigEntry) -> b
         entry.async_create_background_task(
             hass,
             async_import_history_statistics(hass, coordinator, months),
-            "lux_fuel_monitor_history_import",
+            "letzfuel_ha_history_import",
         )
 
     return True

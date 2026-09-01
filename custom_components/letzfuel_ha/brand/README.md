@@ -23,7 +23,7 @@ npx svgexport logo.svg logo@2x.png "svg{}" 2000:560
 ```
 
 Then open a PR on `home-assistant/brands` adding them under
-`custom_integrations/lux_fuel_monitor/`.
+`custom_integrations/letzfuel_ha/`.
 
 Dropping the same `icon.png` / `icon@2x.png` next to this file also satisfies the
 HACS validation action's brand check in the meantime.
