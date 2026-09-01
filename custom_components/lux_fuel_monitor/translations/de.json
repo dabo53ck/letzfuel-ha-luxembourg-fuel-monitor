@@ -38,7 +38,6 @@
           "tracked_fuels": "Zu verfolgende Kraftstoffe",
           "primary_fuel": "Hauptkraftstoff",
           "tank_size": "Tankgröße",
-          "current_level_pct": "Aktueller Füllstand",
           "history_import_enabled": "Preisverlauf in Langzeitstatistiken importieren",
           "history_import_months": "Importtiefe des Verlaufs"
         }
@@ -90,6 +89,9 @@
     },
     "binary_sensor": {
       "price_change_pending": { "name": "Preisänderung bevorstehend" }
+    },
+    "number": {
+      "current_fuel_level": { "name": "Aktueller Füllstand" }
     }
   },
   "services": {

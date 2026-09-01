@@ -240,17 +240,8 @@ class LuxFuelOptionsFlow(OptionsFlow):
                         mode=NumberSelectorMode.BOX,
                     )
                 ),
-                vol.Optional(
-                    CONF_CURRENT_LEVEL,
-                    description={
-                        "suggested_value": current.get(CONF_CURRENT_LEVEL)
-                    },
-                ): NumberSelector(
-                    NumberSelectorConfig(
-                        min=0, max=100, step=1, unit_of_measurement="%",
-                        mode=NumberSelectorMode.SLIDER,
-                    )
-                ),
+                # The current fuel level is adjusted live via the
+                # `number.*_current_fuel_level` slider entity, not here.
                 vol.Required(
                     OPT_HISTORY_IMPORT_ENABLED,
                     default=_get(OPT_HISTORY_IMPORT_ENABLED, True),

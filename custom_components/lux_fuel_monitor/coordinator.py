@@ -87,6 +87,8 @@ class LuxFuelCoordinator(DataUpdateCoordinator[PriceSet]):
         self._last_seen: dict[str, Any] = {}
         self._evening_unsub: CALLBACK_TYPE | None = None
         self._retry_unsubs: list[CALLBACK_TYPE] = []
+        #: Live fuel level (%) set via the number entity; overrides the option.
+        self.manual_fuel_level: float | None = None
 
     # -- lifecycle ---------------------------------------------------------
 
@@ -298,6 +300,15 @@ class LuxFuelCoordinator(DataUpdateCoordinator[PriceSet]):
 
     @property
     def current_level_pct(self) -> float | None:
+        """Live fuel level: the number entity if set, else the configured value."""
+        if self.manual_fuel_level is not None:
+            return self.manual_fuel_level
+        raw = option_value(self.config_entry, CONF_CURRENT_LEVEL, None)
+        return float(raw) if raw is not None else None
+
+    @property
+    def configured_level_pct(self) -> float | None:
+        """The fuel level captured in the config/options (number entity default)."""
         raw = option_value(self.config_entry, CONF_CURRENT_LEVEL, None)
         return float(raw) if raw is not None else None
 

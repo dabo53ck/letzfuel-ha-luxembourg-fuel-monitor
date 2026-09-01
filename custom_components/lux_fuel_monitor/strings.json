@@ -38,7 +38,6 @@
           "tracked_fuels": "Fuels to track",
           "primary_fuel": "Primary fuel",
           "tank_size": "Tank size",
-          "current_level_pct": "Current fuel level",
           "history_import_enabled": "Import price history into long-term statistics",
           "history_import_months": "History import depth"
         }
@@ -90,6 +89,9 @@
     },
     "binary_sensor": {
       "price_change_pending": { "name": "Price change pending" }
+    },
+    "number": {
+      "current_fuel_level": { "name": "Current fuel level" }
     }
   },
   "services": {

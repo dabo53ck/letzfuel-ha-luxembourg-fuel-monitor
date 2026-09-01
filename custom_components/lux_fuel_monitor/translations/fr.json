@@ -38,7 +38,6 @@
           "tracked_fuels": "Carburants à suivre",
           "primary_fuel": "Carburant principal",
           "tank_size": "Taille du réservoir",
-          "current_level_pct": "Niveau de carburant actuel",
           "history_import_enabled": "Importer l'historique des prix dans les statistiques long terme",
           "history_import_months": "Profondeur d'import de l'historique"
         }
@@ -90,6 +89,9 @@
     },
     "binary_sensor": {
       "price_change_pending": { "name": "Changement de prix imminent" }
+    },
+    "number": {
+      "current_fuel_level": { "name": "Niveau de carburant actuel" }
     }
   },
   "services": {

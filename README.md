@@ -34,7 +34,7 @@ answers:
 | **Trend** | `sensor.*_trend` — `rising` / `falling` / `stable` over a configurable window |
 | **Next-day awareness** | `binary_sensor.price_change_pending`, `sensor.*_price_tomorrow`, `sensor.refuel_recommendation` |
 | **Events** | `lux_fuel_monitor_price_change_announced` and `lux_fuel_monitor_price_changed` for automations |
-| **Vehicle analytics** | `sensor.full_tank_cost`, `sensor.refill_cost`, `sensor.full_tank_cost_change` (when a tank size is set) |
+| **Vehicle analytics** | full-tank / refill / cost-change sensors + a live `number` slider for the fuel level (when a tank size is set) |
 | **Services** | `calculate_fill_cost`, `calculate_trip_cost` (response services) |
 | **History** | On setup, past prices are imported into Home Assistant long-term statistics |
 | **Robustness** | Diagnostics, repair issues when the source is stale or unparseable |
@@ -72,9 +72,12 @@ All configuration is through the UI.
   fuel (used by the recommendation and vehicle sensors).
 
 **Step 2 — Vehicle (optional)**
-: Set your tank size to unlock the cost sensors, and optionally your current fuel level.
+: Set your tank size to unlock the cost sensors, and optionally a starting fuel
+  level. After setup, the fuel level is adjusted live via the
+  `number.*_current_fuel_level` slider — put it on a dashboard.
 
-**Options** (⚙️ on the integration card) let you change:
+**Options** (⚙️ on the integration card) let you change everything below without
+re-adding the integration:
 
 | Setting | Default | Notes |
 | --- | --- | --- |
@@ -83,7 +86,7 @@ All configuration is through the UI.
 | Trend window | 14 days | Sample window for the trend sensors |
 | Price display | Incl. VAT | Show prices with or without VAT |
 | Tracked fuels / primary fuel | all / Diesel | |
-| Tank size / current level | — | Enables / feeds the vehicle sensors |
+| Tank size | — | Enables the vehicle sensors (the *level* lives in the number entity) |
 | Import price history | on | Backfill long-term statistics |
 | History import depth | 12 months | How far back to import |
 
@@ -125,9 +128,13 @@ fuel**; the other tracked fuels' copies start disabled.
 
 | Entity | State | Key attributes |
 | --- | --- | --- |
+| `number.*_current_fuel_level` | current fuel level, % — a slider you set from a dashboard | — |
 | `sensor.*_full_tank_cost` | `tank_size × price`, € | `tank_size`, `fuel_type`, `price_per_liter` |
 | `sensor.*_refill_cost` | cost to fill from the current level, € | `current_level_pct`, `tank_size`, `liters_needed`, `price_per_liter` |
 | `sensor.*_full_tank_cost_change` | change in full-tank cost from the last price move, € | `old_full_tank_cost`, `new_full_tank_cost`, `difference`, `per_litre_change`, `change_date` |
+
+The level survives restarts, so once you set it you only nudge it after driving
+or refuelling.
 
 ---
 
