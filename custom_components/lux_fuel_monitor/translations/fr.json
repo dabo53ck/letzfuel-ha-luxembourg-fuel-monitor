@@ -1,0 +1,151 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Luxembourg Fuel Monitor",
+        "description": "Suivez les prix maximaux officiels des carburants au Luxembourg. Les prix proviennent de petrol.lu (Groupement Pétrolier Luxembourgeois).",
+        "data": {
+          "tracked_fuels": "Carburants à suivre",
+          "primary_fuel": "Carburant principal (utilisé pour les capteurs véhicule et recommandation)"
+        }
+      },
+      "vehicle": {
+        "title": "Votre véhicule (facultatif)",
+        "description": "Indiquez la taille de votre réservoir pour obtenir les capteurs de coût de plein et de complément. Laissez vide pour ignorer.",
+        "data": {
+          "tank_size": "Taille du réservoir",
+          "current_level_pct": "Niveau de carburant actuel"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Impossible de joindre la source des prix. Vérifiez votre connexion et réessayez.",
+      "parse_error": "La source des prix a été jointe mais son contenu n'a pas pu être lu. Merci d'ouvrir un ticket."
+    },
+    "abort": {
+      "single_instance_allowed": "Luxembourg Fuel Monitor est déjà configuré."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Paramètres de Luxembourg Fuel Monitor",
+        "data": {
+          "update_interval_hours": "Intervalle de mise à jour",
+          "evening_check_time": "Heure du contrôle du soir (capte la publication vers 18h00 ; réessais à +10 et +20 min)",
+          "trend_window_days": "Fenêtre de tendance",
+          "price_display": "Affichage du prix",
+          "tracked_fuels": "Carburants à suivre",
+          "primary_fuel": "Carburant principal",
+          "tank_size": "Taille du réservoir",
+          "current_level_pct": "Niveau de carburant actuel",
+          "history_import_enabled": "Importer l'historique des prix dans les statistiques long terme",
+          "history_import_months": "Profondeur d'import de l'historique"
+        }
+      }
+    }
+  },
+  "selector": {
+    "fuel_type": {
+      "options": {
+        "diesel": "Diesel",
+        "sp95": "SP95 (E10)",
+        "sp98": "SP98"
+      }
+    },
+    "price_display": {
+      "options": {
+        "incl_vat": "TVA comprise",
+        "excl_vat": "Hors TVA"
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "price": { "name": "Prix {fuel}" },
+      "change": { "name": "Variation du prix {fuel}" },
+      "trend": {
+        "name": "Tendance {fuel}",
+        "state": {
+          "rising": "En hausse",
+          "falling": "En baisse",
+          "stable": "Stable"
+        }
+      },
+      "price_tomorrow": { "name": "Prix {fuel} demain" },
+      "refuel_recommendation": {
+        "name": "Recommandation de plein",
+        "state": {
+          "refuel_today": "Faire le plein aujourd'hui",
+          "wait": "Attendre",
+          "no_change": "Pas de changement",
+          "unknown": "Inconnu"
+        }
+      },
+      "last_price_update": { "name": "Dernière mise à jour du prix" },
+      "days_since_last_change": { "name": "Jours depuis le dernier changement" },
+      "full_tank_cost": { "name": "Coût d'un plein" },
+      "refill_cost": { "name": "Coût du complément" },
+      "full_tank_cost_change": { "name": "Variation du coût d'un plein" }
+    },
+    "binary_sensor": {
+      "price_change_pending": { "name": "Changement de prix imminent" }
+    }
+  },
+  "services": {
+    "calculate_fill_cost": {
+      "name": "Calculer le coût d'un ravitaillement",
+      "description": "Calcule le coût pour ajouter un nombre de litres donné au prix actuel (ou au prix annoncé pour le lendemain).",
+      "fields": {
+        "liters": {
+          "name": "Litres",
+          "description": "Nombre de litres à ajouter."
+        },
+        "fuel_type": {
+          "name": "Type de carburant",
+          "description": "Carburant à tarifer. Par défaut, le carburant principal configuré."
+        },
+        "use_tomorrow_price": {
+          "name": "Utiliser le prix de demain",
+          "description": "Utiliser le prix annoncé pour le lendemain plutôt que celui d'aujourd'hui, si disponible."
+        }
+      }
+    },
+    "calculate_trip_cost": {
+      "name": "Calculer le coût d'un trajet",
+      "description": "Estime le coût en carburant d'un trajet à partir de sa distance et de la consommation du véhicule.",
+      "fields": {
+        "distance_km": {
+          "name": "Distance",
+          "description": "Distance du trajet en kilomètres."
+        },
+        "consumption_l_100km": {
+          "name": "Consommation",
+          "description": "Consommation moyenne en litres aux 100 km."
+        },
+        "fuel_type": {
+          "name": "Type de carburant",
+          "description": "Carburant à tarifer. Par défaut, le carburant principal configuré."
+        }
+      }
+    }
+  },
+  "exceptions": {
+    "not_configured": {
+      "message": "Luxembourg Fuel Monitor n'est pas encore configuré."
+    },
+    "fuel_not_available": {
+      "message": "Aucune donnée de prix disponible pour {fuel}."
+    }
+  },
+  "issues": {
+    "stale_data": {
+      "title": "Les prix des carburants ne sont pas à jour",
+      "description": "Le prix publié le plus récent date de {age_days} jours et la source ne peut pas être actualisée. Consultez https://www.petrol.lu/fr/prix-officiels/ et les journaux de l'intégration."
+    },
+    "parse_error": {
+      "title": "Impossible de lire la source des prix",
+      "description": "La page des prix a été jointe mais n'a pas pu être analysée ({error}). La mise en page a peut-être changé – merci d'ouvrir un ticket."
+    }
+  }
+}

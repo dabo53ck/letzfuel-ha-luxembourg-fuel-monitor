@@ -1,0 +1,151 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Luxembourg Fuel Monitor",
+        "description": "Track Luxembourg's official maximum fuel prices. Prices come from petrol.lu (Groupement Pétrolier Luxembourgeois).",
+        "data": {
+          "tracked_fuels": "Fuels to track",
+          "primary_fuel": "Primary fuel (used for the vehicle and recommendation sensors)"
+        }
+      },
+      "vehicle": {
+        "title": "Your vehicle (optional)",
+        "description": "Set your tank size to get full-tank and refill cost sensors. Leave blank to skip.",
+        "data": {
+          "tank_size": "Tank size",
+          "current_level_pct": "Current fuel level"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Could not reach the fuel price source. Check your connection and try again.",
+      "parse_error": "The fuel price source was reached but its content could not be read. Please open an issue."
+    },
+    "abort": {
+      "single_instance_allowed": "Luxembourg Fuel Monitor is already configured."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Luxembourg Fuel Monitor settings",
+        "data": {
+          "update_interval_hours": "Update interval",
+          "evening_check_time": "Evening check time (catches the ~18:00 publication; retries at +10 and +20 min)",
+          "trend_window_days": "Trend window",
+          "price_display": "Price display",
+          "tracked_fuels": "Fuels to track",
+          "primary_fuel": "Primary fuel",
+          "tank_size": "Tank size",
+          "current_level_pct": "Current fuel level",
+          "history_import_enabled": "Import price history into long-term statistics",
+          "history_import_months": "History import depth"
+        }
+      }
+    }
+  },
+  "selector": {
+    "fuel_type": {
+      "options": {
+        "diesel": "Diesel",
+        "sp95": "SP95 (E10)",
+        "sp98": "SP98"
+      }
+    },
+    "price_display": {
+      "options": {
+        "incl_vat": "Including VAT",
+        "excl_vat": "Excluding VAT"
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "price": { "name": "{fuel} price" },
+      "change": { "name": "{fuel} price change" },
+      "trend": {
+        "name": "{fuel} trend",
+        "state": {
+          "rising": "Rising",
+          "falling": "Falling",
+          "stable": "Stable"
+        }
+      },
+      "price_tomorrow": { "name": "{fuel} price tomorrow" },
+      "refuel_recommendation": {
+        "name": "Refuel recommendation",
+        "state": {
+          "refuel_today": "Refuel today",
+          "wait": "Wait",
+          "no_change": "No change",
+          "unknown": "Unknown"
+        }
+      },
+      "last_price_update": { "name": "Last price update" },
+      "days_since_last_change": { "name": "Days since last change" },
+      "full_tank_cost": { "name": "Full tank cost" },
+      "refill_cost": { "name": "Refill cost" },
+      "full_tank_cost_change": { "name": "Full tank cost change" }
+    },
+    "binary_sensor": {
+      "price_change_pending": { "name": "Price change pending" }
+    }
+  },
+  "services": {
+    "calculate_fill_cost": {
+      "name": "Calculate fill cost",
+      "description": "Calculate the cost to add a given number of litres at the current (or announced next-day) price.",
+      "fields": {
+        "liters": {
+          "name": "Litres",
+          "description": "How many litres to add."
+        },
+        "fuel_type": {
+          "name": "Fuel type",
+          "description": "Fuel to price. Defaults to the configured primary fuel."
+        },
+        "use_tomorrow_price": {
+          "name": "Use tomorrow's price",
+          "description": "Use the announced next-day price instead of today's, when available."
+        }
+      }
+    },
+    "calculate_trip_cost": {
+      "name": "Calculate trip cost",
+      "description": "Estimate the fuel cost of a trip from its distance and the vehicle's consumption.",
+      "fields": {
+        "distance_km": {
+          "name": "Distance",
+          "description": "Trip distance in kilometres."
+        },
+        "consumption_l_100km": {
+          "name": "Consumption",
+          "description": "Average consumption in litres per 100 km."
+        },
+        "fuel_type": {
+          "name": "Fuel type",
+          "description": "Fuel to price. Defaults to the configured primary fuel."
+        }
+      }
+    }
+  },
+  "exceptions": {
+    "not_configured": {
+      "message": "Luxembourg Fuel Monitor is not set up yet."
+    },
+    "fuel_not_available": {
+      "message": "No price data available for {fuel}."
+    }
+  },
+  "issues": {
+    "stale_data": {
+      "title": "Fuel prices are out of date",
+      "description": "The newest published price is {age_days} days old and the source cannot be refreshed. Check https://www.petrol.lu/en/official-prices/ and the integration logs."
+    },
+    "parse_error": {
+      "title": "Cannot read the fuel price source",
+      "description": "The price page was reached but could not be parsed ({error}). The page layout may have changed – please open an issue."
+    }
+  }
+}
