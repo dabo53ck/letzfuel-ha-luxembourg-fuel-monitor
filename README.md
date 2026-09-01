@@ -1,3 +1,5 @@
+<img src="custom_components/lux_fuel_monitor/brand/icon.svg" alt="" width="96" align="right">
+
 # Luxembourg Fuel Monitor
 
 **Luxembourg's official maximum fuel prices, trends and refuelling insights for Home Assistant.**
