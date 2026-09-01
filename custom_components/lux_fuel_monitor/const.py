@@ -95,5 +95,3 @@ UNIT_EUR_PER_LITER: Final = "€/L"
 #: Luxembourg standard VAT rate (informational attribute only; the source
 #: publishes both incl. and excl. VAT figures directly).
 VAT_RATE_LU: Final = 0.17
-
-STATISTIC_SOURCE: Final = DOMAIN

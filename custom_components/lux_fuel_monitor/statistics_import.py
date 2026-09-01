@@ -1,11 +1,12 @@
-"""Backfill long-term statistics from the provider's price history.
+"""Backfill each price sensor's long-term statistics from the provider history.
 
-Luxembourg's official source publishes prices back to 2017. Importing them into
-Home Assistant's long-term statistics means the history graphs and the
-``statistics`` / ``trend`` helper integrations work from the first minute, instead
-of starting empty.
+Luxembourg's official source publishes prices back to 2017. Importing that
+history into the recorder means each ``sensor.*_price`` entity's own history
+graph (and the ``statistics`` / ``trend`` helpers built on it) shows data from
+before the integration was installed, instead of starting empty.
 
-Statistic ids: ``lux_fuel_monitor:<fuel>_price`` (unit €/L, incl. VAT).
+This uses ``async_import_statistics`` against the real entity ids, so the
+back-history merges into the same series the recorder keeps going forward.
 """
 
 from __future__ import annotations
@@ -14,13 +15,16 @@ import logging
 from datetime import date, timedelta
 
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers import entity_registry as er
 from homeassistant.util import dt as dt_util
 
-from .const import DOMAIN, STATISTIC_SOURCE, UNIT_EUR_PER_LITER
+from .const import DOMAIN, UNIT_EUR_PER_LITER
 from .coordinator import LuxFuelCoordinator
-from .models import FUEL_LABELS, PricePoint
+from .models import PricePoint
 
 _LOGGER = logging.getLogger(__name__)
+
+_RECORDER_SOURCE = "recorder"
 
 
 async def async_import_history_statistics(
@@ -28,28 +32,42 @@ async def async_import_history_statistics(
     coordinator: LuxFuelCoordinator,
     months: int,
 ) -> None:
-    """Import daily mean/min/max price statistics for each tracked fuel."""
+    """Best-effort backfill of price-sensor statistics (never raises)."""
     if "recorder" not in hass.config.components:
         _LOGGER.debug("Recorder not enabled; skipping history import")
         return
+    try:
+        await _async_import(hass, coordinator, months)
+    except Exception:
+        _LOGGER.exception("Historical statistics import failed")
 
-    # Imported here so the integration loads even if the recorder component is
-    # unavailable (e.g. minimal test setups).
+
+async def _async_import(
+    hass: HomeAssistant,
+    coordinator: LuxFuelCoordinator,
+    months: int,
+) -> None:
+    """Import daily mean/min/max price statistics for each tracked fuel."""
+    # Imported here so the integration loads even when the recorder is absent
+    # (e.g. minimal test setups).
     from homeassistant.components.recorder.models import (
         StatisticData,
+        StatisticMeanType,
         StatisticMetaData,
     )
     from homeassistant.components.recorder.statistics import async_import_statistics
 
+    entity_registry = er.async_get(hass)
     since = dt_util.now().date() - timedelta(days=max(months, 1) * 31)
-    try:
-        history = await coordinator.provider.async_get_history(since)
-    except Exception as err:
-        _LOGGER.warning("History import skipped: could not fetch history: %s", err)
-        return
-
+    history = await coordinator.provider.async_get_history(since)
     today = dt_util.now().date()
+
     for fuel in coordinator.tracked_fuels:
+        unique_id = f"{coordinator.config_entry.entry_id}_{fuel.value}_price"
+        entity_id = entity_registry.async_get_entity_id("sensor", DOMAIN, unique_id)
+        if entity_id is None:
+            continue
+
         points = sorted(
             (p for p in history if p.fuel == fuel and p.effective_date <= today),
             key=lambda p: p.effective_date,
@@ -57,21 +75,22 @@ async def async_import_history_statistics(
         if len(points) < 2:
             continue
 
-        statistics = _daily_statistics(StatisticData, points, since, today)
-        if not statistics:
+        rows = _daily_statistics(StatisticData, points, since, today)
+        if not rows:
             continue
 
         metadata = StatisticMetaData(
-            has_mean=True,
             has_sum=False,
-            name=f"{FUEL_LABELS[fuel]} price",
-            source=STATISTIC_SOURCE,
-            statistic_id=f"{DOMAIN}:{fuel.value}_price",
+            mean_type=StatisticMeanType.ARITHMETIC,
+            name=None,
+            source=_RECORDER_SOURCE,
+            statistic_id=entity_id,
+            unit_class=None,
             unit_of_measurement=UNIT_EUR_PER_LITER,
         )
-        async_import_statistics(hass, metadata, statistics)
+        async_import_statistics(hass, metadata, rows)
         _LOGGER.debug(
-            "Imported %d daily statistics points for %s", len(statistics), fuel.value
+            "Imported %d statistics points for %s", len(rows), entity_id
         )
 
 

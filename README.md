@@ -94,6 +94,13 @@ All configuration is through the UI.
 Entity IDs are prefixed with the device name, e.g. `sensor.luxembourg_fuel_monitor_diesel_price`.
 Sensors marked *disabled by default* can be enabled from the entity settings.
 
+> **Language note:** entity names are translated, so on a non-English Home
+> Assistant the auto-generated entity IDs follow that language — e.g. on a German
+> system the diesel price sensor is `sensor.luxembourg_fuel_monitor_diesel_preis`,
+> the change sensor `..._diesel_anderung`, the recommendation `..._tankempfehlung`.
+> The examples below use the English IDs; check **Developer Tools → States** (or
+> rename the entities) for yours.
+
 ### Per fuel (`diesel`, `sp95`, `sp98`)
 
 | Entity | State | Key attributes |
@@ -249,8 +256,9 @@ automation:
 ## 30-day average, month high / low, and derivative trend
 
 The integration deliberately does **not** keep its own price database. Home Assistant's
-built-in helpers already do this well, and price history is imported into long-term
-statistics on setup so they work immediately:
+built-in helpers already do this well, and on setup the published price history is
+backfilled into each `sensor.*_price` entity's own long-term statistics — so its
+history graph and these helpers have data from before you installed it:
 
 **30-day average** — add a [Statistics helper](https://www.home-assistant.io/integrations/statistics/):
 
