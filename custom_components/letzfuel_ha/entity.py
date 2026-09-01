@@ -22,7 +22,7 @@ class LuxFuelEntity(CoordinatorEntity[LuxFuelCoordinator]):
             identifiers={(DOMAIN, coordinator.config_entry.entry_id)},
             name="LëtzFuel HA",
             manufacturer="LëtzFuel HA",
-            model="Luxembourg official maximum fuel prices",
+            model="Luxembourg regulated maximum fuel prices",
             configuration_url=coordinator.provider.source_url,
             entry_type=DeviceEntryType.SERVICE,
         )

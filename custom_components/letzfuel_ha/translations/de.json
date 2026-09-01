@@ -3,7 +3,7 @@
     "step": {
       "user": {
         "title": "LëtzFuel HA",
-        "description": "Verfolgen Sie die amtlichen Höchstpreise für Kraftstoffe in Luxemburg. Die Preise stammen von petrol.lu (Groupement Pétrolier Luxembourgeois).",
+        "description": "Verfolgen Sie die staatlich regulierten Höchstpreise für Kraftstoffe in Luxemburg. Die Preise stammen von petrol.lu (Groupement Pétrolier Luxembourgeois).",
         "data": {
           "tracked_fuels": "Zu verfolgende Kraftstoffe",
           "primary_fuel": "Hauptkraftstoff (für Fahrzeug- und Empfehlungssensoren)"
@@ -143,7 +143,7 @@
   "issues": {
     "stale_data": {
       "title": "Kraftstoffpreise sind veraltet",
-      "description": "Der neueste veröffentlichte Preis ist {age_days} Tage alt und die Quelle kann nicht aktualisiert werden. Prüfen Sie die offizielle Preisseite und die Integrationsprotokolle."
+      "description": "Der neueste veröffentlichte Preis ist {age_days} Tage alt und die Quelle kann nicht aktualisiert werden. Prüfen Sie die Preisseite und die Integrationsprotokolle."
     },
     "parse_error": {
       "title": "Preisquelle kann nicht gelesen werden",

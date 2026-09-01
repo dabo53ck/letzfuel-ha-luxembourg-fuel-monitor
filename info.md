@@ -1,6 +1,6 @@
 # LëtzFuel HA
 
-Luxembourg's official maximum fuel prices, trends and refuelling insights for Home Assistant.
+Luxembourg's regulated maximum fuel prices, trends and refuelling insights for Home Assistant.
 
 - Current Diesel / SP95 / SP98 prices with rich attributes
 - Daily change, trend, and **next-day price awareness** ("refuel tonight or wait?")
@@ -10,5 +10,5 @@ Luxembourg's official maximum fuel prices, trends and refuelling insights for Ho
 - Price history imported into Home Assistant long-term statistics on setup
 - English / French / German
 
-Data from the public [petrol.lu official prices page](https://www.petrol.lu/en/official-prices/).
+Data from the public [petrol.lu prices page](https://www.petrol.lu/en/official-prices/).
 Not affiliated with GPL, petrol.lu or the Luxembourg government. Verify at the pump.

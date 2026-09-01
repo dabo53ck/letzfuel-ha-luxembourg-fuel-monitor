@@ -1,7 +1,7 @@
 """Provider abstraction for Luxembourg fuel price sources.
 
 The integration talks to fuel price sources exclusively through :class:`FuelProvider`.
-Adding a new Luxembourg source later (a different scraper, an official API, ...) means
+Adding a new Luxembourg source later (a different scraper, an API, ...) means
 implementing one subclass and registering it in ``providers/__init__.py`` -- no changes
 to the coordinator or entities.
 """

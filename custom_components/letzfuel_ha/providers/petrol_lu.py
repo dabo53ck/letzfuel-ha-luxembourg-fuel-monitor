@@ -1,4 +1,4 @@
-"""Provider for petrol.lu -- the GPL official maximum price table.
+"""Provider for petrol.lu -- the GPL maximum price table.
 
 Source: https://www.petrol.lu/en/official-prices/
 
@@ -54,12 +54,12 @@ _DEFAULT_COLUMNS: dict[FuelType, int] = {
 
 
 class PetrolLuProvider(FuelProvider):
-    """Scraper for the petrol.lu official maximum price table."""
+    """Scraper for the petrol.lu maximum price table."""
 
     key = "petrol_lu"
     name = "petrol.lu (Groupement Pétrolier Luxembourgeois)"
     source_url = SOURCE_URL
-    attribution = "Official maximum prices published by petrol.lu (GPL)"
+    attribution = "Maximum prices published by petrol.lu (GPL)"
 
     def __init__(self, session: ClientSession) -> None:
         """Store the shared aiohttp session."""
@@ -100,7 +100,7 @@ class PetrolLuProvider(FuelProvider):
 
 
 def _parse_history(html: str) -> list[PricePoint]:
-    """Parse the official price table out of the page HTML."""
+    """Parse the price table out of the page HTML."""
     # Imported lazily so the module imports without the requirement installed
     # (e.g. during tooling that only reads manifests).
     from bs4 import BeautifulSoup

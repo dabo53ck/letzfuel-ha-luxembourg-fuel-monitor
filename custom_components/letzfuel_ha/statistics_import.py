@@ -1,6 +1,6 @@
 """Backfill each price sensor's long-term statistics from the provider history.
 
-Luxembourg's official source publishes prices back to 2017. Importing that
+Luxembourg's source publishes prices back to 2017. Importing that
 history into the recorder means each ``sensor.*_price`` entity's own history
 graph (and the ``statistics`` / ``trend`` helpers built on it) shows data from
 before the integration was installed, instead of starting empty.

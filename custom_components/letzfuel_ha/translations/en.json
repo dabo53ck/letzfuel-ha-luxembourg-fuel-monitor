@@ -3,7 +3,7 @@
     "step": {
       "user": {
         "title": "LëtzFuel HA",
-        "description": "Track Luxembourg's official maximum fuel prices. Prices come from petrol.lu (Groupement Pétrolier Luxembourgeois).",
+        "description": "Track Luxembourg's regulated maximum fuel prices. Prices come from petrol.lu (Groupement Pétrolier Luxembourgeois).",
         "data": {
           "tracked_fuels": "Fuels to track",
           "primary_fuel": "Primary fuel (used for the vehicle and recommendation sensors)"
@@ -143,7 +143,7 @@
   "issues": {
     "stale_data": {
       "title": "Fuel prices are out of date",
-      "description": "The newest published price is {age_days} days old and the source cannot be refreshed. Check the official price page and the integration logs."
+      "description": "The newest published price is {age_days} days old and the source cannot be refreshed. Check the price page and the integration logs."
     },
     "parse_error": {
       "title": "Cannot read the fuel price source",

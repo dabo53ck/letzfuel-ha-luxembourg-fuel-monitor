@@ -1,12 +1,12 @@
-<img src="custom_components/letzfuel_ha/brand/icon.png" alt="" width="96" align="right">
+<div align="center">
 
-# LëtzFuel HA &ndash; Luxembourg Fuel Monitor
+<img src="custom_components/letzfuel_ha/brand/logo.png" alt="LëtzFuel HA – Luxembourg Fuel Monitor" width="640">
 
-**Luxembourg's official maximum fuel prices, trends and refuelling insights for Home Assistant.**
+**Luxembourg's regulated maximum fuel prices, trends and refuelling insights for Home Assistant.**
 
-[![hacs][hacs-badge]][hacs-url]
-[![Validate][validate-badge]][validate-url]
-[![Tests][tests-badge]][tests-url]
+[![HACS][hacs-badge]][hacs-url] &nbsp; [![Validate][validate-badge]][validate-url] &nbsp; [![Tests][tests-badge]][tests-url]
+
+</div>
 
 Luxembourg sets a **single national maximum price** for each road fuel by ministerial
 regulation. When the price changes, the new figure is published the evening before it
@@ -22,7 +22,7 @@ answers:
 
 > **Not affiliated** with the Groupement Pétrolier Luxembourgeois, petrol.lu, or the
 > Luxembourg government. Prices are read from the public
-> [petrol.lu official prices page](https://www.petrol.lu/en/official-prices/).
+> [petrol.lu prices page](https://www.petrol.lu/en/official-prices/).
 > Always verify the price at the pump.
 
 ---
