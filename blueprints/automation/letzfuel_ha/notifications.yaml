@@ -1,0 +1,773 @@
+blueprint:
+  name: LëtzFuel HA – Notifications
+  description: >-
+    One automation that turns the LëtzFuel HA integration's events and sensors
+    into phone notifications. Every notification type is opt-in and configured
+    in its own collapsible section: enable the ones you want, pick a notify
+    action once, done.
+
+
+    **Sections**
+
+    - *Notification delivery* – where notifications are sent (any notify
+      service or group; default `notify.notify`).
+
+    - *Evening: next-day price announced* – fires when a new price is published
+      for tomorrow (≈18:00).
+
+    - *New price in effect* – fires the day a new price actually applies.
+
+    - *Refuel recommendation* – fires when `sensor.*_refuel_recommendation`
+      changes to a state you care about.
+
+    - *Data problems* – fires when the price feed stops refreshing.
+
+    - *Price threshold* – fires when a price drops below a value you set.
+
+    - *Quiet hours* – suppress (never delay) notifications in a time window.
+
+    - *Only when home / away* – presence gate.
+
+    - *Advanced* – throttle, extra notification `data`, actionable buttons.
+
+
+    Every notification is forced into the notification group `letzfuel_ha`
+    (iOS `thread-id`, Android `group`). Each type has its own priority:
+    *normal*, *elevated* (Android high / iOS time-sensitive) or
+    *critical* (Android `alarm_stream` / iOS critical alert – bypasses
+    Do Not Disturb; on iOS this needs Critical Alerts allowed for the
+    Home Assistant app).
+
+
+    Full documentation:
+    https://github.com/dabo53ck/letzfuel-ha-luxembourg-fuel-monitor/blob/main/docs/notifications-blueprint.md
+  domain: automation
+  author: dabo53ck
+  source_url: https://github.com/dabo53ck/letzfuel-ha-luxembourg-fuel-monitor/blob/main/blueprints/automation/letzfuel_ha/notifications.yaml
+  homeassistant:
+    min_version: "2025.12.0"
+
+  input:
+    delivery:
+      name: Notification delivery
+      icon: mdi:cellphone-message
+      input:
+        notify_action:
+          name: Notify action
+          description: >-
+            What to run for every notification. The default targets the
+            `notify.notify` group. Change the service to your phone(s) or a
+            notify group – but keep the `data: "{{ notification_data }}"` line:
+            it carries the `letzfuel_ha` notification group and the per-type
+            priority.
+          default:
+            - action: notify.notify
+              data:
+                title: "{{ title }}"
+                message: "{{ message }}"
+                data: "{{ notification_data }}"
+          selector:
+            action: {}
+        persistent_fallback:
+          name: Also create a persistent notification
+          description: >-
+            Mirror every sent notification to Settings → Notifications, so
+            there is an in-dashboard trail. Suppressed (quiet-hours) messages
+            are NOT mirrored.
+          default: true
+          selector:
+            boolean: {}
+        tag_prefix:
+          name: Notification tag prefix
+          description: >-
+            Each type uses the tag `<prefix>_<type>`, so a newer message of the
+            same type replaces the previous one on the phone.
+          default: letzfuel
+          selector:
+            text: {}
+
+    announced:
+      name: "Evening: next-day price announced"
+      icon: mdi:calendar-clock
+      collapsed: true
+      input:
+        announced_enabled:
+          name: Enable
+          default: false
+          selector:
+            boolean: {}
+        announced_fuels:
+          name: Fuels
+          description: Which fuels to notify about. "Primary fuel" follows the integration.
+          default: [primary]
+          selector:
+            select:
+              multiple: true
+              options:
+                - { label: Primary fuel, value: primary }
+                - { label: Diesel, value: diesel }
+                - { label: SP95 (E10), value: sp95 }
+                - { label: SP98, value: sp98 }
+        announced_direction:
+          name: Direction
+          default: both
+          selector:
+            select:
+              options:
+                - { label: Up and down, value: both }
+                - { label: Increases only, value: up }
+                - { label: Decreases only, value: down }
+        announced_min_delta:
+          name: Minimum change
+          description: Ignore moves smaller than this (€/L). 0 = notify on any change.
+          default: 0
+          selector:
+            number:
+              min: 0
+              max: 0.5
+              step: 0.001
+              unit_of_measurement: €/L
+              mode: box
+        announced_priority:
+          name: Priority
+          default: normal
+          selector:
+            select:
+              options:
+                - { label: Normal, value: normal }
+                - { label: Elevated, value: elevated }
+                - { label: "Critical (bypass Do Not Disturb)", value: critical }
+        announced_title:
+          name: Title
+          default: Fuel price change announced for tomorrow
+          selector:
+            text: {}
+        announced_message:
+          name: Message
+          description: Jinja template. `matched_changes` is a list of {fuel, delta, direction, price, old_price, effective_date}.
+          default: >-
+            {% set lines = namespace(v=[]) %}
+            {%- for c in matched_changes %}
+            {%- set lines.v = lines.v + [(c.fuel | upper) ~ ' ' ~ ('+' if c.direction == 'up' else '−') ~ (((c.delta | abs) * 100) | round(1)) ~ ' ct/L → ' ~ c.price ~ ' €/L (' ~ c.effective_date ~ ')'] %}
+            {%- endfor %}
+            {{ lines.v | join('\n') }}
+          selector:
+            text:
+              multiline: true
+        announced_quiet_exempt:
+          name: Ignore quiet hours
+          default: false
+          selector:
+            boolean: {}
+
+    effective:
+      name: New price in effect
+      icon: mdi:cash-sync
+      collapsed: true
+      input:
+        effective_enabled:
+          name: Enable
+          default: false
+          selector:
+            boolean: {}
+        effective_fuels:
+          name: Fuels
+          default: [primary]
+          selector:
+            select:
+              multiple: true
+              options:
+                - { label: Primary fuel, value: primary }
+                - { label: Diesel, value: diesel }
+                - { label: SP95 (E10), value: sp95 }
+                - { label: SP98, value: sp98 }
+        effective_direction:
+          name: Direction
+          default: both
+          selector:
+            select:
+              options:
+                - { label: Up and down, value: both }
+                - { label: Increases only, value: up }
+                - { label: Decreases only, value: down }
+        effective_min_delta:
+          name: Minimum change
+          default: 0
+          selector:
+            number:
+              min: 0
+              max: 0.5
+              step: 0.001
+              unit_of_measurement: €/L
+              mode: box
+        effective_priority:
+          name: Priority
+          default: normal
+          selector:
+            select:
+              options:
+                - { label: Normal, value: normal }
+                - { label: Elevated, value: elevated }
+                - { label: "Critical (bypass Do Not Disturb)", value: critical }
+        effective_title:
+          name: Title
+          default: New fuel price in effect
+          selector:
+            text: {}
+        effective_message:
+          name: Message
+          default: >-
+            {% set lines = namespace(v=[]) %}
+            {%- for c in matched_changes %}
+            {%- set lines.v = lines.v + [(c.fuel | upper) ~ ': ' ~ c.price ~ ' €/L (' ~ ('+' if c.direction == 'up' else '−') ~ (((c.delta | abs) * 100) | round(1)) ~ ' ct/L)'] %}
+            {%- endfor %}
+            {{ lines.v | join('\n') }}
+          selector:
+            text:
+              multiline: true
+        effective_quiet_exempt:
+          name: Ignore quiet hours
+          default: false
+          selector:
+            boolean: {}
+
+    recommendation:
+      name: Refuel recommendation
+      icon: mdi:gas-station
+      collapsed: true
+      input:
+        rec_enabled:
+          name: Enable
+          default: false
+          selector:
+            boolean: {}
+        rec_entity:
+          name: Recommendation sensor
+          default: sensor.letzfuel_ha_refuel_recommendation
+          selector:
+            entity:
+              integration: letzfuel_ha
+              domain: sensor
+        rec_on_states:
+          name: Notify when it becomes
+          default: [refuel_today]
+          selector:
+            select:
+              multiple: true
+              options:
+                - { label: Refuel today, value: refuel_today }
+                - { label: Wait, value: wait }
+                - { label: No change, value: no_change }
+        rec_priority:
+          name: Priority
+          default: normal
+          selector:
+            select:
+              options:
+                - { label: Normal, value: normal }
+                - { label: Elevated, value: elevated }
+                - { label: "Critical (bypass Do Not Disturb)", value: critical }
+        rec_title:
+          name: Title
+          default: Refuel recommendation
+          selector:
+            text: {}
+        rec_message:
+          name: Message
+          default: >-
+            Recommendation: {{ trigger.to_state.state | replace('_', ' ') }}.
+          selector:
+            text:
+              multiline: true
+        rec_quiet_exempt:
+          name: Ignore quiet hours
+          default: false
+          selector:
+            boolean: {}
+
+    problems:
+      name: Data problems
+      icon: mdi:alert-circle-outline
+      collapsed: true
+      input:
+        problems_enabled:
+          name: Enable
+          default: false
+          selector:
+            boolean: {}
+        stale_entity:
+          name: Last-price-update sensor
+          default: sensor.letzfuel_ha_last_price_update
+          selector:
+            entity:
+              integration: letzfuel_ha
+              domain: sensor
+        stale_after_hours:
+          name: Alert after (hours without a successful fetch)
+          default: 30
+          selector:
+            number:
+              min: 6
+              max: 168
+              step: 1
+              unit_of_measurement: h
+              mode: box
+        stale_recovered_notify:
+          name: Also notify when data recovers
+          default: true
+          selector:
+            boolean: {}
+        problems_priority:
+          name: Priority
+          default: elevated
+          selector:
+            select:
+              options:
+                - { label: Normal, value: normal }
+                - { label: Elevated, value: elevated }
+                - { label: "Critical (bypass Do Not Disturb)", value: critical }
+        problems_title:
+          name: Title
+          default: "LëtzFuel HA: fuel data problem"
+          selector:
+            text: {}
+        problems_message:
+          name: Message
+          default: >-
+            No fresh fuel prices for over {{ stale_after_hours }} h. Last
+            successful fetch: {{ state_attr(stale_entity, 'fetched_at') or 'unknown' }}.
+          selector:
+            text:
+              multiline: true
+        problems_recovered_title:
+          name: Recovery title
+          default: "LëtzFuel HA: fuel data restored"
+          selector:
+            text: {}
+        problems_recovered_message:
+          name: Recovery message
+          default: Fresh fuel prices are being fetched again.
+          selector:
+            text:
+              multiline: true
+
+    threshold:
+      name: Price threshold
+      icon: mdi:tag-arrow-down
+      collapsed: true
+      input:
+        threshold_enabled:
+          name: Enable
+          default: false
+          selector:
+            boolean: {}
+        threshold_entity:
+          name: Price sensor to watch
+          default: sensor.letzfuel_ha_diesel_price
+          selector:
+            entity:
+              integration: letzfuel_ha
+              domain: sensor
+        threshold_below:
+          name: Notify when the price is below (€/L)
+          description: Leave at 0 until you enable this section, then set your target price.
+          default: 0
+          selector:
+            number:
+              min: 0
+              max: 5
+              step: 0.001
+              unit_of_measurement: €/L
+              mode: box
+        threshold_priority:
+          name: Priority
+          default: normal
+          selector:
+            select:
+              options:
+                - { label: Normal, value: normal }
+                - { label: Elevated, value: elevated }
+                - { label: "Critical (bypass Do Not Disturb)", value: critical }
+        threshold_title:
+          name: Title
+          default: Fuel price below your target
+          selector:
+            text: {}
+        threshold_message:
+          name: Message
+          default: >-
+            {{ state_attr(threshold_entity, 'friendly_name') or threshold_entity }}
+            is at {{ states(threshold_entity) }} €/L (target: below {{ threshold_below }}).
+          selector:
+            text:
+              multiline: true
+        threshold_quiet_exempt:
+          name: Ignore quiet hours
+          default: false
+          selector:
+            boolean: {}
+
+    quiet:
+      name: Quiet hours
+      icon: mdi:sleep
+      collapsed: true
+      input:
+        quiet_enabled:
+          name: Enable quiet hours
+          description: >-
+            In the window below, notifications are SUPPRESSED (not delayed) –
+            you will not receive them later. Per-type "Ignore quiet hours" and
+            critical notifications still get through.
+          default: false
+          selector:
+            boolean: {}
+        quiet_start:
+          name: Start
+          default: "22:00:00"
+          selector:
+            time: {}
+        quiet_end:
+          name: End
+          default: "07:00:00"
+          selector:
+            time: {}
+        quiet_critical_overrides:
+          name: Critical notifications ignore quiet hours
+          default: true
+          selector:
+            boolean: {}
+
+    presence:
+      name: Only when home / away
+      icon: mdi:home-account
+      collapsed: true
+      input:
+        presence_enabled:
+          name: Enable presence gate
+          default: false
+          selector:
+            boolean: {}
+        presence_entity:
+          name: Person or group
+          description: Leave empty to disable the gate even if the toggle above is on.
+          default: ""
+          selector:
+            entity:
+              domain: [person, group]
+        presence_mode:
+          name: Send only when
+          default: home
+          selector:
+            select:
+              options:
+                - { label: Home, value: home }
+                - { label: Away, value: away }
+        presence_critical_overrides:
+          name: Critical notifications ignore the presence gate
+          default: true
+          selector:
+            boolean: {}
+
+    advanced:
+      name: Advanced
+      icon: mdi:cog
+      collapsed: true
+      input:
+        min_interval_minutes:
+          name: Minimum minutes between notifications
+          description: Global throttle across all types. 0 = no throttle.
+          default: 0
+          selector:
+            number:
+              min: 0
+              max: 1440
+              step: 1
+              unit_of_measurement: min
+              mode: box
+        adv_extra_data:
+          name: Extra notification data
+          description: >-
+            Merged into every notification's `data` (deep merge). E.g.
+            `{ "channel": "alarm_stream_max" }` or `{ "push": { "sound": "US-EN-Alexa..." } }`.
+          default: {}
+          selector:
+            object: {}
+        adv_actions:
+          name: Actionable-notification buttons
+          description: 'List for the companion app, e.g. [{ "action": "URI", "title": "Open petrol.lu", "uri": "https://www.petrol.lu/en/official-prices/" }].'
+          default: []
+          selector:
+            object: {}
+        debug_persistent:
+          name: Always mirror to a persistent notification
+          default: false
+          selector:
+            boolean: {}
+
+mode: queued
+max: 10
+
+trigger_variables:
+  _tv_stale_entity: !input stale_entity
+  _tv_stale_after_hours: !input stale_after_hours
+
+triggers:
+  - trigger: event
+    id: announced
+    event_type: letzfuel_ha_price_change_announced
+  - trigger: event
+    id: effective
+    event_type: letzfuel_ha_price_changed
+  - trigger: state
+    id: recommend
+    entity_id: !input rec_entity
+  - trigger: numeric_state
+    id: threshold
+    entity_id: !input threshold_entity
+    below: !input threshold_below
+  - trigger: template
+    id: stale
+    value_template: >-
+      {% set e = _tv_stale_entity if _tv_stale_entity is string else '' %}
+      {% set fa = as_datetime(state_attr(e, 'fetched_at'), none) if e else none %}
+      {{ e != '' and has_value(e) and (
+           fa is none
+           or (now() - fa) > timedelta(hours = _tv_stale_after_hours | int(30))
+           or not state_attr(e, 'last_fetch_success')
+         ) }}
+    for:
+      minutes: 2
+  - trigger: template
+    id: stale_ok
+    value_template: >-
+      {% set e = _tv_stale_entity if _tv_stale_entity is string else '' %}
+      {% set fa = as_datetime(state_attr(e, 'fetched_at'), none) if e else none %}
+      {{ e != '' and has_value(e) and fa is not none
+         and (now() - fa) <= timedelta(hours = _tv_stale_after_hours | int(30))
+         and state_attr(e, 'last_fetch_success') }}
+    for:
+      minutes: 2
+
+variables:
+  # --- input aliases (!input cannot be used inside a template) ---
+  tag_prefix: !input tag_prefix
+  persistent_fallback: !input persistent_fallback
+  debug_persistent: !input debug_persistent
+  adv_extra_data: !input adv_extra_data
+  adv_actions: !input adv_actions
+  min_interval_minutes: !input min_interval_minutes
+
+  announced_enabled: !input announced_enabled
+  announced_fuels: !input announced_fuels
+  announced_direction: !input announced_direction
+  announced_min_delta: !input announced_min_delta
+  announced_priority: !input announced_priority
+  announced_quiet_exempt: !input announced_quiet_exempt
+
+  effective_enabled: !input effective_enabled
+  effective_fuels: !input effective_fuels
+  effective_direction: !input effective_direction
+  effective_min_delta: !input effective_min_delta
+  effective_priority: !input effective_priority
+  effective_quiet_exempt: !input effective_quiet_exempt
+
+  rec_entity: !input rec_entity
+  rec_enabled: !input rec_enabled
+  rec_on_states: !input rec_on_states
+  rec_priority: !input rec_priority
+  rec_quiet_exempt: !input rec_quiet_exempt
+
+  problems_enabled: !input problems_enabled
+  stale_entity: !input stale_entity
+  stale_after_hours: !input stale_after_hours
+  stale_recovered_notify: !input stale_recovered_notify
+  problems_priority: !input problems_priority
+
+  threshold_enabled: !input threshold_enabled
+  threshold_entity: !input threshold_entity
+  threshold_below: !input threshold_below
+  threshold_priority: !input threshold_priority
+  threshold_quiet_exempt: !input threshold_quiet_exempt
+
+  quiet_enabled: !input quiet_enabled
+  quiet_start: !input quiet_start
+  quiet_end: !input quiet_end
+  quiet_critical_overrides: !input quiet_critical_overrides
+
+  presence_enabled: !input presence_enabled
+  presence_entity: !input presence_entity
+  presence_mode: !input presence_mode
+  presence_critical_overrides: !input presence_critical_overrides
+
+  # --- computed ---
+  _now_min: "{{ now().hour * 60 + now().minute }}"
+  _q_start_min: "{{ (quiet_start.split(':')[0] | int) * 60 + (quiet_start.split(':')[1] | int) }}"
+  _q_end_min: "{{ (quiet_end.split(':')[0] | int) * 60 + (quiet_end.split(':')[1] | int) }}"
+  in_quiet_hours: >-
+    {{ quiet_enabled and (
+         ( (_now_min | int) >= (_q_start_min | int) or (_now_min | int) < (_q_end_min | int) )
+         if (_q_start_min | int) > (_q_end_min | int)
+         else ( (_q_start_min | int) <= (_now_min | int) < (_q_end_min | int) )
+       ) }}
+  presence_ok: >-
+    {% set p = presence_entity if presence_entity is string else '' %}
+    {{ (not presence_enabled) or p == '' or (
+         is_state(p, 'home') if presence_mode == 'home' else not is_state(p, 'home')
+       ) }}
+  throttle_ok: >-
+    {% set gap = (min_interval_minutes | int) * 60 %}
+    {{ gap == 0
+       or this is not defined
+       or this.attributes.last_triggered is none
+       or (now() - this.attributes.last_triggered).total_seconds() >= gap }}
+  matched_changes: >-
+    {% set raw = trigger.event.data.changes
+       if (trigger is defined and trigger.event is defined
+           and trigger.event.data is defined and trigger.event.data.changes is defined)
+       else [] %}
+    {% if trigger.id == 'announced' %}
+      {% set want_raw = announced_fuels %}
+      {% set cfg_dir = announced_direction %}
+      {% set cfg_md = announced_min_delta | float(0) %}
+    {% elif trigger.id == 'effective' %}
+      {% set want_raw = effective_fuels %}
+      {% set cfg_dir = effective_direction %}
+      {% set cfg_md = effective_min_delta | float(0) %}
+    {% else %}
+      {% set want_raw = [] %}
+      {% set cfg_dir = 'both' %}
+      {% set cfg_md = 0 %}
+    {% endif %}
+    {% set primary = state_attr(rec_entity, 'primary_fuel') or 'diesel' %}
+    {% set wf = namespace(v=[]) %}
+    {% for f in want_raw %}
+      {% set wf.v = wf.v + ([primary] if f == 'primary' else [f]) %}
+    {% endfor %}
+    {% set want = wf.v | unique | list %}
+    {% set out = namespace(v=[]) %}
+    {% for c in raw %}
+      {% set new_p = (c.upcoming_price if c.upcoming_price is defined else c.new_price) | float(0) %}
+      {% set old_p = (c.current_price if c.current_price is defined else c.old_price) | float(0) %}
+      {% set d = (c.delta | float(new_p - old_p)) if c.delta is defined else (new_p - old_p) %}
+      {% set dir = 'up' if d > 0 else 'down' %}
+      {% set dir_ok = cfg_dir == 'both' or (cfg_dir == 'up' and dir == 'up') or (cfg_dir == 'down' and dir == 'down') %}
+      {% if c.fuel in want and dir_ok and (d | abs) >= cfg_md %}
+        {% set out.v = out.v + [{
+             'fuel': c.fuel, 'delta': d, 'direction': dir,
+             'price': new_p, 'old_price': old_p, 'effective_date': c.effective_date }] %}
+      {% endif %}
+    {% endfor %}
+    {{ out.v }}
+
+actions:
+  - choose:
+      # ---------- Evening: next-day price announced ----------
+      - conditions:
+          - "{{ trigger.id == 'announced' and announced_enabled }}"
+          - "{{ matched_changes | count > 0 }}"
+          - "{{ throttle_ok }}"
+          - "{{ presence_ok or (announced_priority == 'critical' and presence_critical_overrides) }}"
+          - "{{ (not in_quiet_hours) or announced_quiet_exempt or (announced_priority == 'critical' and quiet_critical_overrides) }}"
+        sequence:
+          - variables:
+              title: !input announced_title
+              message: !input announced_message
+              msg_tag: "{{ tag_prefix }}_announced"
+              priority: "{{ announced_priority }}"
+          - &deliver
+            alias: Deliver the notification
+            sequence:
+              - variables:
+                  notification_data: >-
+                    {% set base = {'tag': msg_tag, 'group': 'letzfuel_ha', 'push': {'thread-id': 'letzfuel_ha'}} %}
+                    {% if priority == 'elevated' %}
+                    {% set base = base | combine({'importance': 'high', 'priority': 'high', 'ttl': 0,
+                        'push': {'interruption-level': 'time-sensitive'}}, recursive=True) %}
+                    {% elif priority == 'critical' %}
+                    {% set base = base | combine({'channel': 'alarm_stream', 'importance': 'high', 'priority': 'high', 'ttl': 0,
+                        'push': {'interruption-level': 'critical', 'sound': {'name': 'default', 'critical': 1, 'volume': 1.0}}}, recursive=True) %}
+                    {% endif %}
+                    {% if adv_actions %}
+                    {% set base = base | combine({'actions': adv_actions}) %}
+                    {% endif %}
+                    {{ base | combine(adv_extra_data, recursive=True) }}
+              - alias: Send through the configured notify action
+                sequence: !input notify_action
+              - alias: Optional persistent-notification copy
+                choose:
+                  - conditions:
+                      - condition: template
+                        value_template: "{{ persistent_fallback or debug_persistent }}"
+                    sequence:
+                      - action: persistent_notification.create
+                        data:
+                          notification_id: "{{ msg_tag }}"
+                          title: "{{ title }}"
+                          message: "{{ message }}"
+
+      # ---------- New price in effect ----------
+      - conditions:
+          - "{{ trigger.id == 'effective' and effective_enabled }}"
+          - "{{ matched_changes | count > 0 }}"
+          - "{{ throttle_ok }}"
+          - "{{ presence_ok or (effective_priority == 'critical' and presence_critical_overrides) }}"
+          - "{{ (not in_quiet_hours) or effective_quiet_exempt or (effective_priority == 'critical' and quiet_critical_overrides) }}"
+        sequence:
+          - variables:
+              title: !input effective_title
+              message: !input effective_message
+              msg_tag: "{{ tag_prefix }}_effective"
+              priority: "{{ effective_priority }}"
+          - *deliver
+
+      # ---------- Refuel recommendation ----------
+      - conditions:
+          - "{{ trigger.id == 'recommend' and rec_enabled }}"
+          - "{{ trigger.to_state.state in rec_on_states }}"
+          - "{{ trigger.from_state is none or trigger.from_state.state != trigger.to_state.state }}"
+          - "{{ throttle_ok }}"
+          - "{{ presence_ok or (rec_priority == 'critical' and presence_critical_overrides) }}"
+          - "{{ (not in_quiet_hours) or rec_quiet_exempt or (rec_priority == 'critical' and quiet_critical_overrides) }}"
+        sequence:
+          - variables:
+              title: !input rec_title
+              message: !input rec_message
+              msg_tag: "{{ tag_prefix }}_recommendation"
+              priority: "{{ rec_priority }}"
+          - *deliver
+
+      # ---------- Data problems: stale ----------
+      - conditions:
+          - "{{ trigger.id == 'stale' and problems_enabled }}"
+        sequence:
+          - variables:
+              title: !input problems_title
+              message: !input problems_message
+              msg_tag: "{{ tag_prefix }}_problem"
+              priority: "{{ problems_priority }}"
+          - *deliver
+
+      # ---------- Data problems: recovered ----------
+      - conditions:
+          - "{{ trigger.id == 'stale_ok' and problems_enabled and stale_recovered_notify }}"
+        sequence:
+          - variables:
+              title: !input problems_recovered_title
+              message: !input problems_recovered_message
+              msg_tag: "{{ tag_prefix }}_problem"
+              priority: normal
+          - *deliver
+
+      # ---------- Price threshold ----------
+      - conditions:
+          - "{{ trigger.id == 'threshold' and threshold_enabled }}"
+          - "{{ throttle_ok }}"
+          - "{{ presence_ok or (threshold_priority == 'critical' and presence_critical_overrides) }}"
+          - "{{ (not in_quiet_hours) or threshold_quiet_exempt or (threshold_priority == 'critical' and quiet_critical_overrides) }}"
+        sequence:
+          - variables:
+              title: !input threshold_title
+              message: !input threshold_message
+              msg_tag: "{{ tag_prefix }}_threshold"
+              priority: "{{ threshold_priority }}"
+          - *deliver

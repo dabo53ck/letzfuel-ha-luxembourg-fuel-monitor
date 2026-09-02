@@ -39,6 +39,7 @@ answers:
 | **Trend** | `sensor.*_trend` — `rising` / `falling` / `stable` over a configurable window |
 | **Next-day awareness** | `binary_sensor.price_change_pending`, `sensor.*_price_tomorrow`, `sensor.refuel_recommendation` |
 | **Events** | `letzfuel_ha_price_change_announced` and `letzfuel_ha_price_changed` for automations |
+| **Notifications** | one import-and-go [notification blueprint](docs/notifications-blueprint.md) — per-type priority, quiet hours, presence gate |
 | **Vehicle analytics** | full-tank / refill / cost-change sensors + a live `number` slider for the fuel level (when a tank size is set) |
 | **Services** | `calculate_fill_cost`, `calculate_trip_cost` (response services) |
 | **History** | On setup, past prices are imported into Home Assistant long-term statistics |
@@ -190,24 +191,43 @@ shape, `old_price` / `new_price`).
 
 ---
 
-## Automation examples
+## Notifications
 
-**Tell me tonight if I should refuel**
+### Notification blueprint (recommended)
+
+One import covers all of it — next-day price alerts, "new price in effect",
+refuel recommendation, a stale-feed alarm and a price-threshold watch. Every
+type is opt-in, with per-type priority (including *critical* to bypass Do Not
+Disturb), quiet hours and a presence gate.
+
+Import URL:
+
+```
+https://github.com/dabo53ck/letzfuel-ha-luxembourg-fuel-monitor/blob/main/blueprints/automation/letzfuel_ha/notifications.yaml
+```
+
+Full walkthrough: [docs/notifications-blueprint.md](docs/notifications-blueprint.md).
+
+### Roll your own
+
+Every entity_id is stable and language-independent (e.g.
+`sensor.letzfuel_ha_diesel_price`, `sensor.letzfuel_ha_refuel_recommendation`),
+so a hand-written automation is straightforward:
 
 ```yaml
 automation:
   - alias: "Fuel: refuel tonight?"
-    trigger:
+    triggers:
       - trigger: event
         event_type: letzfuel_ha_price_change_announced
-    condition:
+    conditions:
       - condition: template
         value_template: >
           {{ trigger.event.data.changes
              | selectattr('fuel', 'eq', 'diesel')
              | selectattr('direction', 'eq', 'up') | list | count > 0 }}
-    action:
-      - action: notify.mobile_app
+    actions:
+      - action: notify.mobile_app_my_phone
         data:
           title: "Diesel goes up tomorrow"
           message: >
@@ -215,54 +235,6 @@ automation:
                | selectattr('fuel','eq','diesel') | first %}
             +{{ '%.3f' | format(c.delta) }} €/L from {{ c.effective_date }}.
             Refuel today.
-```
-
-**Alert on a large move**
-
-```yaml
-automation:
-  - alias: "Fuel: big diesel change"
-    trigger:
-      - trigger: numeric_state
-        entity_id: sensor.letzfuel_ha_diesel_change
-        above: 0.03
-    action:
-      - action: notify.family
-        data:
-          message: >
-            Diesel changed by {{ states('sensor.letzfuel_ha_diesel_change') }} €/L.
-```
-
-**Daily 07:00 fuel summary**
-
-```yaml
-automation:
-  - alias: "Fuel: morning summary"
-    trigger:
-      - trigger: time
-        at: "07:00:00"
-    action:
-      - action: notify.family
-        data:
-          message: >
-            Diesel {{ states('sensor.letzfuel_ha_diesel_price') }} €/L
-            ({{ states('sensor.letzfuel_ha_diesel_trend') }}).
-            Full tank: €{{ states('sensor.letzfuel_ha_full_tank_cost') }}.
-```
-
-**Refill-cost budget alert**
-
-```yaml
-automation:
-  - alias: "Fuel: refill over budget"
-    trigger:
-      - trigger: numeric_state
-        entity_id: sensor.letzfuel_ha_refill_cost
-        above: 70
-    action:
-      - action: notify.me
-        data:
-          message: "A refill now would cost €{{ states('sensor.letzfuel_ha_refill_cost') }}."
 ```
 
 ---
@@ -308,8 +280,7 @@ _Placeholders — add real screenshots before publishing._
 ## Roadmap
 
 - **Phase 2**: current fuel level from a Home Assistant entity; heating oil, BTS and LPG;
-  per-station data via a second provider; notification blueprints and a Lovelace card;
-  Luxembourgish translation.
+  per-station data via a second provider; a Lovelace card.
 - **Phase 3**: a `gouvernement.lu` press-release parser as a cross-check / fallback source;
   price-move prediction from the Platt's Rotterdam index; Energy dashboard cost integration.
 

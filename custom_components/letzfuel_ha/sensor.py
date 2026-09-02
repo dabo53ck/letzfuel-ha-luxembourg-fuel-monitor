@@ -8,6 +8,7 @@ from datetime import datetime
 from typing import Any
 
 from homeassistant.components.sensor import (
+    ENTITY_ID_FORMAT,
     SensorDeviceClass,
     SensorEntity,
     SensorEntityDescription,
@@ -18,6 +19,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.helpers.typing import StateType
 from homeassistant.util import dt as dt_util
+from homeassistant.util import slugify
 
 from .analytics import compute_trend, refuel_recommendation
 from .const import (
@@ -28,7 +30,7 @@ from .const import (
     VAT_RATE_LU,
 )
 from .coordinator import LuxFuelConfigEntry, LuxFuelCoordinator
-from .entity import LuxFuelEntity
+from .entity import LuxFuelEntity, stable_entity_id
 from .models import FUEL_LABELS, FuelType
 
 # --- description ------------------------------------------------------------
@@ -491,6 +493,12 @@ class LuxFuelSensor(LuxFuelEntity, SensorEntity):
         self._fuel = fuel
         suffix = f"{fuel.value}_{description.key}" if fuel else description.key
         self._attr_unique_id = f"{coordinator.config_entry.entry_id}_{suffix}"
+        id_slug = (
+            f"{slugify(FUEL_LABELS[fuel])}_{description.key}"
+            if fuel is not None
+            else description.key
+        )
+        self.entity_id = stable_entity_id(coordinator, ENTITY_ID_FORMAT, id_slug)
         if fuel is not None:
             self._attr_translation_placeholders = {"fuel": FUEL_LABELS[fuel]}
         if description.primary_only_default:

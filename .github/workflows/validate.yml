@@ -41,3 +41,14 @@ jobs:
           python-version: "3.14"
       - run: pip install ruff
       - run: ruff check .
+
+  blueprints:
+    name: Blueprints
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
+      - run: pip install pyyaml
+      - run: python scripts/validate_blueprints.py
