@@ -17,6 +17,9 @@ first tagged release, everything lives under *Unreleased*.
   [`docs/notifications-blueprint.md`](docs/notifications-blueprint.md).
 - `scripts/validate_blueprints.py` and a CI job that structurally checks the
   shipped blueprints.
+- Option **"Fetch tomorrow's announced price"** (default on) to disable the
+  RTL.lu lookup and rely on petrol.lu alone. A failure of the RTL.lu endpoint is
+  logged once and otherwise ignored — it never breaks the petrol.lu update.
 
 ### Changed
 
@@ -26,3 +29,19 @@ first tagged release, everything lives under *Unreleased*.
   being derived from the translated entity name. This lets the blueprint and
   the docs reference entities by a fixed id in any language. Existing
   installations keep the entity IDs already stored in their registry.
+
+### Fixed
+
+- **The announced next-day price is picked up again.** petrol.lu only shows a
+  price once it is in effect, so the pre-announcement (`price_change_pending`,
+  `price_tomorrow`, the refuel recommendation, `letzfuel_ha_price_change_announced`)
+  never fired. The integration now also reads RTL.lu's published price set
+  (`https://api-gate.rtl.lu/fuel-prices/current`), which carries the next-day
+  price from ~18:00 the evening before, and folds it into petrol.lu's history.
+
+### Notes
+
+- petrol.lu remains the source of truth for the current price, the full history
+  and the statistics backfill. RTL.lu is used only for the announced next-day
+  price, which it publishes incl. VAT only (the excl.-VAT figure for that one
+  point is derived at the 17 % LU rate).

@@ -25,6 +25,8 @@ OPT_TREND_WINDOW_DAYS: Final = "trend_window_days"
 OPT_PRICE_DISPLAY: Final = "price_display"
 OPT_HISTORY_IMPORT_ENABLED: Final = "history_import_enabled"
 OPT_HISTORY_IMPORT_MONTHS: Final = "history_import_months"
+#: Fetch the announced next-day price from RTL.lu (petrol.lu does not carry it).
+OPT_ANNOUNCEMENTS_ENABLED: Final = "announcements_enabled"
 
 PRICE_DISPLAY_INCL: Final = "incl_vat"
 PRICE_DISPLAY_EXCL: Final = "excl_vat"

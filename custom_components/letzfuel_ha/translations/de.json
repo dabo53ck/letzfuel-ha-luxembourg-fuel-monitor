@@ -33,6 +33,7 @@
         "data": {
           "update_interval_hours": "Aktualisierungsintervall",
           "evening_check_time": "Uhrzeit der Abendprüfung (erfasst die Veröffentlichung um ca. 18:00; Wiederholungen nach +10 und +20 Min.)",
+          "announcements_enabled": "Morgen angekündigten Preis abrufen (Quelle: RTL.lu; petrol.lu veröffentlicht ihn nicht)",
           "trend_window_days": "Trendfenster",
           "price_display": "Preisanzeige",
           "tracked_fuels": "Zu verfolgende Kraftstoffe",

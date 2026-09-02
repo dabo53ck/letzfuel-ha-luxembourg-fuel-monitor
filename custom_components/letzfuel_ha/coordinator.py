@@ -37,6 +37,7 @@ from .const import (
     EVENT_PRICE_CHANGED,
     ISSUE_PARSE_ERROR,
     ISSUE_STALE_DATA,
+    OPT_ANNOUNCEMENTS_ENABLED,
     OPT_EVENING_CHECK_TIME,
     OPT_PRICE_DISPLAY,
     OPT_TREND_WINDOW_DAYS,
@@ -48,9 +49,12 @@ from .helpers import option_value
 from .models import FuelPrices, FuelType, PricePoint, PriceSet
 from .providers import (
     ProviderConnectionError,
+    ProviderError,
     ProviderParseError,
+    build_price_set,
     get_provider,
 )
+from .providers.rtl_lu import RtlLuAnnouncements
 
 _LOGGER = logging.getLogger(__name__)
 _STORE_VERSION = 1
@@ -65,10 +69,13 @@ class LuxFuelCoordinator(DataUpdateCoordinator[PriceSet]):
 
     def __init__(self, hass: HomeAssistant, entry: LuxFuelConfigEntry) -> None:
         """Set up the coordinator for a config entry."""
+        session = async_get_clientsession(hass)
         self.provider = get_provider(
-            entry.data.get(CONF_PROVIDER, DEFAULT_PROVIDER),
-            async_get_clientsession(hass),
+            entry.data.get(CONF_PROVIDER, DEFAULT_PROVIDER), session
         )
+        #: Supplies the announced next-day price (petrol.lu does not carry it).
+        self._announcements = RtlLuAnnouncements(session)
+        self._announce_warned = False
         interval_hours = int(
             option_value(
                 entry, OPT_UPDATE_INTERVAL_HOURS, DEFAULT_UPDATE_INTERVAL_HOURS
@@ -104,9 +111,9 @@ class LuxFuelCoordinator(DataUpdateCoordinator[PriceSet]):
     # -- polling ---------------------------------------------------------------
 
     async def _async_update_data(self) -> PriceSet:
-        """Fetch prices and run change detection."""
+        """Fetch prices, fold in the announcement, and run change detection."""
         try:
-            price_set = await self.provider.async_get_current_prices(self.tracked_fuels)
+            history = await self.provider.async_get_history()
         except ProviderParseError as err:
             self._async_raise_issue(ISSUE_PARSE_ERROR, {"error": str(err)})
             raise UpdateFailed(f"{self.provider.name}: {err}") from err
@@ -114,9 +121,40 @@ class LuxFuelCoordinator(DataUpdateCoordinator[PriceSet]):
             raise UpdateFailed(f"{self.provider.name}: {err}") from err
 
         self._async_clear_issue(ISSUE_PARSE_ERROR)
+        history = await self._async_merge_announcements(history)
+        price_set = build_price_set(history, self.tracked_fuels, self.provider)
         self._async_check_stale(price_set)
         await self._async_detect_changes(price_set)
         return price_set
+
+    async def _async_merge_announcements(
+        self, history: list[PricePoint]
+    ) -> list[PricePoint]:
+        """Fold RTL.lu's announced next-day price into ``history`` (best effort).
+
+        petrol.lu never carries the pre-announcement, so without this the
+        ``upcoming`` price -- and the pending-change binary sensor, the
+        ``price_tomorrow`` sensor, the refuel recommendation and the announced
+        event -- would never populate. A failure here is logged once and then
+        ignored: the integration keeps working on petrol.lu data alone.
+        """
+        if not option_value(self.config_entry, OPT_ANNOUNCEMENTS_ENABLED, True):
+            return history
+        try:
+            points = await self._announcements.async_get_announced_points(
+                dt_util.now().date()
+            )
+        except ProviderError as err:
+            if not self._announce_warned:
+                _LOGGER.warning("Announcement source (RTL.lu) unavailable: %s", err)
+                self._announce_warned = True
+            return history
+        if self._announce_warned:
+            _LOGGER.info("Announcement source (RTL.lu) recovered")
+            self._announce_warned = False
+        if points:
+            _LOGGER.debug("RTL.lu announced next-day prices: %s", points)
+        return [*history, *points]
 
     # -- change detection & events ------------------------------------------
 
