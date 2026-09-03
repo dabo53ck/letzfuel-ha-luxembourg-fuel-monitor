@@ -8,8 +8,8 @@ first tagged release, everything lives under *Unreleased*.
 
 ### Added
 
-- **Notification blueprint**
-  (`blueprints/automation/letzfuel_ha/notifications.yaml`) — one import covering
+- **Notification blueprint** (`blueprint version 2`,
+  `blueprints/automation/letzfuel_ha/notifications.yaml`) — one import covering
   next-day price alerts, "new price in effect", refuel recommendation and a
   price-threshold watch. Every type is opt-in with its own priority (normal /
   elevated / critical), plus quiet hours and a presence gate. Delivery is a

@@ -1,6 +1,13 @@
 blueprint:
-  name: LëtzFuel HA – Notifications
+  name: LëtzFuel HA – Notifications (v2)
   description: >-
+    **Blueprint version 2** (2026-09-03) — device-picker delivery, fixed
+    notification text, no Data problems / Advanced sections. If you imported
+    v1 before, re-import (Blueprints → ⋮ → Re-import) to pick this up; you'll
+    need to re-pick your device(s) in Notification delivery afterwards. See
+    CHANGELOG.md for the full history.
+
+
     One automation that turns the LëtzFuel HA integration's events and sensors
     into phone notifications. Every notification type is opt-in and configured
     in its own collapsible section: pick your device(s) once, enable the

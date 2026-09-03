@@ -51,6 +51,20 @@ text is fixed (in English); there's nothing to write.
 
 To pick up a later fix: **Blueprints → ⋮ on the blueprint → Re-import**.
 
+### Versioning
+
+Home Assistant has no built-in blueprint version tracking or update check —
+re-importing always silently overwrites whatever you had. The blueprint's
+`description` (visible on the Blueprints page and while editing an automation
+built from it) carries a version marker (`Blueprint version N`) and a one-line
+summary of what changed, so you can tell at a glance whether you're on the
+latest. Check [`CHANGELOG.md`](../CHANGELOG.md) for the full history.
+
+Re-importing a new version does **not** touch inputs you already set on
+automations built from it (device picks, enabled types, …) — except where a
+version note says otherwise (e.g. v2 renamed the delivery input, so it comes
+back empty and needs to be re-picked once).
+
 ## Notification delivery
 
 One input, **Devices**, decides where everything goes: a device picker
