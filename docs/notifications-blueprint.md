@@ -132,22 +132,27 @@ new price **actually applies** (usually just after midnight).
 
 ### Refuel recommendation
 
-Fires when `sensor.*_refuel_recommendation` changes.
+Fires when `sensor.letzfuel_ha_refuel_recommendation` changes. Nothing to
+configure beyond enabling it — the blueprint always watches that one, stable
+entity.
 
 | Input | Meaning |
 | --- | --- |
-| **Recommendation sensor** | Pre-filled with `sensor.letzfuel_ha_refuel_recommendation`. Change it only if you renamed the entity. |
 | **Notify when it becomes** | Any of `refuel_today`, `wait`, `no_change`. Default: `refuel_today` only. |
+
+> If you renamed that entity in your own install, this section won't fire —
+> fork the blueprint and change the hardcoded entity id (search for
+> `sensor.letzfuel_ha_refuel_recommendation` in the YAML).
 
 ### Price threshold
 
-Fires when the watched price sensor drops **below** a value you set — "tell me
+Fires when a watched price sensor drops **below** a value you set — "tell me
 when diesel is under 1.60".
 
 | Input | Meaning |
 | --- | --- |
-| **Price sensor to watch** | Pre-filled with `sensor.letzfuel_ha_diesel_price`. |
-| **Notify when the price is below** | Your target €/L. Leave at `0` until you enable this section (a `0` threshold never fires). |
+| **Fuels** | Which fuels to watch. Same picker as *announced*/*effective*: *Primary fuel* follows the integration's configured primary fuel. |
+| **Notify when the price is below** | Your target €/L, applied to every selected fuel. Leave at `0` until you enable this section (a `0` threshold never fires). |
 
 ## Quiet hours
 
@@ -192,5 +197,5 @@ Minimum change `0.03`, Priority *Critical*. Leave every other type off.
 | Notifications don't group | Shouldn't happen — grouping is fixed and not user-configurable. Check the trace for the `notification_data` variable. |
 | *Critical* doesn't pierce Do Not Disturb | iOS: *Critical Alerts* not allowed for the HA app. Android: another app owns a Do-Not-Disturb override, or the phone blocks the alarm channel. |
 | Nothing during a certain time of day | Quiet hours. Set **Ignore quiet hours** on that type, or use *Critical*. |
-| Announced/effective never fires | No price change has been published yet, or your **Fuels / Direction / Minimum change** filtered it out. Confirm the `letzfuel_ha_price_change_announced` event in Developer Tools → Events. |
-| Wrong entity pre-fills | You renamed the entity. Pick the current one in the section's entity field. |
+| Announced/effective/threshold never fires | No price change has been published yet, or your **Fuels / Direction / Minimum change** filtered it out. Confirm the `letzfuel_ha_price_change_announced` event in Developer Tools → Events. |
+| Refuel recommendation never fires | You renamed `sensor.letzfuel_ha_refuel_recommendation` — see the note in [Refuel recommendation](#refuel-recommendation). |

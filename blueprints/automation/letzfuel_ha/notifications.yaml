@@ -1,10 +1,13 @@
 blueprint:
-  name: LëtzFuel HA – Notifications (v2)
+  name: LëtzFuel HA – Notifications (v3)
   description: >-
-    **Blueprint version 2** (2026-09-03) — device-picker delivery, fixed
-    notification text, no Data problems / Advanced sections. If you imported
-    v1 before, re-import (Blueprints → ⋮ → Re-import) to pick this up; you'll
-    need to re-pick your device(s) in Notification delivery afterwards. See
+    **Blueprint version 3** (2026-09-03) — Refuel recommendation no longer
+    asks you to pick a sensor (it always watches
+    `sensor.letzfuel_ha_refuel_recommendation`); Price threshold now has a
+    Fuels picker like the other types instead of a raw sensor picker. If you
+    imported an earlier version before, re-import (Blueprints → ⋮ →
+    Re-import); Price threshold's fuel selection comes back to its default
+    (Primary fuel) and needs re-picking if you watched a different fuel. See
     CHANGELOG.md for the full history.
 
 
@@ -198,13 +201,6 @@ blueprint:
           default: false
           selector:
             boolean: {}
-        rec_entity:
-          name: Recommendation sensor
-          default: sensor.letzfuel_ha_refuel_recommendation
-          selector:
-            entity:
-              integration: letzfuel_ha
-              domain: sensor
         rec_on_states:
           name: Notify when it becomes
           default: [refuel_today]
@@ -240,13 +236,18 @@ blueprint:
           default: false
           selector:
             boolean: {}
-        threshold_entity:
-          name: Price sensor to watch
-          default: sensor.letzfuel_ha_diesel_price
+        threshold_fuels:
+          name: Fuels
+          description: Which fuels to watch. "Primary fuel" follows the integration.
+          default: [primary]
           selector:
-            entity:
-              integration: letzfuel_ha
-              domain: sensor
+            select:
+              multiple: true
+              options:
+                - { label: Primary fuel, value: primary }
+                - { label: Diesel, value: diesel }
+                - { label: SP95 (E10), value: sp95 }
+                - { label: SP98, value: sp98 }
         threshold_below:
           name: Notify when the price is below (€/L)
           description: Leave at 0 until you enable this section, then set your target price.
@@ -337,6 +338,9 @@ blueprint:
 mode: queued
 max: 10
 
+trigger_variables:
+  _tv_threshold_fuels: !input threshold_fuels
+
 triggers:
   - trigger: event
     id: announced
@@ -346,10 +350,22 @@ triggers:
     event_type: letzfuel_ha_price_changed
   - trigger: state
     id: recommend
-    entity_id: !input rec_entity
+    entity_id: sensor.letzfuel_ha_refuel_recommendation
   - trigger: numeric_state
     id: threshold
-    entity_id: !input threshold_entity
+    entity_id: >-
+      {% set fuel_map = {'diesel': 'sensor.letzfuel_ha_diesel_price',
+                          'sp95': 'sensor.letzfuel_ha_sp95_e10_price',
+                          'sp98': 'sensor.letzfuel_ha_sp98_price'} %}
+      {% set primary = state_attr('sensor.letzfuel_ha_refuel_recommendation', 'primary_fuel') or 'diesel' %}
+      {% set ns = namespace(v=[]) %}
+      {% for f in _tv_threshold_fuels %}
+        {% set key = primary if f == 'primary' else f %}
+        {% if fuel_map.get(key) %}
+          {% set ns.v = ns.v + [fuel_map[key]] %}
+        {% endif %}
+      {% endfor %}
+      {{ ns.v | unique | list }}
     below: !input threshold_below
 
 variables:
@@ -371,13 +387,12 @@ variables:
   effective_priority: !input effective_priority
   effective_quiet_exempt: !input effective_quiet_exempt
 
-  rec_entity: !input rec_entity
+  rec_entity: sensor.letzfuel_ha_refuel_recommendation
   rec_enabled: !input rec_enabled
   rec_on_states: !input rec_on_states
   rec_priority: !input rec_priority
   rec_quiet_exempt: !input rec_quiet_exempt
 
-  threshold_entity: !input threshold_entity
   threshold_enabled: !input threshold_enabled
   threshold_below: !input threshold_below
   threshold_priority: !input threshold_priority
@@ -544,8 +559,8 @@ actions:
           - variables:
               title: Fuel price below your target
               message: >-
-                {{ state_attr(threshold_entity, 'friendly_name') or threshold_entity }}
-                is at {{ states(threshold_entity) }} €/L (target: below {{ threshold_below }}).
+                {{ trigger.to_state.attributes.friendly_name or trigger.entity_id }}
+                is at {{ trigger.to_state.state }} €/L (target: below {{ threshold_below }}).
               msg_tag: "{{ tag_prefix }}_threshold"
               priority: "{{ threshold_priority }}"
           - *deliver
