@@ -7,13 +7,17 @@ It feeds ``sensor.*_refill_cost``.
 
 from __future__ import annotations
 
-from homeassistant.components.number import NumberMode, RestoreNumber
+from homeassistant.components.number import (
+    ENTITY_ID_FORMAT,
+    NumberMode,
+    RestoreNumber,
+)
 from homeassistant.const import PERCENTAGE
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
 from .coordinator import LuxFuelConfigEntry, LuxFuelCoordinator
-from .entity import LuxFuelEntity
+from .entity import LuxFuelEntity, stable_entity_id
 
 _DEFAULT_LEVEL = 50.0
 
@@ -41,10 +45,13 @@ class CurrentFuelLevelNumber(LuxFuelEntity, RestoreNumber):
     _attr_mode = NumberMode.SLIDER
 
     def __init__(self, coordinator: LuxFuelCoordinator) -> None:
-        """Set the unique id."""
+        """Set the unique id and a stable, language-independent entity_id."""
         super().__init__(coordinator)
         self._attr_unique_id = (
             f"{coordinator.config_entry.entry_id}_current_fuel_level"
+        )
+        self.entity_id = stable_entity_id(
+            coordinator, ENTITY_ID_FORMAT, "current_fuel_level"
         )
 
     async def async_added_to_hass(self) -> None:

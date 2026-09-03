@@ -4,12 +4,15 @@ from __future__ import annotations
 
 from typing import Any
 
-from homeassistant.components.binary_sensor import BinarySensorEntity
+from homeassistant.components.binary_sensor import (
+    ENTITY_ID_FORMAT,
+    BinarySensorEntity,
+)
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
 from .coordinator import LuxFuelConfigEntry
-from .entity import LuxFuelEntity
+from .entity import LuxFuelEntity, stable_entity_id
 
 
 async def async_setup_entry(
@@ -27,10 +30,13 @@ class PriceChangePendingBinarySensor(LuxFuelEntity, BinarySensorEntity):
     _attr_translation_key = "price_change_pending"
 
     def __init__(self, coordinator: Any) -> None:
-        """Set the unique id."""
+        """Set the unique id and a stable, language-independent entity_id."""
         super().__init__(coordinator)
         self._attr_unique_id = (
             f"{coordinator.config_entry.entry_id}_price_change_pending"
+        )
+        self.entity_id = stable_entity_id(
+            coordinator, ENTITY_ID_FORMAT, "price_change_pending"
         )
 
     @property

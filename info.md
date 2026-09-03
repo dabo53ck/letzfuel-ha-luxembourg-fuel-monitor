@@ -5,6 +5,7 @@ Luxembourg's regulated maximum fuel prices, trends and refuelling insights for H
 - Current Diesel / SP95 / SP98 prices with rich attributes
 - Daily change, trend, and **next-day price awareness** ("refuel tonight or wait?")
 - `price_change_announced` / `price_changed` events for automations
+- Import-and-go notification blueprint (`docs/notifications-blueprint.md`)
 - Optional vehicle sensors: full-tank cost, refill cost, cost impact of a price change
 - `calculate_fill_cost` and `calculate_trip_cost` services
 - Price history imported into Home Assistant long-term statistics on setup
