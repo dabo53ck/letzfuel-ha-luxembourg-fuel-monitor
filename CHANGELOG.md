@@ -10,10 +10,12 @@ first tagged release, everything lives under *Unreleased*.
 
 - **Notification blueprint**
   (`blueprints/automation/letzfuel_ha/notifications.yaml`) — one import covering
-  next-day price alerts, "new price in effect", refuel recommendation, a
-  stale-feed alarm and a price-threshold watch. Every type is opt-in with its
-  own priority (normal / elevated / critical), plus quiet hours and a presence
-  gate. All notifications are forced into one `letzfuel_ha` phone group. See
+  next-day price alerts, "new price in effect", refuel recommendation and a
+  price-threshold watch. Every type is opt-in with its own priority (normal /
+  elevated / critical), plus quiet hours and a presence gate. Delivery is a
+  device picker (paired Companion App devices) — no notify service to
+  configure, and no message text to write; every type's title/message is
+  fixed. All notifications are forced into one `letzfuel_ha` phone group. See
   [`docs/notifications-blueprint.md`](docs/notifications-blueprint.md).
 - `scripts/validate_blueprints.py` and a CI job that structurally checks the
   shipped blueprints.
