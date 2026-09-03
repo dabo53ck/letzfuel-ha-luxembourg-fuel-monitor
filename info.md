@@ -11,5 +11,7 @@ Luxembourg's regulated maximum fuel prices, trends and refuelling insights for H
 - Price history imported into Home Assistant long-term statistics on setup
 - English / French / German / Luxembourgish
 
-Data from the public [petrol.lu prices page](https://www.petrol.lu/en/official-prices/).
-Not affiliated with GPL, petrol.lu or the Luxembourg government. Verify at the pump.
+Data from the public [petrol.lu prices page](https://www.petrol.lu/en/official-prices/);
+the announced next-day price comes from [RTL.lu](https://www.rtl.lu/mobiliteit/petrolspraisser),
+which publishes it the evening before (petrol.lu does not).
+Not affiliated with GPL, petrol.lu, RTL or the Luxembourg government. Verify at the pump.

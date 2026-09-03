@@ -42,6 +42,7 @@ from .const import (
     MAX_UPDATE_INTERVAL_HOURS,
     MIN_TREND_WINDOW_DAYS,
     MIN_UPDATE_INTERVAL_HOURS,
+    OPT_ANNOUNCEMENTS_ENABLED,
     OPT_EVENING_CHECK_TIME,
     OPT_HISTORY_IMPORT_ENABLED,
     OPT_HISTORY_IMPORT_MONTHS,
@@ -199,6 +200,10 @@ class LuxFuelOptionsFlow(OptionsFlow):
                     OPT_EVENING_CHECK_TIME,
                     default=_get(OPT_EVENING_CHECK_TIME, DEFAULT_EVENING_CHECK_TIME),
                 ): TimeSelector(),
+                vol.Required(
+                    OPT_ANNOUNCEMENTS_ENABLED,
+                    default=_get(OPT_ANNOUNCEMENTS_ENABLED, True),
+                ): BooleanSelector(),
                 vol.Required(
                     OPT_TREND_WINDOW_DAYS,
                     default=_get(OPT_TREND_WINDOW_DAYS, DEFAULT_TREND_WINDOW_DAYS),

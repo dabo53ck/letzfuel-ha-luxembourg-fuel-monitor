@@ -33,6 +33,7 @@
         "data": {
           "update_interval_hours": "Aktualiséierungsintervall",
           "evening_check_time": "Auerzäit vum Owescheck (fänkt d'Verëffentlechung géint 18:00 op; probéiert no +10 an +20 Min. nach eng Kéier)",
+          "announcements_enabled": "De muer ugekënnegte Präis ofruffen (Quell: RTL.lu; petrol.lu verëffentlecht en net)",
           "trend_window_days": "Trendfënster",
           "price_display": "Präisduerstellung",
           "tracked_fuels": "Pëtrol Zorten déi ze verfollegen sinn",

@@ -24,6 +24,7 @@ from custom_components.letzfuel_ha.const import (
 )
 from custom_components.letzfuel_ha.models import FuelType
 from custom_components.letzfuel_ha.providers.petrol_lu import SOURCE_URL
+from custom_components.letzfuel_ha.providers.rtl_lu import RTL_CURRENT_URL
 
 from .helpers import build_petrol_lu_html
 
@@ -78,9 +79,27 @@ def mock_petrol_lu(
 ) -> Callable[[list], None]:
     """Mock the petrol.lu page; returns a setter to change the body later."""
 
-    def _set(entries: list) -> None:
+    def _set(
+        entries: list,
+        rtl_payload: dict | None = None,
+        rtl_status: int = 200,
+    ) -> None:
         aioclient_mock.clear_requests()
         aioclient_mock.get(SOURCE_URL, text=build_petrol_lu_html(entries))
+        # RTL announcement source: default to "no change announced" (date = today)
+        # so tests that don't care about it are unaffected.
+        aioclient_mock.get(
+            RTL_CURRENT_URL,
+            status=rtl_status,
+            json=rtl_payload
+            or {
+                "id": 0,
+                "date": f"{dt_util.now().date().isoformat()}T00:00:00+02:00",
+                "98oct": 1.983,
+                "95oct": 1.792,
+                "diesel": 1.865,
+            },
+        )
 
     _set(price_entries)
     return _set

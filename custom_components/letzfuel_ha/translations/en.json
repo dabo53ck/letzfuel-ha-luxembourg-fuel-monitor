@@ -33,6 +33,7 @@
         "data": {
           "update_interval_hours": "Update interval",
           "evening_check_time": "Evening check time (catches the ~18:00 publication; retries at +10 and +20 min)",
+          "announcements_enabled": "Fetch tomorrow's announced price (source: RTL.lu; petrol.lu does not publish it)",
           "trend_window_days": "Trend window",
           "price_display": "Price display",
           "tracked_fuels": "Fuels to track",
