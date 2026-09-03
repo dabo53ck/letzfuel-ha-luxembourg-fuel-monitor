@@ -202,9 +202,10 @@ shape, `old_price` / `new_price`).
 ### Notification blueprint (recommended)
 
 One import covers all of it — next-day price alerts, "new price in effect",
-refuel recommendation, a stale-feed alarm and a price-threshold watch. Every
-type is opt-in, with per-type priority (including *critical* to bypass Do Not
-Disturb), quiet hours and a presence gate.
+refuel recommendation and a price-threshold watch. Every type is opt-in, with
+per-type priority (including *critical* to bypass Do Not Disturb), quiet
+hours and a presence gate. Just pick your phone(s) from a device picker —
+no notify service to configure.
 
 Import URL:
 
