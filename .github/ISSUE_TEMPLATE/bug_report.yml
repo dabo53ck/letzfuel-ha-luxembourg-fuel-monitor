@@ -1,0 +1,49 @@
+name: Bug report
+description: Something is not working as expected
+labels: ["bug"]
+body:
+  - type: dropdown
+    id: component
+    attributes:
+      label: Which part is affected?
+      options:
+        - Integration (sensors, config flow, data updates)
+        - Notifications blueprint
+        - Documentation
+        - Not sure / both
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What did you expect, and what happened instead?
+    validations:
+      required: true
+  - type: input
+    id: ha_version
+    attributes:
+      label: Home Assistant version
+    validations:
+      required: true
+  - type: input
+    id: integration_version
+    attributes:
+      label: Integration version (HACS)
+      description: Not needed for a blueprint-only bug.
+  - type: input
+    id: blueprint_version
+    attributes:
+      label: Blueprint version
+      description: Shown in the header of the blueprint description, e.g. `v4`.
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs
+      description: Integration bugs only. Settings → System → Logs, filtered to `letzfuel_ha`.
+      render: text
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Diagnostics
+      description: Integration bugs only. Download from the device page and paste or attach (it is redacted).

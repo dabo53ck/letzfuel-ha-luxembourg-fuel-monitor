@@ -1,0 +1,33 @@
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  pytest:
+    name: pytest (${{ matrix.name }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Declared minimum (see hacs.json)
+          - name: "HA 2025.12"
+            python: "3.13"
+            ha_constraint: "homeassistant>=2025.12.0,<2026.0.0"
+          # Latest stable (what most users, and the maintainer, actually run)
+          - name: "HA latest"
+            python: "3.14"
+            ha_constraint: "homeassistant"
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: ${{ matrix.python }}
+      - run: >
+          pip install "${{ matrix.ha_constraint }}"
+          pytest-homeassistant-custom-component pytest-cov beautifulsoup4
+      - run: pytest --cov=custom_components/letzfuel_ha --cov-report=term-missing

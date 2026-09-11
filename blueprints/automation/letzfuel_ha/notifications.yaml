@@ -1,0 +1,672 @@
+blueprint:
+  name: LëtzFuel HA – Notifications (v0.0.1-beta)
+  description: >-
+    **Version 0.0.1-beta** (2026-09-12) — versioning now follows the
+    integration's own release number instead of a separate v1/v2/.../v7
+    counter, so both stay in sync going forward; nothing else changed in
+    this step, it's the same content as v7. New in v7, still current: an
+    optional *Live countdown to midnight* section (experimental): a Lock
+    Screen / Dynamic Island countdown (iOS Live Activity / Android Live
+    Update) that runs from "Refuel today" until the price rises at
+    midnight, additional to the normal push. Off by default. Needs a
+    Companion App with Live Activity / Live Update support (iOS 17.2+,
+    Android 16+); how older app versions handle the extra data fields
+    hasn't been broadly verified yet. Re-import
+    (Blueprints → ⋮ → Re-import) to pick it up. See CHANGELOG.md for the
+    full history.
+
+
+    One automation that turns the LëtzFuel HA integration's events and sensors
+    into phone notifications. Every notification type is opt-in and configured
+    in its own collapsible section: pick your device(s) and language once,
+    enable the types you want, done.
+
+
+    **Sections**
+
+    - *Language* – which language the notification titles/messages are
+      written in.
+
+    - *Notification delivery* – which device(s) to notify. Pick them from
+      your paired Home Assistant Companion app devices; there is no notify
+      service to look up.
+
+    - *Evening: next-day price announced* – fires when a new price is published
+      for tomorrow (≈18:00).
+
+    - *New price in effect* – fires the day a new price actually applies.
+
+    - *Refuel recommendation* – fires when `sensor.*_refuel_recommendation`
+      changes to a state you care about.
+
+    - *Live countdown to midnight (experimental)* – an optional, additional
+      Live Activity / Live Update counting down to midnight while the
+      recommendation is "Refuel today".
+
+    - *Price threshold* – fires when a price drops below a value you set.
+
+    - *Only when home / away* – presence gate.
+
+
+    Every notification is forced into the notification group `letzfuel_ha`
+    (iOS `thread-id`, Android `group`). Each type has its own priority:
+    *normal*, *elevated* (Android high / iOS time-sensitive) or
+    *critical* (Android `alarm_stream` / iOS critical alert – bypasses
+    Do Not Disturb; on iOS this needs Critical Alerts allowed for the
+    Home Assistant app).
+
+
+    Full documentation:
+    https://github.com/dabo53ck/letzfuel-ha-luxembourg-fuel-monitor/blob/main/docs/notifications-blueprint.md
+  domain: automation
+  author: dabo53ck
+  source_url: https://github.com/dabo53ck/letzfuel-ha-luxembourg-fuel-monitor/blob/main/blueprints/automation/letzfuel_ha/notifications.yaml
+  homeassistant:
+    min_version: "2025.12.0"
+
+  input:
+    language:
+      name: Language
+      icon: mdi:translate
+      input:
+        notify_language:
+          name: Notification language
+          description: >-
+            Language used for notification titles and messages. This is
+            separate from Home Assistant's own UI language — blueprint
+            input labels (like this one) are always English.
+          default: en
+          selector:
+            select:
+              options:
+                - { label: English, value: en }
+                - { label: Deutsch, value: de }
+                - { label: Français, value: fr }
+                - { label: Lëtzebuergesch, value: lb }
+
+    delivery:
+      name: Notification delivery
+      icon: mdi:cellphone-message
+      input:
+        notify_devices:
+          name: Devices
+          description: >-
+            Which phone(s)/tablet(s) to notify. Pick them from your paired
+            Home Assistant Companion app devices — no notify service to
+            look up or configure.
+          selector:
+            device:
+              filter:
+                integration: mobile_app
+              multiple: true
+
+    announced:
+      name: "Evening: next-day price announced"
+      icon: mdi:calendar-clock
+      collapsed: true
+      input:
+        announced_enabled:
+          name: Enable
+          default: false
+          selector:
+            boolean: {}
+        announced_fuels:
+          name: Fuels
+          description: Which fuels to notify about. "Primary fuel" follows the integration.
+          default: [primary]
+          selector:
+            select:
+              multiple: true
+              options:
+                - { label: Primary fuel, value: primary }
+                - { label: Diesel, value: diesel }
+                - { label: SP95 (E10), value: sp95 }
+                - { label: SP98, value: sp98 }
+        announced_direction:
+          name: Direction
+          default: both
+          selector:
+            select:
+              options:
+                - { label: Up and down, value: both }
+                - { label: Increases only, value: up }
+                - { label: Decreases only, value: down }
+        announced_min_delta:
+          name: Minimum change
+          description: Ignore moves smaller than this (€/L). 0 = notify on any change.
+          default: 0
+          selector:
+            number:
+              min: 0
+              max: 0.5
+              step: 0.001
+              unit_of_measurement: €/L
+              mode: box
+        announced_priority:
+          name: Priority
+          default: normal
+          selector:
+            select:
+              options:
+                - { label: Normal, value: normal }
+                - { label: Elevated, value: elevated }
+                - { label: "Critical (bypass Do Not Disturb)", value: critical }
+
+    effective:
+      name: New price in effect
+      icon: mdi:cash-sync
+      collapsed: true
+      input:
+        effective_enabled:
+          name: Enable
+          default: false
+          selector:
+            boolean: {}
+        effective_fuels:
+          name: Fuels
+          description: Which fuels to notify about. "Primary fuel" follows the integration.
+          default: [primary]
+          selector:
+            select:
+              multiple: true
+              options:
+                - { label: Primary fuel, value: primary }
+                - { label: Diesel, value: diesel }
+                - { label: SP95 (E10), value: sp95 }
+                - { label: SP98, value: sp98 }
+        effective_direction:
+          name: Direction
+          default: both
+          selector:
+            select:
+              options:
+                - { label: Up and down, value: both }
+                - { label: Increases only, value: up }
+                - { label: Decreases only, value: down }
+        effective_min_delta:
+          name: Minimum change
+          description: Ignore moves smaller than this (€/L). 0 = notify on any change.
+          default: 0
+          selector:
+            number:
+              min: 0
+              max: 0.5
+              step: 0.001
+              unit_of_measurement: €/L
+              mode: box
+        effective_priority:
+          name: Priority
+          default: normal
+          selector:
+            select:
+              options:
+                - { label: Normal, value: normal }
+                - { label: Elevated, value: elevated }
+                - { label: "Critical (bypass Do Not Disturb)", value: critical }
+
+    recommendation:
+      name: Refuel recommendation
+      icon: mdi:gas-station
+      collapsed: true
+      input:
+        rec_enabled:
+          name: Enable
+          default: false
+          selector:
+            boolean: {}
+        rec_on_states:
+          name: Notify when it becomes
+          description: >-
+            The recommendation states worth a notification. "No change" is
+            not here on purpose — use the toggle below for that.
+          default: [refuel_today]
+          selector:
+            select:
+              multiple: true
+              options:
+                - { label: Refuel today, value: refuel_today }
+                - { label: Wait, value: wait }
+        rec_notify_no_change:
+          name: Also notify when there is no recommendation
+          description: >-
+            Off by default: you are only notified when the recommendation is
+            actionable (one of the states above). Turn this on to also get a
+            notification when it settles on "No change" (tomorrow's price
+            brings nothing to do).
+          default: false
+          selector:
+            boolean: {}
+        rec_priority:
+          name: Priority
+          default: normal
+          selector:
+            select:
+              options:
+                - { label: Normal, value: normal }
+                - { label: Elevated, value: elevated }
+                - { label: "Critical (bypass Do Not Disturb)", value: critical }
+
+    live_countdown:
+      name: "Live countdown to midnight (experimental)"
+      icon: mdi:progress-clock
+      collapsed: true
+      input:
+        live_countdown_enabled:
+          name: Enable
+          description: >-
+            Off by default. Adds a Lock Screen / Dynamic Island countdown
+            (iOS Live Activity / Android Live Update) that runs from the
+            moment the recommendation becomes "Refuel today" until
+            midnight, when the higher price takes effect. Purely additive
+            — the normal "Refuel recommendation" push above (if enabled)
+            still fires exactly as before; this is a second, separate
+            notification. Needs a Companion App version with Live
+            Activity / Live Update support (iOS 17.2+, Android 16+) —
+            on an older app version the extra data fields are expected
+            to be ignored, but this hasn't been broadly verified yet.
+          default: false
+          selector:
+            boolean: {}
+
+    threshold:
+      name: Price threshold
+      icon: mdi:tag-arrow-down
+      collapsed: true
+      input:
+        threshold_enabled:
+          name: Enable
+          default: false
+          selector:
+            boolean: {}
+        threshold_fuels:
+          name: Fuels
+          description: Which fuels to watch. "Primary fuel" follows the integration.
+          default: [primary]
+          selector:
+            select:
+              multiple: true
+              options:
+                - { label: Primary fuel, value: primary }
+                - { label: Diesel, value: diesel }
+                - { label: SP95 (E10), value: sp95 }
+                - { label: SP98, value: sp98 }
+        threshold_below:
+          name: Notify when the price is below (€/L)
+          description: Leave at 0 until you enable this section, then set your target price.
+          default: 0
+          selector:
+            number:
+              min: 0
+              max: 5
+              step: 0.001
+              unit_of_measurement: €/L
+              mode: box
+        threshold_priority:
+          name: Priority
+          default: normal
+          selector:
+            select:
+              options:
+                - { label: Normal, value: normal }
+                - { label: Elevated, value: elevated }
+                - { label: "Critical (bypass Do Not Disturb)", value: critical }
+
+    presence:
+      name: Only when home / away
+      icon: mdi:home-account
+      collapsed: true
+      input:
+        presence_enabled:
+          name: Enable presence gate
+          default: false
+          selector:
+            boolean: {}
+        presence_entity:
+          name: Person or group
+          description: Leave empty to disable the gate even if the toggle above is on.
+          default: ""
+          selector:
+            entity:
+              domain: [person, group]
+        presence_mode:
+          name: Send only when
+          default: home
+          selector:
+            select:
+              options:
+                - { label: Home, value: home }
+                - { label: Away, value: away }
+        presence_critical_overrides:
+          name: Critical notifications ignore the presence gate
+          default: true
+          selector:
+            boolean: {}
+
+mode: queued
+max: 10
+
+triggers:
+  - trigger: event
+    id: announced
+    event_type: letzfuel_ha_price_change_announced
+  - trigger: event
+    id: effective
+    event_type: letzfuel_ha_price_changed
+  - trigger: state
+    id: recommend
+    entity_id: sensor.letzfuel_ha_refuel_recommendation
+  - trigger: numeric_state
+    id: threshold_diesel
+    entity_id: sensor.letzfuel_ha_diesel_price
+    below: !input threshold_below
+  - trigger: numeric_state
+    id: threshold_sp95
+    entity_id: sensor.letzfuel_ha_sp95_e10_price
+    below: !input threshold_below
+  - trigger: numeric_state
+    id: threshold_sp98
+    entity_id: sensor.letzfuel_ha_sp98_price
+    below: !input threshold_below
+
+variables:
+  # --- input aliases (!input cannot be used inside a template) ---
+  notify_language: !input notify_language
+  notify_devices: !input notify_devices
+
+  announced_enabled: !input announced_enabled
+  announced_fuels: !input announced_fuels
+  announced_direction: !input announced_direction
+  announced_min_delta: !input announced_min_delta
+  announced_priority: !input announced_priority
+
+  effective_enabled: !input effective_enabled
+  effective_fuels: !input effective_fuels
+  effective_direction: !input effective_direction
+  effective_min_delta: !input effective_min_delta
+  effective_priority: !input effective_priority
+
+  #: Duplicates the literal entity_id already hardcoded on the `recommend`
+  #: trigger above — triggers are evaluated before `variables:`, so the
+  #: trigger can't reference this. Keep both in sync if you ever fork this.
+  rec_entity: sensor.letzfuel_ha_refuel_recommendation
+  rec_enabled: !input rec_enabled
+  rec_on_states: !input rec_on_states
+  rec_notify_no_change: !input rec_notify_no_change
+  rec_priority: !input rec_priority
+
+  live_countdown_enabled: !input live_countdown_enabled
+
+  threshold_enabled: !input threshold_enabled
+  threshold_fuels: !input threshold_fuels
+  threshold_below: !input threshold_below
+  threshold_priority: !input threshold_priority
+
+  presence_enabled: !input presence_enabled
+  presence_entity: !input presence_entity
+  presence_mode: !input presence_mode
+  presence_critical_overrides: !input presence_critical_overrides
+
+  # --- computed ---
+  presence_ok: >-
+    {% set p = presence_entity if presence_entity is string else '' %}
+    {{ (not presence_enabled) or p == '' or (
+         is_state(p, 'home') if presence_mode == 'home' else not is_state(p, 'home')
+       ) }}
+  notify_services: >-
+    {% set ns = namespace(v=[]) %}
+    {% for d in notify_devices %}
+      {% for eid in device_entities(d) %}
+        {% if eid.startswith('notify.') %}
+          {% set ns.v = ns.v + ['mobile_app_' ~ eid.split('.')[1]] %}
+        {% endif %}
+      {% endfor %}
+    {% endfor %}
+    {{ ns.v | unique | list }}
+  #: Per-language notification text. Blueprint input labels can't be
+  #: translated by Home Assistant, so these are hardcoded here instead —
+  #: `notify_language` picks which entry is used, falling back to English.
+  #: `rec_states` deliberately has no `awaiting_price` entry: the
+  #: "Refuel recommendation" condition below can never match that state
+  #: (it's not offered in `rec_on_states`, and the "no recommendation"
+  #: toggle only matches `no_change`) — not a missing translation.
+  strings: >-
+    {% set d = {
+      'en': {
+        'announced_title': 'Fuel price change announced for tomorrow',
+        'effective_title': 'New fuel price in effect',
+        'rec_title': 'Refuel recommendation',
+        'rec_states': {'refuel_today': 'Refuel today', 'wait': 'Wait', 'no_change': 'No change'},
+        'threshold_title': 'Fuel price below your target',
+        'threshold_message': '{name} is at {price} €/L (target: below {target}).',
+        'decimal': '.',
+      },
+      'de': {
+        'announced_title': 'Preisänderung für morgen angekündigt',
+        'effective_title': 'Neuer Preis in Kraft',
+        'rec_title': 'Tankempfehlung',
+        'rec_states': {'refuel_today': 'Heute tanken', 'wait': 'Warten', 'no_change': 'Keine Änderung'},
+        'threshold_title': 'Kraftstoffpreis unter Ihrem Zielwert',
+        'threshold_message': '{name} liegt bei {price} €/L (Ziel: unter {target}).',
+        'decimal': ',',
+      },
+      'fr': {
+        'announced_title': "Changement de prix annoncé pour demain",
+        'effective_title': 'Nouveau prix en vigueur',
+        'rec_title': 'Recommandation de plein',
+        'rec_states': {'refuel_today': "Faire le plein aujourd'hui", 'wait': 'Attendre', 'no_change': 'Pas de changement'},
+        'threshold_title': 'Prix du carburant sous votre seuil',
+        'threshold_message': '{name} est à {price} €/L (seuil : en dessous de {target}).',
+        'decimal': ',',
+      },
+      'lb': {
+        'announced_title': 'Präisännerung fir muer ugekënnegt',
+        'effective_title': 'Neie Präis ab elo',
+        'rec_title': 'Tankempfehlung',
+        'rec_states': {'refuel_today': 'Haut tanken', 'wait': 'Waarden', 'no_change': 'Keng Ännerung'},
+        'threshold_title': 'Pëtrolspräis ënner ärem Zilwert',
+        'threshold_message': '{name} läit bei {price} €/L (Zilwert: ënner {target}).',
+        'decimal': ',',
+      },
+    } %}
+    {{ d.get(notify_language, d['en']) }}
+  threshold_fuel_ok: >-
+    {% set trig_fuel_map = {'threshold_diesel': 'diesel', 'threshold_sp95': 'sp95', 'threshold_sp98': 'sp98'} %}
+    {% set fired_fuel = trig_fuel_map.get(trigger.id) %}
+    {% set primary = state_attr(rec_entity, 'primary_fuel') or 'diesel' %}
+    {% set wf = namespace(v=[]) %}
+    {% for f in threshold_fuels %}
+      {% set wf.v = wf.v + ([primary] if f == 'primary' else [f]) %}
+    {% endfor %}
+    {{ fired_fuel is not none and fired_fuel in (wf.v | unique | list) }}
+  matched_changes: >-
+    {% set raw = trigger.event.data.changes
+       if (trigger is defined and trigger.event is defined
+           and trigger.event.data is defined and trigger.event.data.changes is defined)
+       else [] %}
+    {% if trigger.id == 'announced' %}
+      {% set want_raw = announced_fuels %}
+      {% set cfg_dir = announced_direction %}
+      {% set cfg_md = announced_min_delta | float(0) %}
+    {% elif trigger.id == 'effective' %}
+      {% set want_raw = effective_fuels %}
+      {% set cfg_dir = effective_direction %}
+      {% set cfg_md = effective_min_delta | float(0) %}
+    {% else %}
+      {% set want_raw = [] %}
+      {% set cfg_dir = 'both' %}
+      {% set cfg_md = 0 %}
+    {% endif %}
+    {% set primary = state_attr(rec_entity, 'primary_fuel') or 'diesel' %}
+    {% set wf = namespace(v=[]) %}
+    {% for f in want_raw %}
+      {% set wf.v = wf.v + ([primary] if f == 'primary' else [f]) %}
+    {% endfor %}
+    {% set want = wf.v | unique | list %}
+    {% set out = namespace(v=[]) %}
+    {% for c in raw %}
+      {% set new_p = (c.upcoming_price if c.upcoming_price is defined else c.new_price) | float(0) %}
+      {% set old_p = (c.current_price if c.current_price is defined else c.old_price) | float(0) %}
+      {% set d = (c.delta | float(new_p - old_p)) if c.delta is defined else (new_p - old_p) %}
+      {% set dir = 'up' if d > 0 else 'down' %}
+      {% set dir_ok = cfg_dir == 'both' or (cfg_dir == 'up' and dir == 'up') or (cfg_dir == 'down' and dir == 'down') %}
+      {% set price_str = (new_p | string).replace('.', strings.decimal) %}
+      {% set delta_str = (((d | abs) * 100) | round(1) | string).replace('.', strings.decimal) %}
+      {#- effective_date is a plain YYYY-MM-DD calendar-date string from the
+          integration — split/rejoin to Luxembourg's DD/MM/YYYY instead of
+          parsing as a datetime, which would pull in a needless timezone
+          round-trip for a value that has no time component. #}
+      {% set dp = c.effective_date.split('-') %}
+      {% set date_str = dp[2] ~ '/' ~ dp[1] ~ '/' ~ dp[0] %}
+      {% if c.fuel in want and dir_ok and (d | abs) >= cfg_md %}
+        {% set out.v = out.v + [{
+             'fuel': c.fuel, 'delta': d, 'direction': dir,
+             'price': new_p, 'old_price': old_p, 'effective_date': c.effective_date,
+             'price_str': price_str, 'delta_str': delta_str, 'date_str': date_str }] %}
+      {% endif %}
+    {% endfor %}
+    {{ out.v }}
+
+actions:
+  - choose:
+      # ---------- Evening: next-day price announced ----------
+      - conditions:
+          - "{{ trigger.id == 'announced' and announced_enabled }}"
+          - "{{ matched_changes | count > 0 }}"
+          - "{{ presence_ok or (announced_priority == 'critical' and presence_critical_overrides) }}"
+        sequence:
+          - variables:
+              title: "{{ strings.announced_title }}"
+              message: >-
+                {% set lines = namespace(v=[]) %}
+                {%- for c in matched_changes %}
+                {%- set lines.v = lines.v + [(c.fuel | upper) ~ ' ' ~ ('+' if c.direction == 'up' else '−') ~ c.delta_str ~ ' ct/L → ' ~ c.price_str ~ ' €/L (' ~ c.date_str ~ ')'] %}
+                {%- endfor %}
+                {{ lines.v | join('\n') }}
+              msg_tag: letzfuel_announced
+              priority: "{{ announced_priority }}"
+          - &deliver
+            alias: Deliver the notification
+            sequence:
+              - variables:
+                  notification_data: >-
+                    {% set base = {'tag': msg_tag, 'group': 'letzfuel_ha', 'push': {'thread-id': 'letzfuel_ha'}} %}
+                    {% if priority == 'elevated' %}
+                    {% set base = base | combine({'importance': 'high', 'priority': 'high', 'ttl': 0,
+                        'push': {'interruption-level': 'time-sensitive'}}, recursive=True) %}
+                    {% elif priority == 'critical' %}
+                    {% set base = base | combine({'channel': 'alarm_stream', 'importance': 'high', 'priority': 'high', 'ttl': 0,
+                        'push': {'interruption-level': 'critical', 'sound': {'name': 'default', 'critical': 1, 'volume': 1.0}}}, recursive=True) %}
+                    {% endif %}
+                    {{ base }}
+              - alias: Send to every selected device
+                repeat:
+                  for_each: "{{ notify_services }}"
+                  sequence:
+                    - action: "notify.{{ repeat.item }}"
+                      data:
+                        title: "{{ title }}"
+                        message: "{{ message }}"
+                        data: "{{ notification_data }}"
+
+      # ---------- New price in effect ----------
+      - conditions:
+          - "{{ trigger.id == 'effective' and effective_enabled }}"
+          - "{{ matched_changes | count > 0 }}"
+          - "{{ presence_ok or (effective_priority == 'critical' and presence_critical_overrides) }}"
+        sequence:
+          - variables:
+              title: "{{ strings.effective_title }}"
+              message: >-
+                {% set lines = namespace(v=[]) %}
+                {%- for c in matched_changes %}
+                {%- set lines.v = lines.v + [(c.fuel | upper) ~ ': ' ~ c.price_str ~ ' €/L (' ~ ('+' if c.direction == 'up' else '−') ~ c.delta_str ~ ' ct/L)'] %}
+                {%- endfor %}
+                {{ lines.v | join('\n') }}
+              msg_tag: letzfuel_effective
+              priority: "{{ effective_priority }}"
+          - *deliver
+
+      # ---------- Refuel recommendation ----------
+      - conditions:
+          - "{{ trigger.id == 'recommend' and rec_enabled }}"
+          - >-
+            {{ trigger.to_state.state in rec_on_states
+               or (rec_notify_no_change and trigger.to_state.state == 'no_change') }}
+          - "{{ trigger.from_state is none or trigger.from_state.state != trigger.to_state.state }}"
+          - "{{ presence_ok or (rec_priority == 'critical' and presence_critical_overrides) }}"
+        sequence:
+          - variables:
+              title: "{{ strings.rec_title }}"
+              message: >-
+                {{ strings.rec_states.get(trigger.to_state.state, trigger.to_state.state | replace('_', ' ')) }}.
+              msg_tag: letzfuel_recommendation
+              priority: "{{ rec_priority }}"
+          - *deliver
+
+      # ---------- Price threshold ----------
+      - conditions:
+          - "{{ trigger.id in ['threshold_diesel', 'threshold_sp95', 'threshold_sp98'] and threshold_enabled }}"
+          - "{{ threshold_fuel_ok }}"
+          - "{{ presence_ok or (threshold_priority == 'critical' and presence_critical_overrides) }}"
+        sequence:
+          - variables:
+              title: "{{ strings.threshold_title }}"
+              message: >-
+                {% set name = trigger.to_state.attributes.friendly_name or trigger.entity_id %}
+                {% set price_str = (trigger.to_state.state | string).replace('.', strings.decimal) %}
+                {% set target_str = (threshold_below | string).replace('.', strings.decimal) %}
+                {{ strings.threshold_message.format(name=name, price=price_str, target=target_str) }}
+              msg_tag: letzfuel_threshold
+              priority: "{{ threshold_priority }}"
+          - *deliver
+
+  # A second, independent choose: a `choose:` action only ever runs its
+  # FIRST matching branch -- these two need to run alongside whichever
+  # branch (if any) the choose above picks for the same `recommend`
+  # trigger, not instead of it, so they can't live in that same list.
+  - choose:
+      # ---------- Live countdown to midnight: start ----------
+      - conditions:
+          - "{{ trigger.id == 'recommend' and live_countdown_enabled }}"
+          - "{{ trigger.to_state.state == 'refuel_today' }}"
+          - "{{ trigger.from_state is none or trigger.from_state.state != 'refuel_today' }}"
+        sequence:
+          - variables:
+              #: Seconds from now until the next local midnight. today_at('00:00')
+              #: is today's midnight (already past whenever this fires in the
+              #: evening), so +1 day always lands on the next one.
+              countdown_seconds: "{{ ((today_at('00:00') + timedelta(days=1)) - now()).total_seconds() | int }}"
+          - alias: Start the Live Activity / Live Update on every selected device
+            repeat:
+              for_each: "{{ notify_services }}"
+              sequence:
+                - action: "notify.{{ repeat.item }}"
+                  data:
+                    title: "{{ strings.rec_title }}"
+                    message: "{{ strings.rec_states.refuel_today }}"
+                    data:
+                      tag: letzfuel_countdown
+                      live_update: true
+                      chronometer: true
+                      when_relative: true
+                      when: "{{ countdown_seconds }}"
+                      notification_icon: mdi:gas-station
+
+      # ---------- Live countdown to midnight: end ----------
+      # Ends once the recommendation moves off "Refuel today" -- normally
+      # the 00:05 midnight refresh in the integration's coordinator, well
+      # inside the 8h Live-Activity limit even on the latest possible start.
+      - conditions:
+          - "{{ trigger.id == 'recommend' and live_countdown_enabled }}"
+          - "{{ trigger.to_state.state != 'refuel_today' }}"
+          - "{{ trigger.from_state is not none and trigger.from_state.state == 'refuel_today' }}"
+        sequence:
+          - alias: End the Live Activity / Live Update on every selected device
+            repeat:
+              for_each: "{{ notify_services }}"
+              sequence:
+                - action: "notify.{{ repeat.item }}"
+                  data:
+                    message: clear_notification
+                    data:
+                      tag: letzfuel_countdown

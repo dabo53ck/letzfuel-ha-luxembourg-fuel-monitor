@@ -1,0 +1,174 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "LëtzFuel HA",
+        "description": "D'reglementéiert maximal Verkafspräisser fir Pëtrol zu Lëtzebuerg verfollegen. D'Präisser komme vun petrol.lu (Groupement Pétrolier Luxembourgeois).",
+        "data": {
+          "tracked_fuels": "D'Pëtrol Zorten déi ze verfollege sinn",
+          "primary_fuel": "Haapt Pëtrol's Zort (fir d'Gefier- an d'Recommendatiounen)"
+        }
+      },
+      "vehicle": {
+        "title": "Äert Gefier (optional)",
+        "description": "Gitt Är Tankgréisst u fir d'Sensore fir d'Käschte vun engem vollen Tank a fir d'Notanken. Loosst et eidel fir z'iwwersprangen.",
+        "data": {
+          "tank_size": "Tankgréisst",
+          "level_source": "Source vum Tankfëllstand",
+          "current_level_pct": "Aktuellen Tankfëllstand",
+          "level_entity_id": "Entitéit fir den Tankfëllstand"
+        },
+        "data_description": {
+          "level_entity_id": "Säi Status muss den Tankfëllstand a Prozent sinn (0-100). Gëtt nëmme benotzt, wann d'Source \"Vun enger anerer Entitéit\" ass."
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "D'Source fir d'Pëtrolspräisser konnt net erreecht ginn. Iwwerpréift Är Verbindung a probéiert et nach eng Kéier.",
+      "parse_error": "D'Source fir d'Pëtrolspräisser gouf erreecht, mä hiren Inhalt konnt net gelies ginn. Maacht wgl. en Issue op.",
+      "level_entity_required": "Wielt d'Entitéit fir den Tankfëllstand aus – oder stellt d'Source zréck op manuell."
+    },
+    "abort": {
+      "single_instance_allowed": "LëtzFuel HA ass scho konfiguréiert."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "LëtzFuel HA Astellungen",
+        "data": {
+          "update_interval_hours": "Aktualiséierungsintervall",
+          "evening_check_time": "Auerzäit vum Owescheck (fänkt d'Verëffentlechung géint 18:00 of; probéiert all 2 Min. fir 14 Min., duerno all 5 Min. bis 29 Min. no dëser Zäit)",
+          "announcements_enabled": "De muer ugekënnegte Präis ofruffen",
+          "trend_window_days": "Trendfënster",
+          "price_display": "Präisduerstellung",
+          "tracked_fuels": "Pëtrol Zorten déi ze verfollegen sinn",
+          "primary_fuel": "Haapt Pëtrol's Zort",
+          "tank_size": "Tankgréisst",
+          "level_source": "Source vum Tankfëllstand",
+          "level_entity_id": "Entitéit fir den Tankfëllstand",
+          "history_import_enabled": "Präishistorie an d'Laangzäitstatistike importéieren",
+          "history_import_months": "Importdéift vum Historique"
+        },
+        "data_description": {
+          "level_entity_id": "Säi Status muss den Tankfëllstand a Prozent sinn (0-100). Gëtt nëmme benotzt, wann d'Source \"Vun enger anerer Entitéit\" ass."
+        }
+      }
+    },
+    "error": {
+      "level_entity_required": "Wielt d'Entitéit fir den Tankfëllstand aus – oder stellt d'Source zréck op manuell."
+    }
+  },
+  "selector": {
+    "fuel_type": {
+      "options": {
+        "diesel": "Diesel",
+        "sp95": "SP95 (E10)",
+        "sp98": "SP98"
+      }
+    },
+    "price_display": {
+      "options": {
+        "incl_vat": "Mat TVA",
+        "excl_vat": "Ouni TVA"
+      }
+    },
+    "level_source": {
+      "options": {
+        "manual": "Manuell (Reegler)",
+        "entity": "Vun enger anerer Entitéit"
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "price": { "name": "{fuel} Präis" },
+      "change": { "name": "{fuel} Ännerung" },
+      "trend": {
+        "name": "{fuel} Trend",
+        "state": {
+          "rising": "Klëmmt",
+          "falling": "Fällt",
+          "stable": "Stabil"
+        }
+      },
+      "price_tomorrow": { "name": "{fuel} Präis muer" },
+      "refuel_recommendation": {
+        "name": "Tankempfehlung",
+        "state": {
+          "refuel_today": "Haut tanken",
+          "wait": "Waarden",
+          "no_change": "Keng Ännerung",
+          "awaiting_price": "Waarden op en neie Präis"
+        }
+      },
+      "last_price_update": { "name": "Läscht Präisaktualiséierung" },
+      "days_since_last_change": { "name": "Deeg zënter der leschter Ännerung" },
+      "full_tank_cost": { "name": "Käschte fir e vollen Tank" },
+      "refill_cost": { "name": "Käschte fir nozetanken" },
+      "full_tank_cost_change": { "name": "Ännerung vun de Käschte fir e vollen Tank" }
+    },
+    "binary_sensor": {
+      "price_change_pending": { "name": "Präisännerung steet un" }
+    },
+    "number": {
+      "current_fuel_level": { "name": "Aktuellen Tankfëllstand" }
+    }
+  },
+  "services": {
+    "calculate_fill_cost": {
+      "name": "Tankkäschte berechnen",
+      "description": "D'Käschte berechne fir eng bestëmmten Unzuel u Liter zum aktuellen (oder ugekënnegte) Präis nozetanken.",
+      "fields": {
+        "liters": {
+          "name": "Liter",
+          "description": "Wéivill Liter derbäigetankt ginn."
+        },
+        "fuel_type": {
+          "name": "Zort Pëtrol",
+          "description": "Pëtrol deen ze berechnen ass. Standard ass déi agestallten Haapt Pëtrol's Zort."
+        },
+        "use_tomorrow_price": {
+          "name": "Muerege Präis benotzen",
+          "description": "Wann disponibel, de ugekënnegte Präis fir muer amplaz vun deem vun haut benotzen."
+        }
+      }
+    },
+    "calculate_trip_cost": {
+      "name": "Faartkäschte berechnen",
+      "description": "D'Pëtrolskäschten vun enger Faart aus der Distanz an dem Verbrauch vum Gefier schätzen.",
+      "fields": {
+        "distance_km": {
+          "name": "Distanz",
+          "description": "Faartdistanz a Kilometer."
+        },
+        "consumption_l_100km": {
+          "name": "Verbrauch",
+          "description": "Duerchschnëttleche Verbrauch a Liter pro 100 km."
+        },
+        "fuel_type": {
+          "name": "Zort Pëtrol",
+          "description": "Pëtrol deen ze berechnen ass. Standard ass déi agestallten Haapt Pëtrol's Zort."
+        }
+      }
+    }
+  },
+  "exceptions": {
+    "not_configured": {
+      "message": "LëtzFuel HA ass nach net ageriicht."
+    },
+    "fuel_not_available": {
+      "message": "Keng Präisdaten fir {fuel} verfügbar."
+    }
+  },
+  "issues": {
+    "stale_data": {
+      "title": "D'Pëtrolspräisser sinn net méi aktuell",
+      "description": "De läschte verëffentlechte Präis ass {age_days} Deeg al an d'Source kann net aktualiséiert ginn. Iwwerpréift d'Präissäit an d'Logbicher vun der Integratioun."
+    },
+    "parse_error": {
+      "title": "D'Source fir d'Pëtrolspräisser kann net gelies ginn",
+      "description": "D'Präissäit gouf erreecht, mä konnt net analyséiert ginn ({error}). D'Layout vun der Säit huet sech vläicht geännert – maacht wgl. en Issue op."
+    }
+  }
+}

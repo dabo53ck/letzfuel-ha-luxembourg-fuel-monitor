@@ -1,0 +1,174 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "LëtzFuel HA",
+        "description": "Suivez les prix maximaux réglementés des carburants au Luxembourg. Les prix proviennent de petrol.lu (Groupement Pétrolier Luxembourgeois).",
+        "data": {
+          "tracked_fuels": "Carburants à suivre",
+          "primary_fuel": "Carburant principal (utilisé pour les capteurs véhicule et recommandation)"
+        }
+      },
+      "vehicle": {
+        "title": "Votre véhicule (facultatif)",
+        "description": "Indiquez la taille de votre réservoir pour obtenir les capteurs de coût de plein et de complément. Laissez vide pour ignorer.",
+        "data": {
+          "tank_size": "Taille du réservoir",
+          "level_source": "Source du niveau de carburant",
+          "current_level_pct": "Niveau de carburant actuel",
+          "level_entity_id": "Entité du niveau de carburant"
+        },
+        "data_description": {
+          "level_entity_id": "Son état doit être le niveau du réservoir en pourcentage (0-100). Utilisé uniquement quand la source est « Depuis une autre entité »."
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Impossible de joindre la source des prix. Vérifiez votre connexion et réessayez.",
+      "parse_error": "La source des prix a été jointe mais son contenu n'a pas pu être lu. Merci d'ouvrir un ticket.",
+      "level_entity_required": "Choisissez l'entité qui fournit le niveau de carburant, ou repassez la source en manuel."
+    },
+    "abort": {
+      "single_instance_allowed": "LëtzFuel HA est déjà configuré."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Paramètres de LëtzFuel HA",
+        "data": {
+          "update_interval_hours": "Intervalle de mise à jour",
+          "evening_check_time": "Heure du contrôle du soir (capte la publication vers 18h00 ; réessais toutes les 2 min pendant 14 min, puis toutes les 5 min jusqu'à 29 min après cette heure)",
+          "announcements_enabled": "Récupérer le prix annoncé pour demain",
+          "trend_window_days": "Fenêtre de tendance",
+          "price_display": "Affichage du prix",
+          "tracked_fuels": "Carburants à suivre",
+          "primary_fuel": "Carburant principal",
+          "tank_size": "Taille du réservoir",
+          "level_source": "Source du niveau de carburant",
+          "level_entity_id": "Entité du niveau de carburant",
+          "history_import_enabled": "Importer l'historique des prix dans les statistiques long terme",
+          "history_import_months": "Profondeur d'import de l'historique"
+        },
+        "data_description": {
+          "level_entity_id": "Son état doit être le niveau du réservoir en pourcentage (0-100). Utilisé uniquement quand la source est « Depuis une autre entité »."
+        }
+      }
+    },
+    "error": {
+      "level_entity_required": "Choisissez l'entité qui fournit le niveau de carburant, ou repassez la source en manuel."
+    }
+  },
+  "selector": {
+    "fuel_type": {
+      "options": {
+        "diesel": "Diesel",
+        "sp95": "SP95 (E10)",
+        "sp98": "SP98"
+      }
+    },
+    "price_display": {
+      "options": {
+        "incl_vat": "TVA comprise",
+        "excl_vat": "Hors TVA"
+      }
+    },
+    "level_source": {
+      "options": {
+        "manual": "Manuel (curseur réglable)",
+        "entity": "Depuis une autre entité"
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "price": { "name": "Prix {fuel}" },
+      "change": { "name": "Variation {fuel}" },
+      "trend": {
+        "name": "Tendance {fuel}",
+        "state": {
+          "rising": "En hausse",
+          "falling": "En baisse",
+          "stable": "Stable"
+        }
+      },
+      "price_tomorrow": { "name": "Prix {fuel} demain" },
+      "refuel_recommendation": {
+        "name": "Recommandation de plein",
+        "state": {
+          "refuel_today": "Faire le plein aujourd'hui",
+          "wait": "Attendre",
+          "no_change": "Pas de changement",
+          "awaiting_price": "En attente du nouveau prix"
+        }
+      },
+      "last_price_update": { "name": "Dernière mise à jour du prix" },
+      "days_since_last_change": { "name": "Jours depuis le dernier changement" },
+      "full_tank_cost": { "name": "Coût d'un plein" },
+      "refill_cost": { "name": "Coût du complément" },
+      "full_tank_cost_change": { "name": "Variation du coût d'un plein" }
+    },
+    "binary_sensor": {
+      "price_change_pending": { "name": "Changement de prix imminent" }
+    },
+    "number": {
+      "current_fuel_level": { "name": "Niveau de carburant actuel" }
+    }
+  },
+  "services": {
+    "calculate_fill_cost": {
+      "name": "Calculer le coût d'un ravitaillement",
+      "description": "Calcule le coût pour ajouter un nombre de litres donné au prix actuel (ou au prix annoncé pour le lendemain).",
+      "fields": {
+        "liters": {
+          "name": "Litres",
+          "description": "Nombre de litres à ajouter."
+        },
+        "fuel_type": {
+          "name": "Type de carburant",
+          "description": "Carburant à tarifer. Par défaut, le carburant principal configuré."
+        },
+        "use_tomorrow_price": {
+          "name": "Utiliser le prix de demain",
+          "description": "Utiliser le prix annoncé pour le lendemain plutôt que celui d'aujourd'hui, si disponible."
+        }
+      }
+    },
+    "calculate_trip_cost": {
+      "name": "Calculer le coût d'un trajet",
+      "description": "Estime le coût en carburant d'un trajet à partir de sa distance et de la consommation du véhicule.",
+      "fields": {
+        "distance_km": {
+          "name": "Distance",
+          "description": "Distance du trajet en kilomètres."
+        },
+        "consumption_l_100km": {
+          "name": "Consommation",
+          "description": "Consommation moyenne en litres aux 100 km."
+        },
+        "fuel_type": {
+          "name": "Type de carburant",
+          "description": "Carburant à tarifer. Par défaut, le carburant principal configuré."
+        }
+      }
+    }
+  },
+  "exceptions": {
+    "not_configured": {
+      "message": "LëtzFuel HA n'est pas encore configuré."
+    },
+    "fuel_not_available": {
+      "message": "Aucune donnée de prix disponible pour {fuel}."
+    }
+  },
+  "issues": {
+    "stale_data": {
+      "title": "Les prix des carburants ne sont pas à jour",
+      "description": "Le prix publié le plus récent date de {age_days} jours et la source ne peut pas être actualisée. Consultez la page des prix et les journaux de l'intégration."
+    },
+    "parse_error": {
+      "title": "Impossible de lire la source des prix",
+      "description": "La page des prix a été jointe mais n'a pas pu être analysée ({error}). La mise en page a peut-être changé – merci d'ouvrir un ticket."
+    }
+  }
+}

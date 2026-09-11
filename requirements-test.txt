@@ -1,0 +1,7 @@
+# Local dev only. CI installs its own pins per matrix entry (tests.yml) —
+# the HA 2025.12 floor from hacs.json is covered there, so this file just
+# tracks a workable recent set.
+homeassistant
+pytest-homeassistant-custom-component
+pytest-cov>=7.1.0
+beautifulsoup4>=4.15.0

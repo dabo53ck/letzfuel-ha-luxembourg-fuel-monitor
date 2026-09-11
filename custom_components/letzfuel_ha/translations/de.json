@@ -1,0 +1,174 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "LëtzFuel HA",
+        "description": "Verfolgen Sie die staatlich regulierten Höchstpreise für Kraftstoffe in Luxemburg. Die Preise stammen von petrol.lu (Groupement Pétrolier Luxembourgeois).",
+        "data": {
+          "tracked_fuels": "Zu verfolgende Kraftstoffe",
+          "primary_fuel": "Hauptkraftstoff (für Fahrzeug- und Empfehlungssensoren)"
+        }
+      },
+      "vehicle": {
+        "title": "Ihr Fahrzeug (optional)",
+        "description": "Geben Sie Ihre Tankgröße an, um Sensoren für Tankfüllungs- und Nachtankkosten zu erhalten. Leer lassen zum Überspringen.",
+        "data": {
+          "tank_size": "Tankgröße",
+          "level_source": "Quelle des Füllstands",
+          "current_level_pct": "Aktueller Füllstand",
+          "level_entity_id": "Füllstand-Entität"
+        },
+        "data_description": {
+          "level_entity_id": "Ihr Status muss der Tankfüllstand in Prozent sein (0-100). Wird nur verwendet, wenn die Quelle \"Aus anderer Entität\" ist."
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Die Preisquelle konnte nicht erreicht werden. Prüfen Sie Ihre Verbindung und versuchen Sie es erneut.",
+      "parse_error": "Die Preisquelle wurde erreicht, ihr Inhalt konnte aber nicht gelesen werden. Bitte einen Fehlerbericht öffnen.",
+      "level_entity_required": "Wählen Sie die Entität für den Füllstand aus – oder stellen Sie die Quelle zurück auf manuell."
+    },
+    "abort": {
+      "single_instance_allowed": "LëtzFuel HA ist bereits eingerichtet."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Einstellungen für LëtzFuel HA",
+        "data": {
+          "update_interval_hours": "Aktualisierungsintervall",
+          "evening_check_time": "Uhrzeit der Abendprüfung (erfasst die Veröffentlichung um ca. 18:00; Wiederholungen alle 2 Min. für 14 Min., danach alle 5 Min. bis 29 Min. nach dieser Zeit)",
+          "announcements_enabled": "Morgen angekündigten Preis abrufen",
+          "trend_window_days": "Trendfenster",
+          "price_display": "Preisanzeige",
+          "tracked_fuels": "Zu verfolgende Kraftstoffe",
+          "primary_fuel": "Hauptkraftstoff",
+          "tank_size": "Tankgröße",
+          "level_source": "Quelle des Füllstands",
+          "level_entity_id": "Füllstand-Entität",
+          "history_import_enabled": "Preisverlauf in Langzeitstatistiken importieren",
+          "history_import_months": "Importtiefe des Verlaufs"
+        },
+        "data_description": {
+          "level_entity_id": "Ihr Status muss der Tankfüllstand in Prozent sein (0-100). Wird nur verwendet, wenn die Quelle \"Aus anderer Entität\" ist."
+        }
+      }
+    },
+    "error": {
+      "level_entity_required": "Wählen Sie die Entität für den Füllstand aus – oder stellen Sie die Quelle zurück auf manuell."
+    }
+  },
+  "selector": {
+    "fuel_type": {
+      "options": {
+        "diesel": "Diesel",
+        "sp95": "SP95 (E10)",
+        "sp98": "SP98"
+      }
+    },
+    "price_display": {
+      "options": {
+        "incl_vat": "Inkl. MwSt.",
+        "excl_vat": "Exkl. MwSt."
+      }
+    },
+    "level_source": {
+      "options": {
+        "manual": "Manuell (Schieberegler)",
+        "entity": "Aus anderer Entität"
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "price": { "name": "{fuel} Preis" },
+      "change": { "name": "{fuel} Änderung" },
+      "trend": {
+        "name": "{fuel} Trend",
+        "state": {
+          "rising": "Steigend",
+          "falling": "Fallend",
+          "stable": "Stabil"
+        }
+      },
+      "price_tomorrow": { "name": "{fuel} Preis morgen" },
+      "refuel_recommendation": {
+        "name": "Tankempfehlung",
+        "state": {
+          "refuel_today": "Heute tanken",
+          "wait": "Warten",
+          "no_change": "Keine Änderung",
+          "awaiting_price": "Neuer Preis abwarten"
+        }
+      },
+      "last_price_update": { "name": "Letzte Preisaktualisierung" },
+      "days_since_last_change": { "name": "Tage seit letzter Änderung" },
+      "full_tank_cost": { "name": "Kosten einer Tankfüllung" },
+      "refill_cost": { "name": "Nachtankkosten" },
+      "full_tank_cost_change": { "name": "Änderung der Tankfüllungskosten" }
+    },
+    "binary_sensor": {
+      "price_change_pending": { "name": "Preisänderung bevorstehend" }
+    },
+    "number": {
+      "current_fuel_level": { "name": "Aktueller Füllstand" }
+    }
+  },
+  "services": {
+    "calculate_fill_cost": {
+      "name": "Tankkosten berechnen",
+      "description": "Berechnet die Kosten für eine bestimmte Litermenge zum aktuellen (oder angekündigten) Preis.",
+      "fields": {
+        "liters": {
+          "name": "Liter",
+          "description": "Wie viele Liter getankt werden sollen."
+        },
+        "fuel_type": {
+          "name": "Kraftstoffart",
+          "description": "Zu bepreisender Kraftstoff. Standard ist der konfigurierte Hauptkraftstoff."
+        },
+        "use_tomorrow_price": {
+          "name": "Morgigen Preis verwenden",
+          "description": "Den angekündigten Preis für den nächsten Tag statt des heutigen verwenden, falls verfügbar."
+        }
+      }
+    },
+    "calculate_trip_cost": {
+      "name": "Fahrtkosten berechnen",
+      "description": "Schätzt die Kraftstoffkosten einer Fahrt aus Distanz und Verbrauch des Fahrzeugs.",
+      "fields": {
+        "distance_km": {
+          "name": "Distanz",
+          "description": "Fahrtstrecke in Kilometern."
+        },
+        "consumption_l_100km": {
+          "name": "Verbrauch",
+          "description": "Durchschnittsverbrauch in Litern pro 100 km."
+        },
+        "fuel_type": {
+          "name": "Kraftstoffart",
+          "description": "Zu bepreisender Kraftstoff. Standard ist der konfigurierte Hauptkraftstoff."
+        }
+      }
+    }
+  },
+  "exceptions": {
+    "not_configured": {
+      "message": "LëtzFuel HA ist noch nicht eingerichtet."
+    },
+    "fuel_not_available": {
+      "message": "Keine Preisdaten für {fuel} verfügbar."
+    }
+  },
+  "issues": {
+    "stale_data": {
+      "title": "Kraftstoffpreise sind veraltet",
+      "description": "Der neueste veröffentlichte Preis ist {age_days} Tage alt und die Quelle kann nicht aktualisiert werden. Prüfen Sie die Preisseite und die Integrationsprotokolle."
+    },
+    "parse_error": {
+      "title": "Preisquelle kann nicht gelesen werden",
+      "description": "Die Preisseite wurde erreicht, konnte aber nicht ausgewertet werden ({error}). Möglicherweise hat sich das Seitenlayout geändert – bitte einen Fehlerbericht öffnen."
+    }
+  }
+}

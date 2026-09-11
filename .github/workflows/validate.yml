@@ -1,0 +1,56 @@
+name: Validate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: "0 4 * * 1"
+  workflow_dispatch:
+
+jobs:
+  hassfest:
+    name: hassfest
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: home-assistant/actions/hassfest@master
+
+  hacs:
+    name: HACS
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: hacs/action@main
+        with:
+          category: integration
+          # Not "needs a brands PR": since HA 2026.3 brand assets load directly
+          # from custom_components/letzfuel_ha/brand/ (see brand/README.md), no
+          # home-assistant/brands submission is planned. Kept ignored here
+          # because the HACS action's own "brands" check still expects a
+          # brands-repo entry regardless of that -- remove this once/if that's
+          # confirmed unnecessary against the now-public repo.
+          ignore: brands
+
+  lint:
+    name: Ruff
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
+      - run: pip install ruff
+      - run: ruff check .
+      - run: ruff format --check .
+
+  blueprints:
+    name: Blueprints
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
+      - run: pip install pyyaml
+      - run: python scripts/validate_blueprints.py
