@@ -4,6 +4,7 @@
   "after_dependencies": ["recorder"],
   "codeowners": ["@dabo53ck"],
   "config_flow": true,
+  "dependencies": ["http"],
   "documentation": "https://github.com/dabo53ck/letzfuel-ha-luxembourg-fuel-monitor",
   "integration_type": "service",
   "iot_class": "cloud_polling",
@@ -11,5 +12,5 @@
   "loggers": ["custom_components.letzfuel_ha"],
   "requirements": ["beautifulsoup4>=4.12.0"],
   "single_config_entry": true,
-  "version": "0.0.1-beta"
+  "version": "0.0.2-beta"
 }
