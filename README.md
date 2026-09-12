@@ -27,7 +27,7 @@ answers:
 
 | Source | Used for |
 | --- | --- |
-| [petrol.lu](https://www.petrol.lu/en/official-prices/) (GPL) | current price, full history, statistics backfill — the source of truth |
+| [petrol.lu](https://www.petrol.lu/en/official-prices/) (GPL) | current price, full history, statistics backfill. |
 | [RTL.lu](https://www.rtl.lu/mobiliteit/petrolspraisser) (`api-gate.rtl.lu`) | the **announced next-day price** only. |
 
 > **Not affiliated** with the Groupement Pétrolier Luxembourgeois, petrol.lu, RTL,
