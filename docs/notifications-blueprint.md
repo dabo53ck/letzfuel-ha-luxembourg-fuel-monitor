@@ -209,6 +209,10 @@ when diesel is under 1.60".
 | **Fuels** | Which fuels to watch. Same picker as *announced*/*effective*: *Primary fuel* follows the integration's configured primary fuel. |
 | **Notify when the price is below** | Your target €/L, applied to every selected fuel. Leave at `0` until you enable this section (a `0` threshold never fires). |
 
+> A fuel you don't track in the integration simply never triggers here —
+> nothing to configure, it activates on its own if you start tracking it
+> later.
+
 ## Only when home / away
 
 Optional presence gate.
