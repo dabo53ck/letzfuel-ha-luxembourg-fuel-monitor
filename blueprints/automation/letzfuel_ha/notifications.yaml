@@ -639,7 +639,6 @@ actions:
                       when_relative: true
                       when: "{{ countdown_seconds }}"
                       notification_icon: mdi:gas-station
-                      icon_url: /letzfuel_ha/icon.png
 
       # ---------- Live countdown to midnight: end ----------
       # Ends once the recommendation moves off "Refuel today" -- normally

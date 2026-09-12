@@ -11,9 +11,11 @@ pre-release identifiers included (`0.0.1-beta`, …).
 - **Local brand icon for notifications** (integration + blueprint). The
   integration now serves `brand/icon.png` locally
   (`hass.http.async_register_static_paths`, at `/letzfuel_ha/icon.png`) and
-  the notifications blueprint points every notification's `icon_url` at it,
-  so pushes show the LëtzFuel droplet instead of the generic Home Assistant
-  icon. Nothing to configure. Closes #7.
+  the notifications blueprint points the announced/effective/recommendation/
+  threshold notifications' `icon_url` at it, so those pushes show the
+  LëtzFuel droplet instead of the generic Home Assistant icon. Nothing to
+  configure. Closes #7. Doesn't apply to the *Live countdown* — iOS Live
+  Activities only support a Material Design Icon, not a custom image.
 
 ### Changed
 

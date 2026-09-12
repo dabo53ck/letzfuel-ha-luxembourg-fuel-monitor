@@ -101,9 +101,10 @@ Within that, each **type** uses its own fixed tag (`letzfuel_announced`,
 newer message of the same type **replaces** the previous one rather than
 stacking. These tags are hardcoded and have no setting.
 
-Every notification also carries the LëtzFuel brand icon (served locally by
+The four types above also carry the LëtzFuel brand icon (served locally by
 the integration) instead of the generic Home Assistant icon — nothing to
-configure.
+configure. The *Live countdown* below doesn't get it: iOS Live Activities only
+support a Material Design Icon, not a custom image (see its own note below).
 
 ## Priority and Do Not Disturb
 
@@ -184,6 +185,10 @@ kicks in).
 | Input | Meaning |
 | --- | --- |
 | **Enable** | Off by default. |
+
+Shows a fixed `mdi:gas-station` icon, not the LëtzFuel brand icon — iOS Live
+Activities only support a Material Design Icon (optionally tinted with a hex
+color), not a custom image, so there's no `icon_url` equivalent here.
 
 Needs a Companion App version with Live Activity / Live Update support
 (**iOS 17.2+**, **Android 16+**). What an older app version does with the
