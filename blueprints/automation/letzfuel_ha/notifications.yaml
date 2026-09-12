@@ -1,13 +1,7 @@
 blueprint:
   name: LëtzFuel HA – Notifications
   description: >-
-    **Version 0.0.2-beta** (2026-09-12) — notifications now show the
-    LëtzFuel brand icon (served locally by the integration) instead of the
-    generic Home Assistant icon. No new input; nothing to configure. This
-    version marker is now the only place the blueprint's version appears —
-    the title above no longer carries one. Re-import
-    (Blueprints → ⋮ → Re-import) to pick it up. See CHANGELOG.md for the
-    full history.
+    **v0.0.2-beta**
 
 
     One automation that turns the LëtzFuel HA integration's events and sensors
