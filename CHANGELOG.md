@@ -4,6 +4,27 @@ All notable changes to this project are documented here. The format loosely
 follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). SemVer,
 pre-release identifiers included (`0.0.1-beta`, …).
 
+## [0.0.2-beta] - 2026-09-12
+
+### Added
+
+- **Local brand icon for notifications** (integration + blueprint). The
+  integration now serves `brand/icon.png` locally
+  (`hass.http.async_register_static_paths`, at `/letzfuel_ha/icon.png`) and
+  the notifications blueprint points every notification's `icon_url` at it,
+  so pushes show the LëtzFuel droplet instead of the generic Home Assistant
+  icon. Nothing to configure. Closes #7.
+
+### Changed
+
+- **Blueprint title no longer carries a version number.** The version marker
+  now lives only in the blueprint's `description` (which is where you'd
+  check anyway); the title (`LëtzFuel HA – Notifications`) stays stable
+  across versions.
+- README: the RTL.lu data-source row no longer calls the announced-price
+  lookup "optional" — the wording didn't match how central it is to the
+  next-day awareness features.
+
 ## [0.0.1-beta] - 2026-09-12
 
 ### Added

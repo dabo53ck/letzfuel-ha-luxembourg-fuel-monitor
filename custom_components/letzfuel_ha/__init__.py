@@ -3,11 +3,15 @@
 from __future__ import annotations
 
 import logging
+from pathlib import Path
 
+from homeassistant.components.http import StaticPathConfig
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.typing import ConfigType
 
 from .const import (
+    BRAND_ICON_URL,
     DEFAULT_HISTORY_IMPORT_MONTHS,
     OPT_HISTORY_IMPORT_ENABLED,
     OPT_HISTORY_IMPORT_MONTHS,
@@ -24,6 +28,15 @@ PLATFORMS: list[Platform] = [
     Platform.NUMBER,
     Platform.SENSOR,
 ]
+
+
+async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
+    """Serve the brand icon locally for use as a notification icon_url."""
+    icon_path = Path(__file__).parent / "brand" / "icon.png"
+    await hass.http.async_register_static_paths(
+        [StaticPathConfig(BRAND_ICON_URL, str(icon_path), cache_headers=True)]
+    )
+    return True
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: LuxFuelConfigEntry) -> bool:

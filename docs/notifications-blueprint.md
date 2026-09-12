@@ -72,10 +72,11 @@ Home Assistant has no built-in blueprint version tracking or update check —
 re-importing always silently overwrites whatever you had. The blueprint's
 `description` (visible on the Blueprints page and while editing an automation
 built from it) carries a version marker and a one-line summary of what
-changed, so you can tell at a glance whether you're on the latest. From
-`0.0.1-beta` on, that marker follows the integration's own release number
-instead of the earlier separate v1–v7 counter, so both stay in sync. Check
-[`CHANGELOG.md`](../CHANGELOG.md) for the full history.
+changed, so you can tell at a glance whether you're on the latest — the
+blueprint's title itself is deliberately version-free and stays stable.
+From `0.0.1-beta` on, that marker follows the integration's own release
+number instead of the earlier separate v1–v7 counter, so both stay in sync.
+Check [`CHANGELOG.md`](../CHANGELOG.md) for the full history.
 
 Re-importing a new version does **not** touch inputs you already set on
 automations built from it (device picks, enabled types, …) — except where a
@@ -99,6 +100,10 @@ Within that, each **type** uses its own fixed tag (`letzfuel_announced`,
 `letzfuel_effective`, `letzfuel_recommendation`, `letzfuel_threshold`), so a
 newer message of the same type **replaces** the previous one rather than
 stacking. These tags are hardcoded and have no setting.
+
+Every notification also carries the LëtzFuel brand icon (served locally by
+the integration) instead of the generic Home Assistant icon — nothing to
+configure.
 
 ## Priority and Do Not Disturb
 

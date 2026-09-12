@@ -1,17 +1,11 @@
 blueprint:
-  name: LëtzFuel HA – Notifications (v0.0.1-beta)
+  name: LëtzFuel HA – Notifications
   description: >-
-    **Version 0.0.1-beta** (2026-09-12) — versioning now follows the
-    integration's own release number instead of a separate v1/v2/.../v7
-    counter, so both stay in sync going forward; nothing else changed in
-    this step, it's the same content as v7. New in v7, still current: an
-    optional *Live countdown to midnight* section (experimental): a Lock
-    Screen / Dynamic Island countdown (iOS Live Activity / Android Live
-    Update) that runs from "Refuel today" until the price rises at
-    midnight, additional to the normal push. Off by default. Needs a
-    Companion App with Live Activity / Live Update support (iOS 17.2+,
-    Android 16+); how older app versions handle the extra data fields
-    hasn't been broadly verified yet. Re-import
+    **Version 0.0.2-beta** (2026-09-12) — notifications now show the
+    LëtzFuel brand icon (served locally by the integration) instead of the
+    generic Home Assistant icon. No new input; nothing to configure. This
+    version marker is now the only place the blueprint's version appears —
+    the title above no longer carries one. Re-import
     (Blueprints → ⋮ → Re-import) to pick it up. See CHANGELOG.md for the
     full history.
 
@@ -549,7 +543,7 @@ actions:
             sequence:
               - variables:
                   notification_data: >-
-                    {% set base = {'tag': msg_tag, 'group': 'letzfuel_ha', 'push': {'thread-id': 'letzfuel_ha'}} %}
+                    {% set base = {'tag': msg_tag, 'group': 'letzfuel_ha', 'icon_url': '/letzfuel_ha/icon.png', 'push': {'thread-id': 'letzfuel_ha'}} %}
                     {% if priority == 'elevated' %}
                     {% set base = base | combine({'importance': 'high', 'priority': 'high', 'ttl': 0,
                         'push': {'interruption-level': 'time-sensitive'}}, recursive=True) %}
@@ -651,6 +645,7 @@ actions:
                       when_relative: true
                       when: "{{ countdown_seconds }}"
                       notification_icon: mdi:gas-station
+                      icon_url: /letzfuel_ha/icon.png
 
       # ---------- Live countdown to midnight: end ----------
       # Ends once the recommendation moves off "Refuel today" -- normally
