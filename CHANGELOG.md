@@ -36,6 +36,14 @@ pre-release identifiers included (`0.0.1-beta`, …).
   sensor.letzfuel_ha_sp95_e10_price") when that fuel's sensor doesn't
   exist. Starts working on its own once that fuel is tracked, no re-import
   needed. Closes #9.
+- **No more false "price changed" notifications at the midnight rollover.**
+  A tracked fuel's price record gets a fresh entry dated "today" every day
+  regardless of whether its price actually moved — the coordinator now only
+  fires `letzfuel_ha_price_changed` (and the "New price in effect" push)
+  when the price itself differs from the previous value, not just because
+  the effective date advanced. Confirmed via a real trace where Diesel sent
+  a "−0.0 ct/L" notification on a day only SP95/SP98 actually changed.
+  Closes #10.
 
 ## [0.0.1-beta] - 2026-09-12
 
