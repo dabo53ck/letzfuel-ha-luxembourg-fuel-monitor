@@ -180,7 +180,7 @@ recommendation moves off `refuel_today` (normally the integration's
 just-after-midnight refresh, well before the platform's own 8-hour limit
 kicks in).
 
-<img src="live-activity.png" alt="iOS Lock Screen: a Live Activity counting down to midnight above the accompanying Refuel recommendation and price-announced notifications" width="320">
+<img src="live-activity.jpg" alt="iOS Lock Screen: a Live Activity counting down to midnight above the accompanying Refuel recommendation and price-announced notifications" width="320">
 
 | Input | Meaning |
 | --- | --- |
