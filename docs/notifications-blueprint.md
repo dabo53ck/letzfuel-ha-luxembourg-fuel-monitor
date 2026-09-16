@@ -72,10 +72,11 @@ Home Assistant has no built-in blueprint version tracking or update check —
 re-importing always silently overwrites whatever you had. The blueprint's
 `description` (visible on the Blueprints page and while editing an automation
 built from it) carries a version marker and a one-line summary of what
-changed, so you can tell at a glance whether you're on the latest. From
-`0.0.1-beta` on, that marker follows the integration's own release number
-instead of the earlier separate v1–v7 counter, so both stay in sync. Check
-[`CHANGELOG.md`](../CHANGELOG.md) for the full history.
+changed, so you can tell at a glance whether you're on the latest — the
+blueprint's title itself is deliberately version-free and stays stable.
+From `0.0.1-beta` on, that marker follows the integration's own release
+number instead of the earlier separate v1–v7 counter, so both stay in sync.
+Check [`CHANGELOG.md`](../CHANGELOG.md) for the full history.
 
 Re-importing a new version does **not** touch inputs you already set on
 automations built from it (device picks, enabled types, …) — except where a
@@ -99,6 +100,11 @@ Within that, each **type** uses its own fixed tag (`letzfuel_announced`,
 `letzfuel_effective`, `letzfuel_recommendation`, `letzfuel_threshold`), so a
 newer message of the same type **replaces** the previous one rather than
 stacking. These tags are hardcoded and have no setting.
+
+The four types above also carry the LëtzFuel brand icon (served locally by
+the integration) instead of the generic Home Assistant icon — nothing to
+configure. The *Live countdown* below doesn't get it: iOS Live Activities only
+support a Material Design Icon, not a custom image (see its own note below).
 
 ## Priority and Do Not Disturb
 
@@ -174,11 +180,15 @@ recommendation moves off `refuel_today` (normally the integration's
 just-after-midnight refresh, well before the platform's own 8-hour limit
 kicks in).
 
-<img src="live-activity.png" alt="iOS Lock Screen: a Live Activity counting down to midnight above the accompanying Refuel recommendation and price-announced notifications" width="320">
+<img src="live-activity.jpg" alt="iOS Lock Screen: a Live Activity counting down to midnight above the accompanying Refuel recommendation and price-announced notifications" width="320">
 
 | Input | Meaning |
 | --- | --- |
 | **Enable** | Off by default. |
+
+Shows a fixed `mdi:gas-station` icon, not the LëtzFuel brand icon — iOS Live
+Activities only support a Material Design Icon (optionally tinted with a hex
+color), not a custom image, so there's no `icon_url` equivalent here.
 
 Needs a Companion App version with Live Activity / Live Update support
 (**iOS 17.2+**, **Android 16+**). What an older app version does with the
@@ -198,6 +208,10 @@ when diesel is under 1.60".
 | --- | --- |
 | **Fuels** | Which fuels to watch. Same picker as *announced*/*effective*: *Primary fuel* follows the integration's configured primary fuel. |
 | **Notify when the price is below** | Your target €/L, applied to every selected fuel. Leave at `0` until you enable this section (a `0` threshold never fires). |
+
+> A fuel you don't track in the integration simply never triggers here —
+> nothing to configure, it activates on its own if you start tracking it
+> later.
 
 ## Only when home / away
 

@@ -245,6 +245,85 @@ async def test_changed_event_on_effective_date_advance(
     assert change["new_price"] == pytest.approx(1.865)
 
 
+async def test_no_changed_event_when_price_unchanged_on_date_advance(
+    hass: HomeAssistant, init_integration
+) -> None:
+    """The effective date advancing alone (e.g. every midnight rollover)
+    must not fire a changed event when the price itself didn't move --
+    on a day where only some tracked fuels get a real price change, the
+    others just get a fresh same-price record for the new date."""
+    coordinator = init_integration.runtime_data
+    events = []
+    hass.bus.async_listen(EVENT_PRICE_CHANGED, lambda e: events.append(e))
+
+    yesterday = (dt_util.now().date() - timedelta(days=1)).isoformat()
+    coordinator._last_seen = {
+        "diesel": {
+            "current_date": yesterday,
+            "current_price": "1.865",
+            "upcoming_date": None,
+            "upcoming_price": None,
+        }
+    }
+    await coordinator._async_detect_changes(_price_set("1.865", None))
+    await hass.async_block_till_done()
+
+    assert len(events) == 0
+
+
+async def test_changed_event_only_includes_fuels_that_actually_moved(
+    hass: HomeAssistant, init_integration
+) -> None:
+    """Mixed day, multiple tracked fuels in one refresh: SP95 gets a real
+    price change, Diesel's record just rolls over to a new date at the
+    same price. Only SP95 may appear in the changed event -- this is the
+    exact real-world scenario from the bug report (Diesel sent a false
+    "-0.0 ct/L" notification on a day only SP95/SP98 actually changed).
+    """
+    coordinator = init_integration.runtime_data
+    events = []
+    hass.bus.async_listen(EVENT_PRICE_CHANGED, lambda e: events.append(e))
+
+    today = dt_util.now().date()
+    yesterday = (today - timedelta(days=1)).isoformat()
+
+    diesel_cur = PricePoint(today, FuelType.DIESEL, Decimal("1.865"), Decimal("1.865"))
+    sp95_cur = PricePoint(today, FuelType.SP95, Decimal("1.950"), Decimal("1.950"))
+
+    price_set = PriceSet(
+        fetched_at=dt_util.utcnow(),
+        provider_name="test",
+        source_url="http://example.test",
+        attribution="test",
+        prices={
+            FuelType.DIESEL: FuelPrices(FuelType.DIESEL, diesel_cur, today, None, None),
+            FuelType.SP95: FuelPrices(FuelType.SP95, sp95_cur, today, None, None),
+        },
+        recent_history={FuelType.DIESEL: [diesel_cur], FuelType.SP95: [sp95_cur]},
+    )
+
+    coordinator._last_seen = {
+        "diesel": {
+            "current_date": yesterday,
+            "current_price": "1.865",  # unchanged from today -> no event
+            "upcoming_date": None,
+            "upcoming_price": None,
+        },
+        "sp95": {
+            "current_date": yesterday,
+            "current_price": "1.900",  # differs from today -> real change
+            "upcoming_date": None,
+            "upcoming_price": None,
+        },
+    }
+    await coordinator._async_detect_changes(price_set)
+    await hass.async_block_till_done()
+
+    assert len(events) == 1
+    changed_fuels = {c["fuel"] for c in events[0].data["changes"]}
+    assert changed_fuels == {"sp95"}
+
+
 def _stale_price_set(age_days: int) -> PriceSet:
     """A PriceSet whose newest price is `age_days` old."""
     old_date = dt_util.now().date() - timedelta(days=age_days)

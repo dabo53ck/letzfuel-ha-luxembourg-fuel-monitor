@@ -4,6 +4,47 @@ All notable changes to this project are documented here. The format loosely
 follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). SemVer,
 pre-release identifiers included (`0.0.1-beta`, …).
 
+## [0.0.2-beta] - 2026-09-16
+
+### Added
+
+- **Local brand icon for notifications** (integration + blueprint). The
+  integration now serves `brand/icon.png` locally
+  (`hass.http.async_register_static_paths`, at `/letzfuel_ha/icon.png`) and
+  the notifications blueprint points the announced/effective/recommendation/
+  threshold notifications' `icon_url` at it, so those pushes show the
+  LëtzFuel droplet instead of the generic Home Assistant icon. Nothing to
+  configure. Closes #7. Doesn't apply to the *Live countdown* — iOS Live
+  Activities only support a Material Design Icon, not a custom image.
+
+### Changed
+
+- **Blueprint title no longer carries a version number.** The version marker
+  now lives only in the blueprint's `description` (which is where you'd
+  check anyway); the title (`LëtzFuel HA – Notifications`) stays stable
+  across versions.
+- README: the RTL.lu data-source row no longer calls the announced-price
+  lookup "optional" — the wording didn't match how central it is to the
+  next-day awareness features.
+
+### Fixed
+
+- **Blueprint: Price threshold no longer errors when a fuel isn't tracked.**
+  The three price-threshold triggers (diesel/SP95/SP98) are now `template`
+  triggers (`has_value(...) and states(...) < below`) instead of
+  `numeric_state`, which used to error at load time ("unknown entity
+  sensor.letzfuel_ha_sp95_e10_price") when that fuel's sensor doesn't
+  exist. Starts working on its own once that fuel is tracked, no re-import
+  needed. Closes #9.
+- **No more false "price changed" notifications at the midnight rollover.**
+  A tracked fuel's price record gets a fresh entry dated "today" every day
+  regardless of whether its price actually moved — the coordinator now only
+  fires `letzfuel_ha_price_changed` (and the "New price in effect" push)
+  when the price itself differs from the previous value, not just because
+  the effective date advanced. Confirmed via a real trace where Diesel sent
+  a "−0.0 ct/L" notification on a day only SP95/SP98 actually changed.
+  Closes #10.
+
 ## [0.0.1-beta] - 2026-09-12
 
 ### Added

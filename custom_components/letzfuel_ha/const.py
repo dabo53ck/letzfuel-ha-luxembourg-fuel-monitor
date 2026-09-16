@@ -7,13 +7,16 @@ from typing import Final
 from .models import FuelType
 
 DOMAIN: Final = "letzfuel_ha"
+#: Static path the brand icon is served at (see __init__.py's async_setup) --
+#: the notifications blueprint references this exact path as its icon_url.
+BRAND_ICON_URL: Final = "/letzfuel_ha/icon.png"
 
 # --- Providers -------------------------------------------------------------
 DEFAULT_PROVIDER: Final = "petrol_lu"
 #: Single source of truth for the version number both scrapers put in their
 #: User-Agent string (manifest.json's "version" is HA's own source of truth
 #: for the integration as a whole; keep this in sync by hand at release time).
-USER_AGENT_VERSION: Final = "0.0.1-beta"
+USER_AGENT_VERSION: Final = "0.0.2-beta"
 
 # --- Config entry keys ---------------------------------------------------------
 CONF_PROVIDER: Final = "provider"

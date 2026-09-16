@@ -1,19 +1,7 @@
 blueprint:
-  name: LëtzFuel HA – Notifications (v0.0.1-beta)
+  name: LëtzFuel HA – Notifications
   description: >-
-    **Version 0.0.1-beta** (2026-09-12) — versioning now follows the
-    integration's own release number instead of a separate v1/v2/.../v7
-    counter, so both stay in sync going forward; nothing else changed in
-    this step, it's the same content as v7. New in v7, still current: an
-    optional *Live countdown to midnight* section (experimental): a Lock
-    Screen / Dynamic Island countdown (iOS Live Activity / Android Live
-    Update) that runs from "Refuel today" until the price rises at
-    midnight, additional to the normal push. Off by default. Needs a
-    Companion App with Live Activity / Live Update support (iOS 17.2+,
-    Android 16+); how older app versions handle the extra data fields
-    hasn't been broadly verified yet. Re-import
-    (Blueprints → ⋮ → Re-import) to pick it up. See CHANGELOG.md for the
-    full history.
+    ![version](https://img.shields.io/badge/version-0.0.2--beta-blue)
 
 
     One automation that turns the LëtzFuel HA integration's events and sensors
@@ -355,18 +343,37 @@ triggers:
   - trigger: state
     id: recommend
     entity_id: sensor.letzfuel_ha_refuel_recommendation
-  - trigger: numeric_state
+  # `template` instead of `numeric_state` -- these three fuels aren't
+  # necessarily all tracked (see the integration's Fuels option), and a
+  # numeric_state trigger errors at load time if its entity doesn't exist.
+  # A template trigger's value_template is a full template (states()/
+  # has_value() all work, unlike a limited `enabled:` template), evaluated
+  # per state change rather than validated once at load, so a not-yet-
+  # existing entity just renders false instead of erroring -- and it starts
+  # working on its own the moment that fuel's sensor appears. Still exposes
+  # trigger.to_state/trigger.entity_id like a state trigger would, so the
+  # message-building template below needs no changes.
+  - trigger: template
     id: threshold_diesel
-    entity_id: sensor.letzfuel_ha_diesel_price
-    below: !input threshold_below
-  - trigger: numeric_state
+    value_template: >-
+      {{ has_value('sensor.letzfuel_ha_diesel_price')
+         and states('sensor.letzfuel_ha_diesel_price') | float < below }}
+  - trigger: template
     id: threshold_sp95
-    entity_id: sensor.letzfuel_ha_sp95_e10_price
-    below: !input threshold_below
-  - trigger: numeric_state
+    value_template: >-
+      {{ has_value('sensor.letzfuel_ha_sp95_e10_price')
+         and states('sensor.letzfuel_ha_sp95_e10_price') | float < below }}
+  - trigger: template
     id: threshold_sp98
-    entity_id: sensor.letzfuel_ha_sp98_price
-    below: !input threshold_below
+    value_template: >-
+      {{ has_value('sensor.letzfuel_ha_sp98_price')
+         and states('sensor.letzfuel_ha_sp98_price') | float < below }}
+
+# trigger_variables is a top-level key (applies to every trigger's own
+# template scope, not something nested inside individual trigger items --
+# that was rejected as an invalid key when tried per-trigger).
+trigger_variables:
+  below: !input threshold_below
 
 variables:
   # --- input aliases (!input cannot be used inside a template) ---
@@ -549,7 +556,7 @@ actions:
             sequence:
               - variables:
                   notification_data: >-
-                    {% set base = {'tag': msg_tag, 'group': 'letzfuel_ha', 'push': {'thread-id': 'letzfuel_ha'}} %}
+                    {% set base = {'tag': msg_tag, 'group': 'letzfuel_ha', 'icon_url': '/letzfuel_ha/icon.png', 'push': {'thread-id': 'letzfuel_ha'}} %}
                     {% if priority == 'elevated' %}
                     {% set base = base | combine({'importance': 'high', 'priority': 'high', 'ttl': 0,
                         'push': {'interruption-level': 'time-sensitive'}}, recursive=True) %}
@@ -612,8 +619,19 @@ actions:
           - variables:
               title: "{{ strings.threshold_title }}"
               message: >-
-                {% set name = trigger.to_state.attributes.friendly_name or trigger.entity_id %}
-                {% set price_str = (trigger.to_state.state | string).replace('.', strings.decimal) %}
+                {#- Resolved from trigger.id rather than trigger.to_state/
+                    trigger.entity_id -- those come from the trigger
+                    platform's own state-change payload, which a template
+                    trigger (used here so an untracked fuel's sensor can't
+                    error at load time, see the triggers above) isn't
+                    guaranteed to populate the same way a numeric_state
+                    trigger would. #}
+                {% set trig_entity_map = {'threshold_diesel': 'sensor.letzfuel_ha_diesel_price',
+                     'threshold_sp95': 'sensor.letzfuel_ha_sp95_e10_price',
+                     'threshold_sp98': 'sensor.letzfuel_ha_sp98_price'} %}
+                {% set ent = trig_entity_map.get(trigger.id) %}
+                {% set name = state_attr(ent, 'friendly_name') or ent %}
+                {% set price_str = (states(ent) | string).replace('.', strings.decimal) %}
                 {% set target_str = (threshold_below | string).replace('.', strings.decimal) %}
                 {{ strings.threshold_message.format(name=name, price=price_str, target=target_str) }}
               msg_tag: letzfuel_threshold

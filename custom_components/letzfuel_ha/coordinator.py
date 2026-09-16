@@ -181,12 +181,18 @@ class LuxFuelCoordinator(DataUpdateCoordinator[PriceSet]):
             up_date = fp.upcoming.effective_date.isoformat() if fp.upcoming else None
             up_price = str(fp.upcoming.price_incl_vat) if fp.upcoming else None
 
-            if prev.get("current_date") and prev["current_date"] != cur_date:
+            old_price = _as_float(prev.get("current_price"))
+            new_price = float(fp.current.price_incl_vat)
+            if (
+                prev.get("current_date")
+                and prev["current_date"] != cur_date
+                and old_price != new_price
+            ):
                 changed.append(
                     {
                         "fuel": key,
-                        "old_price": _as_float(prev.get("current_price")),
-                        "new_price": float(fp.current.price_incl_vat),
+                        "old_price": old_price,
+                        "new_price": new_price,
                         "effective_date": cur_date,
                     }
                 )
