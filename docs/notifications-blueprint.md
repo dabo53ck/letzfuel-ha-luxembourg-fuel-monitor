@@ -12,6 +12,7 @@ Lëtzebuergesch); there's nothing to write.
 - [Language](#language)
 - [Notification delivery](#notification-delivery)
 - [Grouping](#grouping)
+- [Tapping a notification](#tapping-a-notification)
 - [Priority and Do Not Disturb](#priority-and-do-not-disturb)
 - [The notification types](#the-notification-types)
   - [Evening: next-day price announced](#evening-next-day-price-announced)
@@ -89,6 +90,25 @@ One input, **Devices**, decides where everything goes: a device picker
 pre-filtered to your paired Home Assistant Companion app devices. Pick one or
 several — there's no notify service name to look up. Every enabled type is
 sent to every selected device.
+
+## Tapping a notification
+
+Tapping a notification opens something useful instead of just the app:
+
+| Notification | Opens |
+| --- | --- |
+| Price change announced / new price in effect | the price sensor of the (first) fuel it's about |
+| Price threshold | the price sensor of the fuel that dropped below your target |
+| Refuel recommendation and Live countdown | the *Refuel recommendation* sensor |
+
+That opens Home Assistant's details dialog for the entity, with its history
+graph. If you'd rather land on your own dashboard, fill in the optional
+**Dashboard opened when you tap a notification** input under *Notification
+delivery* — a view path like `/lovelace/fuel` or `/dashboard-fuel/overview` —
+and every notification opens that instead.
+
+Under the hood the blueprint sends both the iOS (`url` / `entity_id`) and the
+Android (`clickAction`) fields, so it works the same on both.
 
 ## Grouping
 

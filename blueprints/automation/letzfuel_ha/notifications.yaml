@@ -17,7 +17,7 @@ blueprint:
 
     - *Notification delivery* – which device(s) to notify. Pick them from
       your paired Home Assistant Companion app devices; there is no notify
-      service to look up.
+      service to look up. Optionally also where tapping a notification opens.
 
     - *Evening: next-day price announced* – fires when a new price is published
       for tomorrow (≈18:00).
@@ -87,6 +87,17 @@ blueprint:
               filter:
                 integration: mobile_app
               multiple: true
+        tap_dashboard_path:
+          name: Dashboard opened when you tap a notification (optional)
+          description: >-
+            Leave empty and tapping a notification opens the details of the
+            relevant entity (the fuel's price and history, or the refuel
+            recommendation). Or enter the path of your own dashboard view,
+            e.g. `/lovelace/fuel` or `/dashboard-fuel/overview`, and every
+            notification opens that instead.
+          default: ""
+          selector:
+            text: {}
 
     announced:
       name: "Evening: next-day price announced"
@@ -379,6 +390,7 @@ variables:
   # --- input aliases (!input cannot be used inside a template) ---
   notify_language: !input notify_language
   notify_devices: !input notify_devices
+  tap_dashboard_path: !input tap_dashboard_path
 
   announced_enabled: !input announced_enabled
   announced_fuels: !input announced_fuels
@@ -439,38 +451,38 @@ variables:
   strings: >-
     {% set d = {
       'en': {
-        'announced_title': 'Fuel price change announced for tomorrow',
+        'announced_title': 'Price change tomorrow',
         'effective_title': 'New fuel price in effect',
         'rec_title': 'Refuel recommendation',
         'rec_states': {'refuel_today': 'Refuel today', 'wait': 'Wait', 'no_change': 'No change'},
-        'threshold_title': 'Fuel price below your target',
+        'threshold_title': 'Price below your target',
         'threshold_message': '{name} is at {price} €/L (target: below {target}).',
         'decimal': '.',
       },
       'de': {
-        'announced_title': 'Preisänderung für morgen angekündigt',
+        'announced_title': 'Preisänderung morgen',
         'effective_title': 'Neuer Preis in Kraft',
         'rec_title': 'Tankempfehlung',
         'rec_states': {'refuel_today': 'Heute tanken', 'wait': 'Warten', 'no_change': 'Keine Änderung'},
-        'threshold_title': 'Kraftstoffpreis unter Ihrem Zielwert',
+        'threshold_title': 'Preis unter Zielwert',
         'threshold_message': '{name} liegt bei {price} €/L (Ziel: unter {target}).',
         'decimal': ',',
       },
       'fr': {
-        'announced_title': "Changement de prix annoncé pour demain",
+        'announced_title': 'Changement de prix demain',
         'effective_title': 'Nouveau prix en vigueur',
         'rec_title': 'Recommandation de plein',
         'rec_states': {'refuel_today': "Faire le plein aujourd'hui", 'wait': 'Attendre', 'no_change': 'Pas de changement'},
-        'threshold_title': 'Prix du carburant sous votre seuil',
+        'threshold_title': 'Prix sous votre seuil',
         'threshold_message': '{name} est à {price} €/L (seuil : en dessous de {target}).',
         'decimal': ',',
       },
       'lb': {
-        'announced_title': 'Präisännerung fir muer ugekënnegt',
+        'announced_title': 'Präisännerung muer',
         'effective_title': 'Neie Präis ab elo',
         'rec_title': 'Tankempfehlung',
         'rec_states': {'refuel_today': 'Haut tanken', 'wait': 'Waarden', 'no_change': 'Keng Ännerung'},
-        'threshold_title': 'Pëtrolspräis ënner ärem Zilwert',
+        'threshold_title': 'Präis ënner Zilwert',
         'threshold_message': '{name} läit bei {price} €/L (Zilwert: ënner {target}).',
         'decimal': ',',
       },
@@ -532,6 +544,29 @@ variables:
       {% endif %}
     {% endfor %}
     {{ out.v }}
+  #: What tapping the notification opens. The entity is the one most relevant
+  #: to the notification (the fuel's price sensor, else the recommendation).
+  tap_entity: >-
+    {% set fuel_entities = {'diesel': 'sensor.letzfuel_ha_diesel_price',
+         'sp95': 'sensor.letzfuel_ha_sp95_e10_price',
+         'sp98': 'sensor.letzfuel_ha_sp98_price'} %}
+    {%- if trigger.id in ['announced', 'effective'] and matched_changes | count > 0 -%}
+      {{ fuel_entities.get(matched_changes[0].fuel, rec_entity) }}
+    {%- elif trigger.id.startswith('threshold_') -%}
+      {{ fuel_entities.get(trigger.id.replace('threshold_', ''), rec_entity) }}
+    {%- else -%}
+      {{ rec_entity }}
+    {%- endif -%}
+  #: iOS opens an entity's More Info via `entity_id` (only when no `url` is
+  #: set), Android via `clickAction: entityId:<id>`; a dashboard path goes in
+  #: `url` (iOS) and `clickAction` (Android). Each platform ignores the other's key.
+  tap_data: >-
+    {% set tap = tap_dashboard_path | string | trim %}
+    {%- if tap != '' -%}
+      {{ {'url': tap, 'clickAction': tap} }}
+    {%- else -%}
+      {{ {'entity_id': tap_entity, 'clickAction': 'entityId:' ~ tap_entity} }}
+    {%- endif -%}
 
 actions:
   - choose:
@@ -557,6 +592,7 @@ actions:
               - variables:
                   notification_data: >-
                     {% set base = {'tag': msg_tag, 'group': 'letzfuel_ha', 'icon_url': '/letzfuel_ha/icon.png', 'push': {'thread-id': 'letzfuel_ha'}} %}
+                    {% set base = base | combine(tap_data) %}
                     {% if priority == 'elevated' %}
                     {% set base = base | combine({'importance': 'high', 'priority': 'high', 'ttl': 0,
                         'push': {'interruption-level': 'time-sensitive'}}, recursive=True) %}
@@ -662,13 +698,11 @@ actions:
                   data:
                     title: "{{ strings.rec_title }}"
                     message: "{{ strings.rec_states.refuel_today }}"
-                    data:
-                      tag: letzfuel_countdown
-                      live_update: true
-                      chronometer: true
-                      when_relative: true
-                      when: "{{ countdown_seconds }}"
-                      notification_icon: mdi:gas-station
+                    data: >-
+                      {{ {'tag': 'letzfuel_countdown', 'live_update': true,
+                          'chronometer': true, 'when_relative': true,
+                          'when': countdown_seconds,
+                          'notification_icon': 'mdi:gas-station'} | combine(tap_data) }}
 
       # ---------- Live countdown to midnight: end ----------
       # Ends once the recommendation moves off "Refuel today" -- normally
