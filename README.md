@@ -7,7 +7,7 @@
 
 **Luxembourg's regulated maximum fuel prices, trends and refuelling insights for Home Assistant.**
 
-[![HACS][hacs-badge]][hacs-url] &nbsp; [![Validate][validate-badge]][validate-url] &nbsp; [![Tests][tests-badge]][tests-url]
+[![Release][release-badge]][release-url] &nbsp; [![HACS][hacs-badge]][hacs-url] &nbsp; [![Validate][validate-badge]][validate-url] &nbsp; [![Tests][tests-badge]][tests-url]
 
 </div>
 
@@ -359,6 +359,8 @@ cards:
 [MIT](LICENSE)
 
 <!-- badges -->
+[release-badge]: https://img.shields.io/github/v/release/dabo53ck/letzfuel-ha-luxembourg-fuel-monitor?include_prereleases&label=release
+[release-url]: https://github.com/dabo53ck/letzfuel-ha-luxembourg-fuel-monitor/releases
 [hacs-badge]: https://img.shields.io/badge/HACS-Custom-41BDF5.svg
 [hacs-url]: https://github.com/hacs/integration
 [validate-badge]: https://github.com/dabo53ck/letzfuel-ha-luxembourg-fuel-monitor/actions/workflows/validate.yml/badge.svg

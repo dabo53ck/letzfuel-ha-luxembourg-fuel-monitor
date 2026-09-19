@@ -19,6 +19,7 @@ pre-release identifiers included (`0.0.1-beta`, …).
 - **Shorter notification titles** so they no longer get cut off on the
   device: the "price change announced" and "price below your target" titles
   are shorter in all four languages.
+- README: added a release-version badge, first in the badge row at the top.
 
 ## [0.0.2-beta] - 2026-09-16
 
