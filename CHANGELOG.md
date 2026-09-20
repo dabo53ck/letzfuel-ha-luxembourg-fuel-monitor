@@ -4,6 +4,23 @@ All notable changes to this project are documented here. The format loosely
 follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). SemVer,
 pre-release identifiers included (`0.0.1-beta`, …).
 
+## [0.0.3-beta] - 2026-09-20
+
+### Added
+
+- **Tapping a notification now opens something useful.** By default it opens
+  the details of the relevant entity (the fuel's price and history, or the
+  refuel recommendation). A new optional input, *Dashboard opened when you tap
+  a notification*, lets you send every notification to your own dashboard
+  instead. Applies to all notification types and the Live countdown. Closes #11.
+
+### Changed
+
+- **Shorter notification titles** so they no longer get cut off on the
+  device: the "price change announced" and "price below your target" titles
+  are shorter in all four languages.
+- README: added a release-version badge, first in the badge row at the top.
+
 ## [0.0.2-beta] - 2026-09-16
 
 ### Added
