@@ -16,7 +16,7 @@ DEFAULT_PROVIDER: Final = "petrol_lu"
 #: Single source of truth for the version number both scrapers put in their
 #: User-Agent string (manifest.json's "version" is HA's own source of truth
 #: for the integration as a whole; keep this in sync by hand at release time).
-USER_AGENT_VERSION: Final = "0.0.2-beta"
+USER_AGENT_VERSION: Final = "0.0.3-beta"
 
 # --- Config entry keys ---------------------------------------------------------
 CONF_PROVIDER: Final = "provider"

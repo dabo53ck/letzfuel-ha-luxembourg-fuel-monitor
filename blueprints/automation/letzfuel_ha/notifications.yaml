@@ -1,7 +1,7 @@
 blueprint:
   name: LëtzFuel HA – Notifications
   description: >-
-    ![version](https://img.shields.io/badge/version-0.0.2--beta-blue)
+    ![version](https://img.shields.io/badge/version-0.0.3--beta-blue)
 
 
     One automation that turns the LëtzFuel HA integration's events and sensors
