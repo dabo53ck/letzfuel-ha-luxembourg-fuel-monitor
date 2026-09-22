@@ -24,13 +24,6 @@ jobs:
       - uses: hacs/action@main
         with:
           category: integration
-          # Not "needs a brands PR": since HA 2026.3 brand assets load directly
-          # from custom_components/letzfuel_ha/brand/ (see brand/README.md), no
-          # home-assistant/brands submission is planned. Kept ignored here
-          # because the HACS action's own "brands" check still expects a
-          # brands-repo entry regardless of that -- remove this once/if that's
-          # confirmed unnecessary against the now-public repo.
-          ignore: brands
 
   lint:
     name: Ruff
