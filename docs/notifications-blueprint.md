@@ -18,7 +18,7 @@ Lëtzebuergesch, Português, Italiano); there's nothing to write.
   - [Evening: next-day price announced](#evening-next-day-price-announced)
   - [New price in effect](#new-price-in-effect)
   - [Refuel recommendation](#refuel-recommendation)
-  - [Live countdown to midnight (experimental)](#live-countdown-to-midnight-experimental)
+  - [Live countdown to midnight](#live-countdown-to-midnight)
   - [Price threshold](#price-threshold)
 - [Only when home / away](#only-when-home--away)
 - [Worked configurations](#worked-configurations)
@@ -189,7 +189,7 @@ entity.
 > fork the blueprint and change the hardcoded entity id (search for
 > `sensor.letzfuel_ha_refuel_recommendation` in the YAML).
 
-### Live countdown to midnight (experimental)
+### Live countdown to midnight
 
 Off by default and **additional** to *Refuel recommendation* above, not a
 replacement — if you have both enabled, you get the normal push *and* this.
@@ -211,6 +211,7 @@ Shows a fixed `mdi:gas-station` icon, not the LëtzFuel brand icon — iOS Live
 Activities only support a Material Design Icon (optionally tinted with a hex
 color), not a custom image, so there's no `icon_url` equivalent here.
 
+Confirmed working on both iOS (Live Activity) and Android (Live Update).
 Needs a Companion App version with Live Activity / Live Update support
 (**iOS 17.2+**, **Android 16+**). What an older app version does with the
 extra notification fields hasn't been broadly verified — if in doubt, try

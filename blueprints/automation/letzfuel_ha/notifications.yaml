@@ -27,7 +27,7 @@ blueprint:
     - *Refuel recommendation* – fires when `sensor.*_refuel_recommendation`
       changes to a state you care about.
 
-    - *Live countdown to midnight (experimental)* – an optional, additional
+    - *Live countdown to midnight* – an optional, additional
       Live Activity / Live Update counting down to midnight while the
       recommendation is "Refuel today".
 
@@ -248,7 +248,7 @@ blueprint:
                 - { label: "Critical (bypass Do Not Disturb)", value: critical }
 
     live_countdown:
-      name: "Live countdown to midnight (experimental)"
+      name: "Live countdown to midnight"
       icon: mdi:progress-clock
       collapsed: true
       input:

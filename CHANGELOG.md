@@ -14,6 +14,11 @@ pre-release identifiers included (`0.0.1-beta`, …).
   language — Notification language on the blueprint side, Home Assistant's
   own language setting on the integration side.
 
+### Changed
+
+- **Live countdown to midnight is no longer marked experimental** — confirmed
+  working on both iOS (Live Activity) and Android (Live Update).
+
 ## [0.0.3-beta] - 2026-09-20
 
 ### Added
