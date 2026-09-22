@@ -5,7 +5,7 @@ turns LëtzFuel HA's events and sensors into phone notifications. Every
 notification type is **opt-in** and lives in its own collapsible section — you
 pick your device(s) and language once, enable the types you want, and you're
 done. Message text is fixed per language (English, German, French,
-Lëtzebuergesch); there's nothing to write.
+Lëtzebuergesch, Português, Italiano); there's nothing to write.
 
 - [Requirements](#requirements)
 - [Install](#install)
@@ -59,9 +59,10 @@ To pick up a later fix: **Blueprints → ⋮ on the blueprint → Re-import**.
 
 ## Language
 
-One input, **Notification language**, picks which of the four fixed text sets
-(English, German, French, Lëtzebuergesch) is used for every notification's
-title and message — decimal numbers switch between `.` and `,` along with it.
+One input, **Notification language**, picks which of the six fixed text sets
+(English, German, French, Lëtzebuergesch, Português, Italiano) is used for
+every notification's title and message — decimal numbers switch between `.`
+and `,` along with it.
 This is independent of Home Assistant's own UI language: the blueprint's
 *input* labels (section names, field descriptions) always stay English,
 because Home Assistant has no mechanism to translate a blueprint's own UI.

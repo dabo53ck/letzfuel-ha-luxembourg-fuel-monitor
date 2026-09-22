@@ -44,12 +44,12 @@ answers:
 | **Trend** | `sensor.*_trend` — `rising` / `falling` / `stable` over a configurable window |
 | **Next-day awareness** | `binary_sensor.price_change_pending`, `sensor.*_price_tomorrow`, `sensor.refuel_recommendation` |
 | **Events** | `letzfuel_ha_price_change_announced` and `letzfuel_ha_price_changed` for automations |
-| **Notifications** | one import-and-go [notification blueprint](docs/notifications-blueprint.md) — per-type priority, 4 languages, presence gate |
+| **Notifications** | one import-and-go [notification blueprint](docs/notifications-blueprint.md) — per-type priority, 6 languages, presence gate |
 | **Vehicle analytics** | full-tank / refill / cost-change sensors (when a tank size is set); fuel level from a live `number` slider or read from another entity |
 | **Services** | `calculate_fill_cost`, `calculate_trip_cost` (response services) |
 | **History** | On setup, past prices are imported into Home Assistant long-term statistics |
 | **Robustness** | Diagnostics, repair issues when the source is stale or unparseable |
-| **i18n** | English, French, German, Luxembourgish |
+| **i18n** | English, French, German, Luxembourgish, Portuguese, Italian |
 
 ---
 
@@ -82,7 +82,8 @@ directory and restart.
 One import covers all of it — next-day price alerts, "new price in effect",
 refuel recommendation and a price-threshold watch. Every type is opt-in, with
 per-type priority (including *critical* to bypass Do Not Disturb), a language
-picker (English/German/French/Lëtzebuergesch) and a presence gate. Just pick
+picker (English/German/French/Lëtzebuergesch/Português/Italiano) and a
+presence gate. Just pick
 your phone(s) from a device picker — no notify service to configure.
 
 [![Open your Home Assistant instance and show the blueprint import dialog.](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2Fdabo53ck%2Fletzfuel-ha-luxembourg-fuel-monitor%2Fblob%2Fmain%2Fblueprints%2Fautomation%2Fletzfuel_ha%2Fnotifications.yaml)
