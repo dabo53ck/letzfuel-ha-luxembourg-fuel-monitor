@@ -5,7 +5,7 @@ turns LëtzFuel HA's events and sensors into phone notifications. Every
 notification type is **opt-in** and lives in its own collapsible section — you
 pick your device(s) and language once, enable the types you want, and you're
 done. Message text is fixed per language (English, German, French,
-Lëtzebuergesch); there's nothing to write.
+Lëtzebuergesch, Português, Italiano); there's nothing to write.
 
 - [Requirements](#requirements)
 - [Install](#install)
@@ -18,7 +18,7 @@ Lëtzebuergesch); there's nothing to write.
   - [Evening: next-day price announced](#evening-next-day-price-announced)
   - [New price in effect](#new-price-in-effect)
   - [Refuel recommendation](#refuel-recommendation)
-  - [Live countdown to midnight (experimental)](#live-countdown-to-midnight-experimental)
+  - [Live countdown to midnight](#live-countdown-to-midnight)
   - [Price threshold](#price-threshold)
 - [Only when home / away](#only-when-home--away)
 - [Worked configurations](#worked-configurations)
@@ -59,9 +59,10 @@ To pick up a later fix: **Blueprints → ⋮ on the blueprint → Re-import**.
 
 ## Language
 
-One input, **Notification language**, picks which of the four fixed text sets
-(English, German, French, Lëtzebuergesch) is used for every notification's
-title and message — decimal numbers switch between `.` and `,` along with it.
+One input, **Notification language**, picks which of the six fixed text sets
+(English, German, French, Lëtzebuergesch, Português, Italiano) is used for
+every notification's title and message — decimal numbers switch between `.`
+and `,` along with it.
 This is independent of Home Assistant's own UI language: the blueprint's
 *input* labels (section names, field descriptions) always stay English,
 because Home Assistant has no mechanism to translate a blueprint's own UI.
@@ -188,7 +189,7 @@ entity.
 > fork the blueprint and change the hardcoded entity id (search for
 > `sensor.letzfuel_ha_refuel_recommendation` in the YAML).
 
-### Live countdown to midnight (experimental)
+### Live countdown to midnight
 
 Off by default and **additional** to *Refuel recommendation* above, not a
 replacement — if you have both enabled, you get the normal push *and* this.
@@ -210,6 +211,7 @@ Shows a fixed `mdi:gas-station` icon, not the LëtzFuel brand icon — iOS Live
 Activities only support a Material Design Icon (optionally tinted with a hex
 color), not a custom image, so there's no `icon_url` equivalent here.
 
+Confirmed working on both iOS (Live Activity) and Android (Live Update).
 Needs a Companion App version with Live Activity / Live Update support
 (**iOS 17.2+**, **Android 16+**). What an older app version does with the
 extra notification fields hasn't been broadly verified — if in doubt, try

@@ -94,39 +94,11 @@ click-handling automation needed.
 - Docs: README data-sources table, `docs/notifications-blueprint.md`, and a
   CHANGELOG entry once shipped.
 
-## Portuguese and Italian translations
+## DONE: Portuguese and Italian translations
 
-**Idea:** add `pt` and `it` alongside the existing English/German/French/
-Lëtzebuergesch support — both communities are sizeable in Luxembourg, and
-neither is covered today.
-
-### Where this touches
-
-1. **Integration** (`custom_components/letzfuel_ha/translations/`): new
-   `pt.json` and `it.json`, translated from `strings.json` (the reference
-   copy) the same way `de.json`/`fr.json`/`lb.json` already are — config
-   flow and options-step labels/descriptions.
-2. **Blueprint** (`blueprints/automation/letzfuel_ha/notifications.yaml`):
-   - The `notify_language` input's selector options list gets two more
-     entries (`{ label: Português, value: pt }`, `{ label: Italiano, value:
-     it }`).
-   - The `d = {...}` language dict (title/message strings for announced/
-     effective/rec/threshold, plus `decimal`) needs a full `'pt'` and `'it'`
-     entry — real translations, not machine-generated, same bar as the
-     existing four. Portuguese and Italian both use `,` as the decimal
-     separator like German/French/Lëtzebuergesch already do.
-   - Blueprint's own input *labels* (section names, field descriptions)
-     stay English regardless, per the existing "Home Assistant can't
-     translate a blueprint's own UI" constraint noted in
-     [`docs/notifications-blueprint.md`](notifications-blueprint.md) — only
-     the *notification text* is affected.
-
-### Open questions to resolve when this is actually built
-
-- Source the translations properly (native speaker review, not just a
-  first machine-translated draft) — wrong wording in a push notification is
-  more visible/embarrassing than in a settings screen.
-- Whether this bumps the blueprint's version marker on its own or waits to
-  ride along with some other change (no code/behaviour changes, pure
-  content addition).
-- CHANGELOG entry once shipped.
+Shipped for the stable release: `custom_components/letzfuel_ha/translations/pt.json`
+and `it.json` (config flow + options, mirroring `de.json`/`fr.json`/`lb.json`),
+plus `pt`/`it` entries in the blueprint's `notify_language` selector and
+`strings` dict (title/message text, comma decimal separator). Drafted by
+Claude, not yet reviewed by a native speaker — flag any wording issue as a
+bug if one turns up.

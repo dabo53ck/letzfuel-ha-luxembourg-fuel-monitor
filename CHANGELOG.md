@@ -4,6 +4,21 @@ All notable changes to this project are documented here. The format loosely
 follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). SemVer,
 pre-release identifiers included (`0.0.1-beta`, …).
 
+## Unreleased
+
+### Added
+
+- **Portuguese and Italian support**, both for the integration's own UI
+  (config flow, options) and for the notifications blueprint (notification
+  titles/messages, comma decimal separator). Pick them like any other
+  language — Notification language on the blueprint side, Home Assistant's
+  own language setting on the integration side.
+
+### Changed
+
+- **Live countdown to midnight is no longer marked experimental** — confirmed
+  working on both iOS (Live Activity) and Android (Live Update).
+
 ## [0.0.3-beta] - 2026-09-20
 
 ### Added

@@ -27,7 +27,7 @@ blueprint:
     - *Refuel recommendation* – fires when `sensor.*_refuel_recommendation`
       changes to a state you care about.
 
-    - *Live countdown to midnight (experimental)* – an optional, additional
+    - *Live countdown to midnight* – an optional, additional
       Live Activity / Live Update counting down to midnight while the
       recommendation is "Refuel today".
 
@@ -71,6 +71,8 @@ blueprint:
                 - { label: Deutsch, value: de }
                 - { label: Français, value: fr }
                 - { label: Lëtzebuergesch, value: lb }
+                - { label: Português, value: pt }
+                - { label: Italiano, value: it }
 
     delivery:
       name: Notification delivery
@@ -246,7 +248,7 @@ blueprint:
                 - { label: "Critical (bypass Do Not Disturb)", value: critical }
 
     live_countdown:
-      name: "Live countdown to midnight (experimental)"
+      name: "Live countdown to midnight"
       icon: mdi:progress-clock
       collapsed: true
       input:
@@ -484,6 +486,24 @@ variables:
         'rec_states': {'refuel_today': 'Haut tanken', 'wait': 'Waarden', 'no_change': 'Keng Ännerung'},
         'threshold_title': 'Präis ënner Zilwert',
         'threshold_message': '{name} läit bei {price} €/L (Zilwert: ënner {target}).',
+        'decimal': ',',
+      },
+      'pt': {
+        'announced_title': 'Alteração de preço amanhã',
+        'effective_title': 'Novo preço em vigor',
+        'rec_title': 'Recomendação de abastecimento',
+        'rec_states': {'refuel_today': 'Abastecer hoje', 'wait': 'Aguardar', 'no_change': 'Sem alteração'},
+        'threshold_title': 'Preço abaixo do seu limite',
+        'threshold_message': '{name} está a {price} €/L (limite: abaixo de {target}).',
+        'decimal': ',',
+      },
+      'it': {
+        'announced_title': 'Variazione di prezzo domani',
+        'effective_title': 'Nuovo prezzo in vigore',
+        'rec_title': 'Raccomandazione di rifornimento',
+        'rec_states': {'refuel_today': 'Fai rifornimento oggi', 'wait': 'Attendi', 'no_change': 'Nessuna variazione'},
+        'threshold_title': 'Prezzo sotto la tua soglia',
+        'threshold_message': '{name} è a {price} €/L (soglia: sotto {target}).',
         'decimal': ',',
       },
     } %}
