@@ -4,7 +4,7 @@ All notable changes to this project are documented here. The format loosely
 follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). SemVer,
 pre-release identifiers included (`0.0.1-beta`, …).
 
-## Unreleased
+## [0.1.0] - 2026-09-24
 
 ### Added
 
