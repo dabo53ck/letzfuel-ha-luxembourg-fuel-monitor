@@ -109,6 +109,8 @@ class LuxFuelConfigFlow(ConfigFlow, domain=DOMAIN):
     """Handle the initial configuration."""
 
     VERSION = 1
+    #: 2: the old default evening check time (18:01) moves to 17:30.
+    MINOR_VERSION = 2
 
     def __init__(self) -> None:
         """Init transient state."""

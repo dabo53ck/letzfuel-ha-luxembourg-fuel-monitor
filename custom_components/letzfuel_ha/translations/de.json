@@ -38,7 +38,7 @@
         "title": "Einstellungen für LëtzFuel HA",
         "data": {
           "update_interval_hours": "Aktualisierungsintervall",
-          "evening_check_time": "Uhrzeit der Abendprüfung (erfasst die Veröffentlichung um ca. 18:00; Wiederholungen alle 2 Min. für 14 Min., danach alle 5 Min. bis 29 Min. nach dieser Zeit)",
+          "evening_check_time": "Uhrzeit der Abendprüfung (erfasst die Veröffentlichung gegen 17:30–18:00; solange nichts angekündigt ist, Wiederholungen alle 2 Min. für 60 Min., danach alle 20–30 Min. bis Mitternacht)",
           "announcements_enabled": "Morgen angekündigten Preis abrufen",
           "trend_window_days": "Trendfenster",
           "price_display": "Preisanzeige",
@@ -169,6 +169,10 @@
     "parse_error": {
       "title": "Preisquelle kann nicht gelesen werden",
       "description": "Die Preisseite wurde erreicht, konnte aber nicht ausgewertet werden ({error}). Möglicherweise hat sich das Seitenlayout geändert – bitte einen Fehlerbericht öffnen."
+    },
+    "announcements_unavailable": {
+      "title": "Preis für morgen erscheint erst spät",
+      "description": "Seit {days} Tagen ist die Quelle für die Ankündigung des morgigen Preises nicht nutzbar, es wird ein Ersatz verwendet. Fällt auch dieser aus, erscheint der Preis für morgen erst, wenn die offizielle Preistabelle ihn listet, meist spät am Abend. Bitte die Diagnose prüfen und ein Issue eröffnen, falls das anhält."
     }
   }
 }

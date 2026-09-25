@@ -157,7 +157,7 @@ fork it and change the wording); the inputs below only control *whether* and
 ### Evening: next-day price announced
 
 Fires on the `letzfuel_ha_price_change_announced` event — a new price has been
-published for tomorrow (Luxembourg publishes around 18:00 the day before). The
+published for tomorrow (Luxembourg publishes around 17:30–18:00 the day before). The
 message shows the date it takes effect in Luxembourg's regional format,
 `DD/MM/YYYY` (e.g. `SP95 −2,8 ct/L → 1,84 €/L (10/09/2026)`) — fixed, not a
 setting.
@@ -168,6 +168,12 @@ setting.
 | **Direction** | Up and down / increases only / decreases only. |
 | **Minimum change** | Ignore moves smaller than this (€/L). `0` = any change. |
 | **Priority** | See [above](#priority-and-do-not-disturb). |
+
+**Corrections.** If petrol.lu's official price for that day later turns out
+different from what was announced (`letzfuel_ha_price_change_corrected`), a
+correction is sent with the same settings — only for a fuel and change you were
+actually notified about — and replaces the earlier notification on the phone,
+e.g. `DIESEL: 2.095 €/L (no change) instead of 2.055 €/L (26/09/2026)`.
 
 ### New price in effect
 

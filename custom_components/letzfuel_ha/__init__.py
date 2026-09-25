@@ -12,7 +12,10 @@ from homeassistant.helpers.typing import ConfigType
 
 from .const import (
     BRAND_ICON_URL,
+    DEFAULT_EVENING_CHECK_TIME,
     DEFAULT_HISTORY_IMPORT_MONTHS,
+    LEGACY_EVENING_CHECK_TIME,
+    OPT_EVENING_CHECK_TIME,
     OPT_HISTORY_IMPORT_ENABLED,
     OPT_HISTORY_IMPORT_MONTHS,
 )
@@ -65,6 +68,25 @@ async def async_setup_entry(hass: HomeAssistant, entry: LuxFuelConfigEntry) -> b
             "letzfuel_ha_history_import",
         )
 
+    return True
+
+
+async def async_migrate_entry(hass: HomeAssistant, entry: LuxFuelConfigEntry) -> bool:
+    """Migrate an older config entry."""
+    if entry.version > 1:
+        return False  # from a newer, incompatible version
+    if entry.minor_version < 2:
+        # The default evening check moved from 18:01 to 17:30. Saving the
+        # options once stores the default explicitly, so an untouched 18:01
+        # would otherwise stick forever; a custom time is left alone.
+        data, options = dict(entry.data), dict(entry.options)
+        for values in (data, options):
+            if values.get(OPT_EVENING_CHECK_TIME) == LEGACY_EVENING_CHECK_TIME:
+                values[OPT_EVENING_CHECK_TIME] = DEFAULT_EVENING_CHECK_TIME
+        hass.config_entries.async_update_entry(
+            entry, data=data, options=options, minor_version=2
+        )
+        _LOGGER.debug("Migrated config entry to version 1.2")
     return True
 
 

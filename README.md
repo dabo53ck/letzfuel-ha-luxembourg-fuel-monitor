@@ -25,13 +25,20 @@ answers:
 
 ### Data sources
 
-| Source | Used for |
-| --- | --- |
-| [petrol.lu](https://www.petrol.lu/en/official-prices/) (GPL) | current price, full history, statistics backfill. |
-| [RTL.lu](https://www.rtl.lu/mobiliteit/petrolspraisser) (`api-gate.rtl.lu`) | the **announced next-day price** only. |
+Prices come from the official maximum-price table published by
+[petrol.lu](https://www.petrol.lu/en/official-prices/) (GPL): today's price,
+the full history and the statistics backfill.
 
-> **Not affiliated** with the Groupement Pétrolier Luxembourgeois, petrol.lu, RTL,
-> or the Luxembourg government. Always verify the price at the pump.
+petrol.lu usually adds the next day's price only late in the evening. To tell
+you about a change in time, the integration also checks a public announcement
+feed for **tomorrow's price** — nothing else is taken from it. The feed is only
+trusted while it agrees with petrol.lu on today's price; if it is unusable, a
+backup feed stands in. Implausible values are ignored, and petrol.lu always has
+the final say: if its official price turns out different from what was
+announced, a correction follows. You can turn this off in the options.
+
+> **Not affiliated** with the GPL, petrol.lu, any other data source or the
+> Luxembourg government. Always verify the price at the pump.
 
 ---
 
@@ -43,7 +50,7 @@ answers:
 | **Daily change** | `sensor.*_change` — signed €/L move at the last price change, with percentage and dates |
 | **Trend** | `sensor.*_trend` — `rising` / `falling` / `stable` over a configurable window |
 | **Next-day awareness** | `binary_sensor.price_change_pending`, `sensor.*_price_tomorrow`, `sensor.refuel_recommendation` |
-| **Events** | `letzfuel_ha_price_change_announced` and `letzfuel_ha_price_changed` for automations |
+| **Events** | `letzfuel_ha_price_change_announced`, `letzfuel_ha_price_change_corrected` and `letzfuel_ha_price_changed` for automations |
 | **Notifications** | one import-and-go [notification blueprint](docs/notifications-blueprint.md) — per-type priority, 6 languages, presence gate |
 | **Vehicle analytics** | full-tank / refill / cost-change sensors (when a tank size is set); fuel level from a live `number` slider or read from another entity |
 | **Services** | `calculate_fill_cost`, `calculate_trip_cost` (response services) |
@@ -147,8 +154,8 @@ re-adding the integration:
 | Setting | Default | Notes |
 | --- | --- | --- |
 | Update interval | 6 h | Regular polling cadence |
-| Evening check time | 18:01 | Extra refresh to catch the publication; retries at **+10** and **+20 min** if nothing new appeared |
-| Fetch tomorrow's announced price | on | Pull the announced next-day price from RTL.lu (petrol.lu doesn't carry it). Turn off to rely on petrol.lu alone. |
+| Evening check time | 17:30 | Extra refresh to catch the publication; while nothing has been announced yet it retries every **2 min** for an hour, then every **20–30 min** (random) until midnight |
+| Fetch tomorrow's announced price | on | Also ask the announcement feed (or its backup) for the next-day price, so it shows up in the evening. Implausible values are ignored. Turn off to rely on petrol.lu alone. |
 | Trend window | 14 days | Sample window for the trend sensors |
 | Price display | Incl. VAT | Show prices with or without VAT |
 | Tracked fuels / primary fuel | all / Diesel | |
@@ -264,7 +271,7 @@ Returns `{ liters_needed, cost, price_per_liter, fuel_type, currency }`.
 ## Events
 
 `letzfuel_ha_price_change_announced` fires when a next-day price is published that
-differs from today:
+differs from today (for a given fuel and day, once):
 
 ```yaml
 event_type: letzfuel_ha_price_change_announced
@@ -277,6 +284,25 @@ data:
       delta: 0.024
       direction: up
       effective_date: "2026-09-02"
+```
+
+`letzfuel_ha_price_change_corrected` fires when petrol.lu's official price for a
+day turns out different from what was announced for it — the same evening or
+after midnight. `current_price` is the price before that day, so `delta` and
+`direction` (`up` / `down` / `none`) describe the *real* change:
+
+```yaml
+event_type: letzfuel_ha_price_change_corrected
+data:
+  provider: "petrol.lu (Groupement Pétrolier Luxembourgeois)"
+  changes:
+    - fuel: diesel
+      effective_date: "2026-09-26"
+      announced_price: 2.055
+      corrected_price: 2.095
+      current_price: 2.095
+      delta: 0.0
+      direction: none
 ```
 
 `letzfuel_ha_price_changed` fires the day a new price actually takes effect (same
