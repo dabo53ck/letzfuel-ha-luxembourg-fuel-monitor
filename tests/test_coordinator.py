@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from datetime import timedelta
+from datetime import datetime, timedelta
 from decimal import Decimal
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 from homeassistant.core import HomeAssistant
@@ -23,6 +23,7 @@ from custom_components.letzfuel_ha.const import (
     EVENT_PRICE_CHANGED,
     ISSUE_PARSE_ERROR,
     ISSUE_STALE_DATA,
+    LATE_EVENING_POLL_MINUTES,
     OPT_ANNOUNCEMENTS_ENABLED,
     OPT_HISTORY_IMPORT_ENABLED,
     STALE_AFTER_DAYS,
@@ -34,6 +35,10 @@ from custom_components.letzfuel_ha.models import (
     PriceSet,
 )
 from custom_components.letzfuel_ha.providers.base import ProviderParseError
+
+from .helpers import sheet_json
+
+_COORD = "custom_components.letzfuel_ha.coordinator"
 
 
 def _entry(**options: object) -> MockConfigEntry:
@@ -389,3 +394,286 @@ async def test_parse_error_issue_raised_and_cleared(
     await coordinator.async_refresh()
     assert coordinator.last_update_success
     assert ir.async_get(hass).async_get_issue(DOMAIN, ISSUE_PARSE_ERROR) is None
+
+
+# -- multiple announcement sources ---------------------------------------------
+
+
+def _rtl(day, diesel: float) -> dict:
+    return {
+        "id": 1,
+        "date": f"{day.isoformat()}T00:00:00+02:00",
+        "98oct": 1.983,
+        "95oct": 1.792,
+        "diesel": diesel,
+    }
+
+
+async def _setup(hass: HomeAssistant, **options: object) -> MockConfigEntry:
+    entry = _entry(**options)
+    entry.add_to_hass(hass)
+    assert await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+    return entry
+
+
+async def _unload(hass: HomeAssistant, entry: MockConfigEntry) -> None:
+    await hass.config_entries.async_unload(entry.entry_id)
+    await hass.async_block_till_done()
+
+
+async def test_sheet_announces_when_rtl_is_stale(
+    hass: HomeAssistant, mock_petrol_lu, price_entries
+) -> None:
+    """The 2026-09-24 case: RTL keeps listing today, the sheet has tomorrow."""
+    tomorrow = dt_util.now().date() + timedelta(days=1)
+    mock_petrol_lu(
+        price_entries,
+        sheet_payload=sheet_json([(tomorrow, {FuelType.DIESEL: "1.905"})]),
+    )
+
+    entry = await _setup(hass)
+    coordinator = entry.runtime_data
+    fp = coordinator.fuel_prices(FuelType.DIESEL)
+    assert fp.upcoming is not None
+    assert fp.upcoming.effective_date == tomorrow
+    assert fp.upcoming.price_incl_vat == Decimal("1.905")
+    assert fp.has_pending_change
+
+    status = coordinator.announcement_status
+    assert status["rtl_lu"]["outcome"] == "nothing_future"
+    assert status["rtl_lu"]["latest_date"] == dt_util.now().date().isoformat()
+    assert status["live_sheet"]["outcome"] == "announced"
+    assert status["live_sheet"]["latest_date"] == tomorrow.isoformat()
+
+    await _unload(hass, entry)
+
+
+async def test_provider_row_wins_over_announcement(
+    hass: HomeAssistant, mock_petrol_lu, price_entries, caplog
+) -> None:
+    tomorrow = dt_util.now().date() + timedelta(days=1)
+    entries = [
+        *price_entries,
+        (tomorrow, {FuelType.DIESEL: (Decimal("1.900"), Decimal("1.624"))}),
+    ]
+    mock_petrol_lu(entries, rtl_payload=_rtl(tomorrow, 1.950))
+
+    entry = await _setup(hass)
+    fp = entry.runtime_data.fuel_prices(FuelType.DIESEL)
+    assert fp.upcoming.price_incl_vat == Decimal("1.900")
+    assert "Conflicting announced diesel price" in caplog.text
+    assert "ignored 1.95 from rtl_lu" in caplog.text
+
+    await _unload(hass, entry)
+
+
+async def test_rtl_wins_over_sheet_and_conflict_logged_once(
+    hass: HomeAssistant, mock_petrol_lu, price_entries, caplog
+) -> None:
+    tomorrow = dt_util.now().date() + timedelta(days=1)
+    mock_petrol_lu(
+        price_entries,
+        rtl_payload=_rtl(tomorrow, 1.905),
+        sheet_payload=sheet_json([(tomorrow, {FuelType.DIESEL: "1.915"})]),
+    )
+
+    entry = await _setup(hass)
+    coordinator = entry.runtime_data
+    assert coordinator.fuel_prices(FuelType.DIESEL).upcoming.price_incl_vat == Decimal(
+        "1.905"
+    )
+
+    await coordinator.async_refresh()
+    assert caplog.text.count("ignored 1.915 from live_sheet") == 1
+
+    await _unload(hass, entry)
+
+
+async def test_implausible_announcement_is_ignored(
+    hass: HomeAssistant, mock_petrol_lu, price_entries
+) -> None:
+    tomorrow = dt_util.now().date() + timedelta(days=1)
+    mock_petrol_lu(
+        price_entries,
+        sheet_payload=sheet_json([(tomorrow, {FuelType.DIESEL: "18.65"})]),
+    )
+
+    entry = await _setup(hass)
+    coordinator = entry.runtime_data
+    assert coordinator.fuel_prices(FuelType.DIESEL).upcoming is None
+    assert coordinator.announcement_status["live_sheet"]["outcome"] == "implausible"
+    assert coordinator.announcement_status["live_sheet"]["rejected"] == 1
+
+    await _unload(hass, entry)
+
+
+async def test_all_announcement_sources_failing_is_non_fatal(
+    hass: HomeAssistant, mock_petrol_lu, price_entries, caplog
+) -> None:
+    mock_petrol_lu(price_entries, rtl_status=502, sheet_status=500)
+
+    entry = await _setup(hass)
+    coordinator = entry.runtime_data
+    assert coordinator.last_update_success
+    assert coordinator.fuel_prices(FuelType.DIESEL).upcoming is None
+    for key in ("rtl_lu", "live_sheet"):
+        assert coordinator.announcement_status[key]["outcome"] == "error"
+
+    # warned once per source, then quiet until it recovers
+    await coordinator.async_refresh()
+    assert caplog.text.count("Announcement source rtl_lu unavailable") == 1
+    assert caplog.text.count("Announcement source live_sheet unavailable") == 1
+
+    mock_petrol_lu(price_entries)
+    await coordinator.async_refresh()
+    assert "Announcement source live_sheet recovered" in caplog.text
+    assert coordinator.announcement_status["live_sheet"]["outcome"] == (
+        "nothing_future"
+    )
+
+    await _unload(hass, entry)
+
+
+async def test_announcements_option_disables_every_source(
+    hass: HomeAssistant, mock_petrol_lu, price_entries
+) -> None:
+    tomorrow = dt_util.now().date() + timedelta(days=1)
+    mock_petrol_lu(
+        price_entries,
+        rtl_payload=_rtl(tomorrow, 1.905),
+        sheet_payload=sheet_json([(tomorrow, {FuelType.DIESEL: "1.905"})]),
+    )
+
+    entry = await _setup(hass, **{OPT_ANNOUNCEMENTS_ENABLED: False})
+    coordinator = entry.runtime_data
+    assert coordinator.fuel_prices(FuelType.DIESEL).upcoming is None
+    assert coordinator.announcement_status == {}
+
+    await _unload(hass, entry)
+
+
+# -- late-evening polling -------------------------------------------------------
+
+
+def _local(hour: int, minute: int = 0) -> datetime:
+    return dt_util.start_of_local_day() + timedelta(hours=hour, minutes=minute)
+
+
+async def test_evening_trigger_arms_randomized_late_poll(
+    hass: HomeAssistant, init_integration
+) -> None:
+    coordinator = init_integration.runtime_data
+    tracker = MagicMock()
+    with (
+        patch(f"{_COORD}.random.uniform", return_value=25.0) as uniform,
+        patch(f"{_COORD}.async_track_point_in_time", tracker),
+    ):
+        await coordinator._async_evening_trigger(_local(18, 1))
+
+    uniform.assert_called_with(*LATE_EVENING_POLL_MINUTES)
+    times = [call.args[2] for call in tracker.call_args_list]
+    # the fixed retries, then the first late poll 25 min after the last one
+    assert times[:-1] == [
+        _local(18, 1) + timedelta(minutes=m) for m in EVENING_RETRY_OFFSETS_MINUTES
+    ]
+    assert times[-1] == _local(18, 55)
+    assert coordinator._late_poll_deadline == _local(24)
+
+
+async def test_late_poll_stops_at_midnight(
+    hass: HomeAssistant, init_integration
+) -> None:
+    coordinator = init_integration.runtime_data
+    coordinator._late_poll_deadline = _local(24)
+    tracker = MagicMock()
+    with (
+        patch(f"{_COORD}.random.uniform", return_value=25.0),
+        patch(f"{_COORD}.async_track_point_in_time", tracker),
+    ):
+        coordinator._schedule_late_poll(_local(23, 20))
+        assert tracker.call_args.args[2] == _local(23, 45)
+        tracker.reset_mock()
+
+        coordinator._schedule_late_poll(_local(23, 40))  # would be 00:05
+        tracker.assert_not_called()
+        assert coordinator._late_poll_unsub is None
+
+
+async def test_late_poll_rearms_until_announced(
+    hass: HomeAssistant, mock_petrol_lu, price_entries, init_integration
+) -> None:
+    coordinator = init_integration.runtime_data
+    coordinator._late_poll_deadline = _local(24) + timedelta(days=1)
+    tracker = MagicMock()
+    with patch(f"{_COORD}.async_track_point_in_time", tracker):
+        # nothing announced yet -> refresh, then arm the next poll
+        await coordinator._async_late_poll(_local(19))
+        assert tracker.call_count == 1
+
+        # the sheet now has tomorrow -> refresh finds it, no further poll
+        tomorrow = dt_util.now().date() + timedelta(days=1)
+        mock_petrol_lu(
+            price_entries,
+            sheet_payload=sheet_json([(tomorrow, {FuelType.DIESEL: "1.905"})]),
+        )
+        await coordinator._async_late_poll(_local(19, 25))
+        assert coordinator._has_pending_change()
+        assert tracker.call_count == 1
+
+    coordinator._late_poll_unsub = None  # the MagicMock "unsub" needs no cleanup
+
+
+@pytest.mark.parametrize(("hour", "armed"), [(20, True), (10, False)])
+async def test_setup_after_evening_check_starts_late_polling(
+    hass: HomeAssistant, mock_petrol_lu, freezer, hour: int, armed: bool
+) -> None:
+    """A restart at 20:40 (after the 18:01 check) still polls that evening."""
+    freezer.move_to(_local(hour, 40))
+
+    entry = await _setup(hass)
+    coordinator = entry.runtime_data
+    assert (coordinator._late_poll_unsub is not None) is armed
+
+    await _unload(hass, entry)
+    assert coordinator._late_poll_unsub is None
+
+
+async def test_unchanged_announcement_ends_evening_polling(
+    hass: HomeAssistant, mock_petrol_lu, price_entries, init_integration
+) -> None:
+    """Tomorrow announced at today's price: nothing left to wait for."""
+    coordinator = init_integration.runtime_data
+    tomorrow = dt_util.now().date() + timedelta(days=1)
+    mock_petrol_lu(price_entries, rtl_payload=_rtl(tomorrow, 1.865))
+    tracker = MagicMock()
+    with patch(f"{_COORD}.async_track_point_in_time", tracker):
+        await coordinator._async_evening_trigger(_local(18, 1))
+        # no pending change -> the fixed retries are still armed ...
+        assert tracker.call_count == len(EVENING_RETRY_OFFSETS_MINUTES)
+        # ... but no late-evening polling on top
+        assert coordinator._late_poll_unsub is None
+
+        await coordinator._async_late_poll(_local(19))
+        assert tracker.call_count == len(EVENING_RETRY_OFFSETS_MINUTES)
+    coordinator._retry_unsubs.clear()
+
+
+async def test_unexpected_source_error_is_non_fatal(
+    hass: HomeAssistant, mock_petrol_lu, price_entries
+) -> None:
+    """Garbage that isn't a ProviderError must not break the update either."""
+    mock_petrol_lu(
+        price_entries,
+        rtl_payload={"id": 1, "date": "2026-13-45T00:00:00+02:00", "diesel": 2.0},
+    )
+
+    entry = await _setup(hass)
+    coordinator = entry.runtime_data
+    assert coordinator.last_update_success
+    assert coordinator.announcement_status["rtl_lu"]["outcome"] == "error"
+    assert coordinator.announcement_status["live_sheet"]["outcome"] == (
+        "nothing_future"
+    )
+
+    await _unload(hass, entry)

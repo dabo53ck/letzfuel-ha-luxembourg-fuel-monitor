@@ -28,10 +28,10 @@ answers:
 | Source | Used for |
 | --- | --- |
 | [petrol.lu](https://www.petrol.lu/en/official-prices/) (GPL) | current price, full history, statistics backfill. |
-| [RTL.lu](https://www.rtl.lu/mobiliteit/petrolspraisser) (`api-gate.rtl.lu`) | the **announced next-day price** only. |
+| Additional public announcement feeds | the **announced next-day price** only (petrol.lu usually lists it late in the evening). |
 
-> **Not affiliated** with the Groupement Pétrolier Luxembourgeois, petrol.lu, RTL,
-> or the Luxembourg government. Always verify the price at the pump.
+> **Not affiliated** with the Groupement Pétrolier Luxembourgeois, petrol.lu, any
+> other data source, or the Luxembourg government. Always verify the price at the pump.
 
 ---
 
@@ -147,8 +147,8 @@ re-adding the integration:
 | Setting | Default | Notes |
 | --- | --- | --- |
 | Update interval | 6 h | Regular polling cadence |
-| Evening check time | 18:01 | Extra refresh to catch the publication; retries at **+10** and **+20 min** if nothing new appeared |
-| Fetch tomorrow's announced price | on | Pull the announced next-day price from RTL.lu (petrol.lu doesn't carry it). Turn off to rely on petrol.lu alone. |
+| Evening check time | 18:01 | Extra refresh to catch the publication; while nothing has been announced yet it retries every few minutes up to **+29 min**, then every **20–30 min** (random) until midnight |
+| Fetch tomorrow's announced price | on | Also ask the additional announcement feeds for the next-day price, so it shows up in the evening. Implausible values are ignored. Turn off to rely on petrol.lu alone. |
 | Trend window | 14 days | Sample window for the trend sensors |
 | Price display | Incl. VAT | Show prices with or without VAT |
 | Tracked fuels / primary fuel | all / Diesel | |

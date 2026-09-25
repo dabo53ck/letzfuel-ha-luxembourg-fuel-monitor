@@ -42,7 +42,8 @@ OPT_TREND_WINDOW_DAYS: Final = "trend_window_days"
 OPT_PRICE_DISPLAY: Final = "price_display"
 OPT_HISTORY_IMPORT_ENABLED: Final = "history_import_enabled"
 OPT_HISTORY_IMPORT_MONTHS: Final = "history_import_months"
-#: Fetch the announced next-day price from RTL.lu (petrol.lu does not carry it).
+#: Also ask the additional announcement sources for the next-day price
+#: (petrol.lu usually lists it only late in the evening).
 OPT_ANNOUNCEMENTS_ENABLED: Final = "announcements_enabled"
 
 PRICE_DISPLAY_INCL: Final = "incl_vat"
@@ -60,6 +61,10 @@ DEFAULT_EVENING_CHECK_TIME: Final = "18:01:00"
 #: is a no-op (skipped, not cancelled) once a pending change is found --
 #: harmless since it just checks state instead of refreshing again.
 EVENING_RETRY_OFFSETS_MINUTES: Final = (2, 4, 6, 8, 10, 12, 14, 19, 24, 29)
+#: After the last retry, keep polling until midnight while nothing has been
+#: announced yet -- each gap drawn at random from this range (minutes) so
+#: installs don't hit the sources in lockstep.
+LATE_EVENING_POLL_MINUTES: Final = (20, 30)
 #: Fixed time for the just-after-midnight refresh that promptly re-evaluates
 #: the current/upcoming rollover, instead of waiting for the next periodic
 #: poll (which can land hours later depending on when the last one ran).
@@ -79,6 +84,12 @@ MAX_TREND_WINDOW_DAYS: Final = 90
 RECENT_HISTORY_DAYS: Final = 120
 #: Data older than this (with a failing fetch) raises a repair issue.
 STALE_AFTER_DAYS: Final = 14
+
+# --- Announcement plausibility ---------------------------------------------
+#: Announced prices further ahead than this (days) are ignored.
+ANNOUNCE_MAX_DAYS_AHEAD: Final = 7
+#: Announced prices further than this fraction from today's price are ignored.
+ANNOUNCE_MAX_DEVIATION: Final = 0.15
 
 # --- Trend classification -------------------------------------------------
 TREND_RISING: Final = "rising"
@@ -128,3 +139,5 @@ UNIT_EUR_PER_LITER: Final = "€/L"
 #: Luxembourg standard VAT rate (informational attribute only; the source
 #: publishes both incl. and excl. VAT figures directly).
 VAT_RATE_LU: Final = 0.17
+#: Effective dates are Luxembourg calendar days.
+LU_TIME_ZONE: Final = "Europe/Luxembourg"

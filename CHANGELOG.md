@@ -4,6 +4,33 @@ All notable changes to this project are documented here. The format loosely
 follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). SemVer,
 pre-release identifiers included (`0.0.1-beta`, …).
 
+## Unreleased
+
+### Fixed
+
+- **Evening price announcement no longer missed when a source skips it.**
+  On 2026-09-24 a Diesel increase for the next day was announced around
+  17:40, but the only announcement source never published it, so the change
+  only showed up at midnight as "New price in effect". The announced
+  next-day price now comes from several sources: petrol.lu's own next-day
+  row plus two additional public feeds, and the first one that has it wins.
+  If they disagree, petrol.lu wins and a warning is logged. Closes #17.
+- **More evening checks.** After the existing retries up to 18:30, the
+  integration keeps checking every 20–30 minutes (randomised to spread the
+  load on the sources) until midnight, as long as nothing has been
+  announced yet. A restart during the evening now resumes these checks
+  instead of waiting for the next day.
+- Announced dates are read as Luxembourg calendar days, whatever time zone
+  Home Assistant runs in.
+
+### Added
+
+- **Plausibility check** for announced prices: values more than 15 % away
+  from today's price, or dated more than a week ahead, are ignored.
+- **Diagnostics** show, per announcement source, when it was last checked,
+  the newest date it listed and the outcome (`announced`, `nothing_future`,
+  `implausible` or `error`).
+
 ## [0.1.0] - 2026-09-24
 
 ### Added

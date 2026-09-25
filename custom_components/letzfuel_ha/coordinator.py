@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+import asyncio
 import logging
-from datetime import datetime, time, timedelta
+import random
+from datetime import date, datetime, time, timedelta
 from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
@@ -40,6 +42,7 @@ from .const import (
     EVENT_PRICE_CHANGED,
     ISSUE_PARSE_ERROR,
     ISSUE_STALE_DATA,
+    LATE_EVENING_POLL_MINUTES,
     LEVEL_SOURCE_ENTITY,
     LEVEL_SOURCE_MANUAL,
     MIDNIGHT_REFRESH_TIME,
@@ -55,11 +58,18 @@ from .helpers import option_value
 from .models import FuelPrices, FuelType, PricePoint, PriceSet
 from .providers import (
     ProviderConnectionError,
-    ProviderError,
     ProviderParseError,
     build_price_set,
     get_provider,
 )
+from .providers.announcements import (
+    AnnouncementResult,
+    AnnouncementSource,
+    current_prices,
+    merge_announced,
+    split_plausible,
+)
+from .providers.live_sheet import LiveSheetAnnouncements
 from .providers.rtl_lu import RtlLuAnnouncements
 
 _LOGGER = logging.getLogger(__name__)
@@ -79,9 +89,16 @@ class LuxFuelCoordinator(DataUpdateCoordinator[PriceSet]):
         self.provider = get_provider(
             entry.data.get(CONF_PROVIDER, DEFAULT_PROVIDER), session
         )
-        #: Supplies the announced next-day price (petrol.lu does not carry it).
-        self._announcements = RtlLuAnnouncements(session)
-        self._announce_warned = False
+        #: Supply the announced next-day price earlier than the provider does,
+        #: in priority order (the provider's own future rows beat all of them).
+        self._announcement_sources: list[AnnouncementSource] = [
+            RtlLuAnnouncements(session),
+            LiveSheetAnnouncements(session),
+        ]
+        self._source_warned: set[str] = set()
+        self._conflicts_warned: set[tuple[str, str, str, str]] = set()
+        #: Last outcome per announcement source (exposed in diagnostics).
+        self.announcement_status: dict[str, dict[str, Any]] = {}
         interval_hours = int(
             option_value(
                 entry, OPT_UPDATE_INTERVAL_HOURS, DEFAULT_UPDATE_INTERVAL_HOURS
@@ -100,6 +117,8 @@ class LuxFuelCoordinator(DataUpdateCoordinator[PriceSet]):
         self._last_seen: dict[str, Any] = {}
         self._evening_unsub: CALLBACK_TYPE | None = None
         self._retry_unsubs: list[CALLBACK_TYPE] = []
+        self._late_poll_unsub: CALLBACK_TYPE | None = None
+        self._late_poll_deadline: datetime | None = None
         self._midnight_unsub: CALLBACK_TYPE | None = None
         self._level_entity_unsub: CALLBACK_TYPE | None = None
         #: Live fuel level (%) set via the number entity; overrides the option.
@@ -140,31 +159,110 @@ class LuxFuelCoordinator(DataUpdateCoordinator[PriceSet]):
     async def _async_merge_announcements(
         self, history: list[PricePoint]
     ) -> list[PricePoint]:
-        """Fold RTL.lu's announced next-day price into ``history`` (best effort).
+        """Fold the announced next-day prices into ``history`` (best effort).
 
-        petrol.lu never carries the pre-announcement, so without this the
-        ``upcoming`` price -- and the pending-change binary sensor, the
-        ``price_tomorrow`` sensor, the refuel recommendation and the announced
-        event -- would never populate. A failure here is logged once and then
-        ignored: the integration keeps working on petrol.lu data alone.
+        The provider usually lists the next day's row only late in the evening,
+        so without this the ``upcoming`` price -- and the pending-change binary
+        sensor, the ``price_tomorrow`` sensor, the refuel recommendation and the
+        announced event -- would come too late. Every source is optional: a
+        failing one is logged once and skipped, implausible values are dropped,
+        and the provider's own rows always win over an announcement.
         """
         if not option_value(self.config_entry, OPT_ANNOUNCEMENTS_ENABLED, True):
+            self.announcement_status = {}
             return history
-        try:
-            points = await self._announcements.async_get_announced_points(
-                dt_util.now().date()
+
+        today = dt_util.now().date()
+        current = current_prices(history, today)
+        results = await asyncio.gather(
+            *(
+                self._async_fetch_announcements(source, today)
+                for source in self._announcement_sources
             )
-        except ProviderError as err:
-            if not self._announce_warned:
-                _LOGGER.warning("Announcement source (RTL.lu) unavailable: %s", err)
-                self._announce_warned = True
-            return history
-        if self._announce_warned:
-            _LOGGER.info("Announcement source (RTL.lu) recovered")
-            self._announce_warned = False
-        if points:
-            _LOGGER.debug("RTL.lu announced next-day prices: %s", points)
-        return [*history, *points]
+        )
+
+        batches: list[tuple[str, list[PricePoint]]] = []
+        for source, result in zip(self._announcement_sources, results, strict=True):
+            if result is None:
+                continue
+            kept, rejected = split_plausible(result.points, current, today)
+            if kept:
+                outcome = "announced"
+            elif rejected:
+                outcome = "implausible"
+            else:
+                outcome = "nothing_future"
+            self._set_source_status(
+                source.key, outcome, latest_date=result.latest_date, rejected=rejected
+            )
+            _LOGGER.debug(
+                "Announcement source %s: latest date %s, %d future price(s), "
+                "%d rejected",
+                source.key,
+                result.latest_date,
+                len(kept),
+                len(rejected),
+            )
+            if rejected:
+                _LOGGER.debug("Rejected as implausible (%s): %s", source.key, rejected)
+            batches.append((source.key, kept))
+
+        merged, conflicts = merge_announced(history, batches)
+        for conflict in conflicts:
+            key = (
+                conflict.fuel.value,
+                conflict.effective_date.isoformat(),
+                str(conflict.ignored),
+                conflict.ignored_source,
+            )
+            if key in self._conflicts_warned:
+                continue
+            self._conflicts_warned.add(key)
+            _LOGGER.warning(
+                "Conflicting announced %s price for %s: kept %s, ignored %s from %s",
+                conflict.fuel.value,
+                conflict.effective_date,
+                conflict.kept,
+                conflict.ignored,
+                conflict.ignored_source,
+            )
+        return merged
+
+    async def _async_fetch_announcements(
+        self, source: AnnouncementSource, today: date
+    ) -> AnnouncementResult | None:
+        """Fetch one source; log a failure once, return None instead of raising."""
+        try:
+            result = await source.async_fetch(today)
+        except Exception as err:  # optional source: must fail soft, whatever broke
+            self._set_source_status(source.key, "error", error=str(err))
+            if source.key not in self._source_warned:
+                _LOGGER.warning(
+                    "Announcement source %s unavailable: %s", source.key, err
+                )
+                self._source_warned.add(source.key)
+            return None
+        if source.key in self._source_warned:
+            _LOGGER.info("Announcement source %s recovered", source.key)
+            self._source_warned.discard(source.key)
+        return result
+
+    def _set_source_status(
+        self,
+        key: str,
+        outcome: str,
+        *,
+        latest_date: date | None = None,
+        rejected: list[PricePoint] | None = None,
+        error: str | None = None,
+    ) -> None:
+        self.announcement_status[key] = {
+            "fetched_at": dt_util.utcnow().isoformat(),
+            "outcome": outcome,
+            "latest_date": latest_date.isoformat() if latest_date else None,
+            "rejected": len(rejected or []),
+            "error": error,
+        }
 
     # -- change detection & events ------------------------------------------
 
@@ -268,6 +366,12 @@ class LuxFuelCoordinator(DataUpdateCoordinator[PriceSet]):
             minute=parsed.minute,
             second=parsed.second,
         )
+        # Set up (or restarted) after the evening check already ran today:
+        # don't wait until tomorrow, keep polling for the rest of the evening.
+        now = dt_util.now()
+        if now.time() >= parsed and not self._has_upcoming():
+            self._late_poll_deadline = _next_midnight(now)
+            self._schedule_late_poll(now)
 
     @callback
     def _teardown_evening_schedule(self) -> None:
@@ -277,6 +381,7 @@ class LuxFuelCoordinator(DataUpdateCoordinator[PriceSet]):
         for unsub in self._retry_unsubs:
             unsub()
         self._retry_unsubs.clear()
+        self._cancel_late_poll()
 
     async def _async_evening_trigger(self, now: datetime) -> None:
         """Refresh at the configured time, then schedule the retry offsets."""
@@ -284,6 +389,7 @@ class LuxFuelCoordinator(DataUpdateCoordinator[PriceSet]):
         # the time this runs again a day later -- reset instead of letting
         # fired-and-forgotten unsub refs pile up for the life of the entry.
         self._retry_unsubs.clear()
+        self._cancel_late_poll()
         await self.async_refresh()
         if self._has_pending_change():
             return
@@ -295,12 +401,49 @@ class LuxFuelCoordinator(DataUpdateCoordinator[PriceSet]):
                     now + timedelta(minutes=offset),
                 )
             )
+        if self._has_upcoming():
+            return  # announced, just unchanged -- nothing left to wait for
+        self._late_poll_deadline = _next_midnight(now)
+        self._schedule_late_poll(
+            now + timedelta(minutes=max(EVENING_RETRY_OFFSETS_MINUTES))
+        )
 
     async def _async_evening_retry(self, now: datetime) -> None:
         """Retry only while no next-day price has appeared yet."""
         if self._has_pending_change():
             return
         await self.async_refresh()
+
+    @callback
+    def _schedule_late_poll(self, after: datetime) -> None:
+        """Arm the next late-evening poll a random 20-30 min after ``after``.
+
+        Nothing is armed once that would land past the evening's midnight --
+        the midnight refresh takes over from there.
+        """
+        self._cancel_late_poll()
+        low, high = LATE_EVENING_POLL_MINUTES
+        when = after + timedelta(minutes=random.uniform(low, high))
+        if self._late_poll_deadline is None or when >= self._late_poll_deadline:
+            return
+        self._late_poll_unsub = async_track_point_in_time(
+            self.hass, self._async_late_poll, when
+        )
+
+    async def _async_late_poll(self, now: datetime) -> None:
+        """Poll again unless tomorrow's price is known by now; then re-arm."""
+        self._late_poll_unsub = None
+        if self._has_upcoming():
+            return
+        await self.async_refresh()
+        if not self._has_upcoming():
+            self._schedule_late_poll(now)
+
+    @callback
+    def _cancel_late_poll(self) -> None:
+        if self._late_poll_unsub is not None:
+            self._late_poll_unsub()
+            self._late_poll_unsub = None
 
     @callback
     def async_setup_midnight_schedule(self) -> None:
@@ -356,6 +499,11 @@ class LuxFuelCoordinator(DataUpdateCoordinator[PriceSet]):
     @callback
     def _async_level_entity_changed(self, _event: Event) -> None:
         self.async_update_listeners()
+
+    @callback
+    def _has_upcoming(self) -> bool:
+        """True once tomorrow's price is known -- changed or not."""
+        return bool(self.data and any(fp.upcoming for fp in self.data.prices.values()))
 
     @callback
     def _has_pending_change(self) -> bool:
@@ -482,6 +630,11 @@ class LuxFuelCoordinator(DataUpdateCoordinator[PriceSet]):
             return None
         value = point.price_incl_vat if self.use_incl_vat else point.price_excl_vat
         return float(value)
+
+
+def _next_midnight(now: datetime) -> datetime:
+    """Local midnight at the end of ``now``'s day."""
+    return dt_util.start_of_local_day(dt_util.as_local(now).date() + timedelta(days=1))
 
 
 def _as_float(value: Any) -> float | None:

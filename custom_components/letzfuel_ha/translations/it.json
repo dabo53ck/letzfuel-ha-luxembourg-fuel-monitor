@@ -38,7 +38,7 @@
         "title": "Impostazioni di LëtzFuel HA",
         "data": {
           "update_interval_hours": "Intervallo di aggiornamento",
-          "evening_check_time": "Orario del controllo serale (intercetta la pubblicazione verso le 18:00; riprova ogni 2 min per 14 min, poi ogni 5 min fino a 29 min dopo quest'ora)",
+          "evening_check_time": "Orario del controllo serale (intercetta la pubblicazione verso le 18:00; riprova ogni 2 min per 14 min, poi ogni 5 min fino a 29 min dopo quest'ora, poi ogni 20–30 min fino a mezzanotte)",
           "announcements_enabled": "Recupera il prezzo annunciato per domani",
           "trend_window_days": "Finestra di tendenza",
           "price_display": "Visualizzazione del prezzo",

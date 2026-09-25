@@ -23,10 +23,11 @@ from custom_components.letzfuel_ha.const import (
     OPT_HISTORY_IMPORT_ENABLED,
 )
 from custom_components.letzfuel_ha.models import FuelType
+from custom_components.letzfuel_ha.providers.live_sheet import LIVE_SHEET_URL
 from custom_components.letzfuel_ha.providers.petrol_lu import SOURCE_URL
 from custom_components.letzfuel_ha.providers.rtl_lu import RTL_CURRENT_URL
 
-from .helpers import build_petrol_lu_html
+from .helpers import build_petrol_lu_html, sheet_json
 
 D = Decimal
 
@@ -110,6 +111,8 @@ def mock_petrol_lu(
         entries: list,
         rtl_payload: dict | None = None,
         rtl_status: int = 200,
+        sheet_payload: dict | None = None,
+        sheet_status: int = 200,
     ) -> None:
         aioclient_mock.clear_requests()
         aioclient_mock.get(SOURCE_URL, text=build_petrol_lu_html(entries))
@@ -126,6 +129,12 @@ def mock_petrol_lu(
                 "95oct": 1.792,
                 "diesel": 1.865,
             },
+        )
+        # Live sheet announcement source: likewise nothing beyond today.
+        aioclient_mock.get(
+            LIVE_SHEET_URL,
+            status=sheet_status,
+            json=sheet_payload or sheet_json([(dt_util.now().date(), {})]),
         )
 
     _set(price_entries)

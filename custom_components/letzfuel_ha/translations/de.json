@@ -38,7 +38,7 @@
         "title": "Einstellungen für LëtzFuel HA",
         "data": {
           "update_interval_hours": "Aktualisierungsintervall",
-          "evening_check_time": "Uhrzeit der Abendprüfung (erfasst die Veröffentlichung um ca. 18:00; Wiederholungen alle 2 Min. für 14 Min., danach alle 5 Min. bis 29 Min. nach dieser Zeit)",
+          "evening_check_time": "Uhrzeit der Abendprüfung (erfasst die Veröffentlichung um ca. 18:00; Wiederholungen alle 2 Min. für 14 Min., danach alle 5 Min. bis 29 Min. nach dieser Zeit, dann alle 20–30 Min. bis Mitternacht)",
           "announcements_enabled": "Morgen angekündigten Preis abrufen",
           "trend_window_days": "Trendfenster",
           "price_display": "Preisanzeige",

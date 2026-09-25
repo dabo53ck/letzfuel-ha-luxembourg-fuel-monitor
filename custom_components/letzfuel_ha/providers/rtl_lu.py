@@ -24,8 +24,9 @@ from decimal import Decimal
 from aiohttp import ClientError, ClientSession
 from homeassistant.util import dt as dt_util
 
-from ..const import USER_AGENT_VERSION, VAT_RATE_LU
+from ..const import LU_TIME_ZONE, USER_AGENT_VERSION, VAT_RATE_LU
 from ..models import FuelType, PricePoint
+from .announcements import AnnouncementResult
 from .base import ProviderConnectionError, ProviderParseError
 
 RTL_CURRENT_URL = "https://api-gate.rtl.lu/fuel-prices/current"
@@ -47,6 +48,8 @@ _FUEL_KEYS: dict[str, FuelType] = {
 class RtlLuAnnouncements:
     """Reads the announced next-day price set from RTL.lu."""
 
+    key = "rtl_lu"
+
     def __init__(self, session: ClientSession) -> None:
         """Store the shared aiohttp session."""
         self._session = session
@@ -57,8 +60,15 @@ class RtlLuAnnouncements:
         ``today`` is passed in so the caller controls the clock (and tests stay
         deterministic).
         """
+        return (await self.async_fetch(today)).points
+
+    async def async_fetch(self, today: date) -> AnnouncementResult:
+        """Fetch the payload; report its effective date and any future points."""
         data = await self._async_fetch()
-        return parse_announced(data, today)
+        return AnnouncementResult(
+            latest_date=parse_effective_date(data),
+            points=parse_announced(data, today),
+        )
 
     async def _async_fetch(self) -> dict:
         """GET the current price JSON."""
@@ -94,12 +104,7 @@ def parse_announced(data: dict, today: date) -> list[PricePoint]:
     effective date is today or earlier (RTL is then merely mirroring the price
     that is already in effect).
     """
-    raw_date = data.get("date")
-    parsed = dt_util.parse_datetime(str(raw_date)) if raw_date else None
-    if parsed is None:
-        raise ProviderParseError(f"RTL.lu: unparseable effective date {raw_date!r}")
-
-    effective = parsed.date()
+    effective = parse_effective_date(data)
     if effective <= today:
         return []
 
@@ -124,3 +129,19 @@ def parse_announced(data: dict, today: date) -> list[PricePoint]:
             )
         )
     return points
+
+
+def parse_effective_date(data: dict) -> date:
+    """Return the payload's effective date as a Luxembourg calendar date.
+
+    Converted to Luxembourg time first, so a UTC timestamp for midnight there
+    (``...T22:00:00Z`` in summer) still maps to the right day, whatever time
+    zone Home Assistant runs in.
+    """
+    raw_date = data.get("date")
+    parsed = dt_util.parse_datetime(str(raw_date)) if raw_date else None
+    if parsed is None:
+        raise ProviderParseError(f"RTL.lu: unparseable effective date {raw_date!r}")
+    if parsed.tzinfo is not None:
+        parsed = parsed.astimezone(dt_util.get_time_zone(LU_TIME_ZONE))
+    return parsed.date()

@@ -63,6 +63,7 @@ async def async_get_config_entry_diagnostics(
             "tracked_fuels": [f.value for f in coordinator.tracked_fuels],
             "primary_fuel": coordinator.primary_fuel.value,
         },
+        "announcement_sources": dict(coordinator.announcement_status),
         "data": {
             "fetched_at": data.fetched_at.isoformat() if data else None,
             "provider_name": data.provider_name if data else None,
