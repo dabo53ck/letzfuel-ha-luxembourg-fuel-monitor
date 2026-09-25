@@ -130,11 +130,24 @@ def mock_petrol_lu(
                 "diesel": 1.865,
             },
         )
-        # Live sheet announcement source: likewise nothing beyond today.
+        # Live sheet announcement source: agrees with petrol.lu on today's
+        # prices (so it is trusted) and lists nothing beyond today.
         aioclient_mock.get(
             LIVE_SHEET_URL,
             status=sheet_status,
-            json=sheet_payload or sheet_json([(dt_util.now().date(), {})]),
+            json=sheet_payload
+            or sheet_json(
+                [
+                    (
+                        dt_util.now().date(),
+                        {
+                            FuelType.DIESEL: "1.865",
+                            FuelType.SP95: "1.792",
+                            FuelType.SP98: "1.983",
+                        },
+                    )
+                ]
+            ),
         )
 
     _set(price_entries)

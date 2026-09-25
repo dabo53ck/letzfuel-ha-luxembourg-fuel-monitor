@@ -42,7 +42,7 @@ OPT_TREND_WINDOW_DAYS: Final = "trend_window_days"
 OPT_PRICE_DISPLAY: Final = "price_display"
 OPT_HISTORY_IMPORT_ENABLED: Final = "history_import_enabled"
 OPT_HISTORY_IMPORT_MONTHS: Final = "history_import_months"
-#: Also ask the additional announcement sources for the next-day price
+#: Also ask the announcement feed (and its fallback) for the next-day price
 #: (petrol.lu usually lists it only late in the evening).
 OPT_ANNOUNCEMENTS_ENABLED: Final = "announcements_enabled"
 
@@ -54,6 +54,8 @@ DEFAULT_TRACKED_FUELS: Final = [FuelType.DIESEL, FuelType.SP95, FuelType.SP98]
 DEFAULT_PRIMARY_FUEL: Final = FuelType.DIESEL
 DEFAULT_UPDATE_INTERVAL_HOURS: Final = 6
 DEFAULT_EVENING_CHECK_TIME: Final = "17:30:00"
+#: The default before 0.1.1; migrated to the new default (see __init__.py).
+LEGACY_EVENING_CHECK_TIME: Final = "18:01:00"
 #: Extra refreshes fired (minutes after the evening check) while tomorrow's
 #: price is still unknown -- every 2 min for an hour (17:32 ... 18:30 with the
 #: default 17:30 check time). A retry is a no-op once tomorrow's price is known.
@@ -91,6 +93,9 @@ STALE_AFTER_DAYS: Final = 14
 ANNOUNCE_MAX_DAYS_AHEAD: Final = 7
 #: Announced prices further than this fraction from today's price are ignored.
 ANNOUNCE_MAX_DEVIATION: Final = 0.15
+#: Raise a repair issue once the announcement feed has been unusable (and the
+#: fallback in use) for this many days in a row.
+ANNOUNCE_FEED_BROKEN_ISSUE_DAYS: Final = 3
 
 # --- Trend classification -------------------------------------------------
 TREND_RISING: Final = "rising"
@@ -119,10 +124,13 @@ RECOMMENDATION_STATES: Final = [
 # --- Events --------------------------------------------------------------------
 EVENT_PRICE_CHANGE_ANNOUNCED: Final = f"{DOMAIN}_price_change_announced"
 EVENT_PRICE_CHANGED: Final = f"{DOMAIN}_price_changed"
+#: An announced price turned out different once the official price was known.
+EVENT_PRICE_CHANGE_CORRECTED: Final = f"{DOMAIN}_price_change_corrected"
 
 # --- Repair issues ---------------------------------------------------------
 ISSUE_STALE_DATA: Final = "stale_data"
 ISSUE_PARSE_ERROR: Final = "parse_error"
+ISSUE_ANNOUNCEMENTS_UNAVAILABLE: Final = "announcements_unavailable"
 
 # --- Services --------------------------------------------------------------
 SERVICE_CALCULATE_FILL_COST: Final = "calculate_fill_cost"

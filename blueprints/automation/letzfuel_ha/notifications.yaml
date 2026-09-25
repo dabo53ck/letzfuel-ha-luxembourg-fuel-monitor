@@ -20,7 +20,9 @@ blueprint:
       service to look up. Optionally also where tapping a notification opens.
 
     - *Evening: next-day price announced* – fires when a new price is published
-      for tomorrow (≈18:00).
+      for tomorrow (≈17:30–18:00). If the official price later turns out
+      different, a correction follows (same settings, replaces the first
+      notification).
 
     - *New price in effect* – fires the day a new price actually applies.
 
@@ -351,6 +353,9 @@ triggers:
     id: announced
     event_type: letzfuel_ha_price_change_announced
   - trigger: event
+    id: corrected
+    event_type: letzfuel_ha_price_change_corrected
+  - trigger: event
     id: effective
     event_type: letzfuel_ha_price_changed
   - trigger: state
@@ -454,6 +459,9 @@ variables:
     {% set d = {
       'en': {
         'announced_title': 'Price change tomorrow',
+        'corrected_title': 'Correction: announced price',
+        'no_change': 'no change',
+        'instead_of': 'instead of',
         'effective_title': 'New fuel price in effect',
         'rec_title': 'Refuel recommendation',
         'rec_states': {'refuel_today': 'Refuel today', 'wait': 'Wait', 'no_change': 'No change'},
@@ -463,6 +471,9 @@ variables:
       },
       'de': {
         'announced_title': 'Preisänderung morgen',
+        'corrected_title': 'Korrektur: angekündigter Preis',
+        'no_change': 'unverändert',
+        'instead_of': 'statt',
         'effective_title': 'Neuer Preis in Kraft',
         'rec_title': 'Tankempfehlung',
         'rec_states': {'refuel_today': 'Heute tanken', 'wait': 'Warten', 'no_change': 'Keine Änderung'},
@@ -472,6 +483,9 @@ variables:
       },
       'fr': {
         'announced_title': 'Changement de prix demain',
+        'corrected_title': 'Correction : prix annoncé',
+        'no_change': 'inchangé',
+        'instead_of': 'au lieu de',
         'effective_title': 'Nouveau prix en vigueur',
         'rec_title': 'Recommandation de plein',
         'rec_states': {'refuel_today': "Faire le plein aujourd'hui", 'wait': 'Attendre', 'no_change': 'Pas de changement'},
@@ -481,6 +495,9 @@ variables:
       },
       'lb': {
         'announced_title': 'Präisännerung muer',
+        'corrected_title': 'Korrektur: ugekënnegte Präis',
+        'no_change': 'onverännert',
+        'instead_of': 'amplaz',
         'effective_title': 'Neie Präis ab elo',
         'rec_title': 'Tankempfehlung',
         'rec_states': {'refuel_today': 'Haut tanken', 'wait': 'Waarden', 'no_change': 'Keng Ännerung'},
@@ -490,6 +507,9 @@ variables:
       },
       'pt': {
         'announced_title': 'Alteração de preço amanhã',
+        'corrected_title': 'Correção: preço anunciado',
+        'no_change': 'sem alteração',
+        'instead_of': 'em vez de',
         'effective_title': 'Novo preço em vigor',
         'rec_title': 'Recomendação de abastecimento',
         'rec_states': {'refuel_today': 'Abastecer hoje', 'wait': 'Aguardar', 'no_change': 'Sem alteração'},
@@ -499,6 +519,9 @@ variables:
       },
       'it': {
         'announced_title': 'Variazione di prezzo domani',
+        'corrected_title': 'Correzione: prezzo annunciato',
+        'no_change': 'invariato',
+        'instead_of': 'invece di',
         'effective_title': 'Nuovo prezzo in vigore',
         'rec_title': 'Raccomandazione di rifornimento',
         'rec_states': {'refuel_today': 'Fai rifornimento oggi', 'wait': 'Attendi', 'no_change': 'Nessuna variazione'},
@@ -564,6 +587,44 @@ variables:
       {% endif %}
     {% endfor %}
     {{ out.v }}
+  #: Corrections only go out for announcements this automation actually sent:
+  #: the fuel must be selected for *announced*, and the *announced* change
+  #: (announced price vs. the price at the time) must have passed its
+  #: direction / minimum-change filters.
+  matched_corrections: >-
+    {% set raw = trigger.event.data.changes
+       if (trigger is defined and trigger.id == 'corrected' and trigger.event is defined
+           and trigger.event.data is defined and trigger.event.data.changes is defined)
+       else [] %}
+    {% set primary = state_attr(rec_entity, 'primary_fuel') or 'diesel' %}
+    {% set wf = namespace(v=[]) %}
+    {% for f in announced_fuels %}
+      {% set wf.v = wf.v + ([primary] if f == 'primary' else [f]) %}
+    {% endfor %}
+    {% set want = wf.v | unique | list %}
+    {% set md = announced_min_delta | float(0) %}
+    {% set out = namespace(v=[]) %}
+    {% for c in raw %}
+      {% set base = c.current_price | float(0) %}
+      {% set ann = c.announced_price | float(0) %}
+      {% set new_p = c.corrected_price | float(0) %}
+      {% set ann_d = ann - base %}
+      {% set dir_ok = announced_direction == 'both'
+           or (announced_direction == 'up' and ann_d > 0)
+           or (announced_direction == 'down' and ann_d < 0) %}
+      {% if c.fuel in want and dir_ok and (ann_d | abs) >= md %}
+        {% set d = new_p - base %}
+        {% set dp = c.effective_date.split('-') %}
+        {% set out.v = out.v + [{
+             'fuel': c.fuel,
+             'price_str': ('%.3f' | format(new_p)).replace('.', strings.decimal),
+             'announced_str': ('%.3f' | format(ann)).replace('.', strings.decimal),
+             'change_str': strings.no_change if (d | abs) < 0.0005
+               else (('+' if d > 0 else '−') ~ (((d | abs) * 100) | round(1) | string).replace('.', strings.decimal) ~ ' ct/L'),
+             'date_str': dp[2] ~ '/' ~ dp[1] ~ '/' ~ dp[0] }] %}
+      {% endif %}
+    {% endfor %}
+    {{ out.v }}
   #: What tapping the notification opens. The entity is the one most relevant
   #: to the notification (the fuel's price sensor, else the recommendation).
   tap_entity: >-
@@ -572,6 +633,8 @@ variables:
          'sp98': 'sensor.letzfuel_ha_sp98_price'} %}
     {%- if trigger.id in ['announced', 'effective'] and matched_changes | count > 0 -%}
       {{ fuel_entities.get(matched_changes[0].fuel, rec_entity) }}
+    {%- elif trigger.id == 'corrected' and matched_corrections | count > 0 -%}
+      {{ fuel_entities.get(matched_corrections[0].fuel, rec_entity) }}
     {%- elif trigger.id.startswith('threshold_') -%}
       {{ fuel_entities.get(trigger.id.replace('threshold_', ''), rec_entity) }}
     {%- else -%}
@@ -630,6 +693,25 @@ actions:
                         title: "{{ title }}"
                         message: "{{ message }}"
                         data: "{{ notification_data }}"
+
+      # ---------- Correction of an earlier announcement ----------
+      # Same tag as the announcement, so on the phone it replaces the wrong one.
+      - conditions:
+          - "{{ trigger.id == 'corrected' and announced_enabled }}"
+          - "{{ matched_corrections | count > 0 }}"
+          - "{{ presence_ok or (announced_priority == 'critical' and presence_critical_overrides) }}"
+        sequence:
+          - variables:
+              title: "{{ strings.corrected_title }}"
+              message: >-
+                {% set lines = namespace(v=[]) %}
+                {%- for c in matched_corrections %}
+                {%- set lines.v = lines.v + [(c.fuel | upper) ~ ': ' ~ c.price_str ~ ' €/L (' ~ c.change_str ~ ') ' ~ strings.instead_of ~ ' ' ~ c.announced_str ~ ' €/L (' ~ c.date_str ~ ')'] %}
+                {%- endfor %}
+                {{ lines.v | join('\n') }}
+              msg_tag: letzfuel_announced
+              priority: "{{ announced_priority }}"
+          - *deliver
 
       # ---------- New price in effect ----------
       - conditions:

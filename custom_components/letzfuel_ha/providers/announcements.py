@@ -1,10 +1,12 @@
 """Shared plumbing for the next-day announcement sources.
 
 The provider (petrol.lu) is the source of truth for current prices and history,
-but it usually lists the next day's row only late in the evening. Additional
-sources supply the announced (future-dated) price earlier. Each one is optional
-and fails soft; this module holds what they share: the result type, a
-plausibility filter, and the rule for merging them into the provider history.
+but it usually lists the next day's row only late in the evening. An
+announcement feed supplies the announced (future-dated) price earlier, with a
+fallback feed for when it is unusable. Both are optional and fail soft; this
+module holds what they share: the result type, a consistency check against the
+provider, a plausibility filter, and the rule for merging them into the
+provider history (the provider always wins).
 """
 
 from __future__ import annotations
@@ -27,6 +29,8 @@ class AnnouncementResult:
     latest_date: date | None
     #: Future-dated price points only (effective after "today").
     points: list[PricePoint] = field(default_factory=list)
+    #: Every complete row the source lists, past and future (incl. VAT).
+    rows: dict[date, dict[FuelType, Decimal]] = field(default_factory=dict)
 
 
 class AnnouncementSource(Protocol):
@@ -62,6 +66,45 @@ def current_prices(
         if prev is None or point.effective_date >= prev.effective_date:
             latest[point.fuel] = point
     return {fuel: point.price_incl_vat for fuel, point in latest.items()}
+
+
+def current_points(
+    history: Iterable[PricePoint], today: date
+) -> dict[FuelType, PricePoint]:
+    """Latest point in effect today, per fuel."""
+    latest: dict[FuelType, PricePoint] = {}
+    for point in history:
+        if point.effective_date > today:
+            continue
+        prev = latest.get(point.fuel)
+        if prev is None or point.effective_date >= prev.effective_date:
+            latest[point.fuel] = point
+    return latest
+
+
+def matches_provider(
+    rows: dict[date, dict[FuelType, Decimal]],
+    current: dict[FuelType, PricePoint],
+) -> bool:
+    """True if the source agrees with the provider on the price in effect now.
+
+    Compares the source's row for the provider's current effective date (or
+    the newest row before it) with the provider's current prices. A source
+    that is stale or mis-edited fails this and is not trusted for tomorrow.
+    Keyed on the provider's date, not the calendar day, so the check still
+    holds after midnight before the provider has published the new day.
+    """
+    if not current:
+        return False
+    ref = max(point.effective_date for point in current.values())
+    past = [day for day in rows if day <= ref]
+    if not past:
+        return False
+    row = rows[max(past)]
+    compared = [fuel for fuel in current if fuel in row]
+    return bool(compared) and all(
+        row[fuel] == current[fuel].price_incl_vat for fuel in compared
+    )
 
 
 def split_plausible(

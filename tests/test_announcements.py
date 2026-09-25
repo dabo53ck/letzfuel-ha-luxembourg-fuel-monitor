@@ -8,7 +8,9 @@ from decimal import Decimal
 from custom_components.letzfuel_ha.const import ANNOUNCE_MAX_DAYS_AHEAD
 from custom_components.letzfuel_ha.models import FuelType, PricePoint
 from custom_components.letzfuel_ha.providers.announcements import (
+    current_points,
     current_prices,
+    matches_provider,
     merge_announced,
     split_plausible,
 )
@@ -99,3 +101,31 @@ def test_merge_same_price_is_not_a_conflict() -> None:
 
     assert merged == history
     assert conflicts == []
+
+
+def test_matches_provider() -> None:
+    history = [_pt(TODAY, "2.055"), _pt(TODAY, "1.835", FuelType.SP95)]
+    current = current_points(history, TODAY)
+    good = {TODAY: {FuelType.DIESEL: D("2.055"), FuelType.SP95: D("1.835")}}
+
+    assert matches_provider(good, current)
+    # a future row doesn't matter, the row for the provider's date does
+    assert matches_provider({**good, TOMORROW: {FuelType.DIESEL: D("9")}}, current)
+    # stale or mis-edited feed
+    assert not matches_provider(
+        {TODAY: {FuelType.DIESEL: D("2.095"), FuelType.SP95: D("1.835")}}, current
+    )
+    # nothing to compare against
+    assert not matches_provider({TOMORROW: {FuelType.DIESEL: D("2.055")}}, current)
+    assert not matches_provider(good, {})
+
+
+def test_matches_provider_after_midnight() -> None:
+    """Before the provider lists the new day, compare its latest day instead."""
+    yesterday = TODAY - timedelta(days=1)
+    current = current_points([_pt(yesterday, "2.095")], TODAY)
+    rows = {
+        yesterday: {FuelType.DIESEL: D("2.095")},
+        TODAY: {FuelType.DIESEL: D("2.200")},  # the feed already has today
+    }
+    assert matches_provider(rows, current)

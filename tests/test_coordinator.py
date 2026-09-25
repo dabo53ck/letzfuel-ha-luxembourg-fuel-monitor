@@ -13,6 +13,7 @@ from homeassistant.util import dt as dt_util
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.letzfuel_ha.const import (
+    ANNOUNCE_FEED_BROKEN_ISSUE_DAYS,
     CONF_PRIMARY_FUEL,
     CONF_PROVIDER,
     CONF_TRACKED_FUELS,
@@ -21,7 +22,9 @@ from custom_components.letzfuel_ha.const import (
     DOMAIN,
     EVENING_RETRY_OFFSETS_MINUTES,
     EVENT_PRICE_CHANGE_ANNOUNCED,
+    EVENT_PRICE_CHANGE_CORRECTED,
     EVENT_PRICE_CHANGED,
+    ISSUE_ANNOUNCEMENTS_UNAVAILABLE,
     ISSUE_PARSE_ERROR,
     ISSUE_STALE_DATA,
     LATE_EVENING_POLL_MINUTES,
@@ -110,36 +113,26 @@ async def test_announced_event_fires_once(
     assert len(events) == 1
 
 
-async def test_rtl_announcement_drives_pending_change(
+async def test_fallback_announces_while_primary_is_down(
     hass: HomeAssistant, mock_petrol_lu, price_entries
 ) -> None:
-    """RTL's announced next-day price populates `upcoming` / pending change.
-
-    petrol.lu's history carries no future row here; the upcoming price can only
-    come from the RTL announcement source.
-    """
+    """With the primary feed unreachable, the fallback supplies tomorrow."""
     tomorrow = dt_util.now().date() + timedelta(days=1)
-    mock_petrol_lu(
-        price_entries,
-        rtl_payload={
-            "id": 2132,
-            "date": f"{tomorrow.isoformat()}T00:00:00+02:00",
-            "98oct": 1.983,
-            "95oct": 1.792,
-            "diesel": 2.024,
-        },
-    )
+    mock_petrol_lu(price_entries, rtl_payload=_rtl(tomorrow, 2.024), sheet_status=500)
 
     entry = _entry()
     entry.add_to_hass(hass)
     assert await hass.config_entries.async_setup(entry.entry_id)
     await hass.async_block_till_done()
 
-    fp = entry.runtime_data.fuel_prices(FuelType.DIESEL)
+    coordinator = entry.runtime_data
+    fp = coordinator.fuel_prices(FuelType.DIESEL)
     assert fp.upcoming is not None
     assert fp.upcoming.effective_date == tomorrow
     assert fp.upcoming.price_incl_vat == Decimal("2.024")
     assert fp.has_pending_change
+    assert coordinator.announcement_status["live_sheet"]["outcome"] == "error"
+    assert coordinator.announcement_status["rtl_lu"]["outcome"] == "announced"
 
     await hass.config_entries.async_unload(entry.entry_id)
     await hass.async_block_till_done()
@@ -399,13 +392,27 @@ async def test_parse_error_issue_raised_and_cleared(
     assert ir.async_get(hass).async_get_issue(DOMAIN, ISSUE_PARSE_ERROR) is None
 
 
-# -- multiple announcement sources ---------------------------------------------
+# -- announcement feeds: primary, fallback, leader, corrections ---------------
 
 
 def _sheet(day, diesel: str, sp95: str = "1.792", sp98: str = "1.983") -> dict:
-    """A complete sheet row (all fuels filled); SP95/SP98 at today's price."""
+    """Today's row (matching petrol.lu) plus a complete row for ``day``."""
+    today = dt_util.now().date()
     return sheet_json(
-        [(day, {FuelType.DIESEL: diesel, FuelType.SP95: sp95, FuelType.SP98: sp98})]
+        [
+            (
+                today,
+                {
+                    FuelType.DIESEL: "1.865",
+                    FuelType.SP95: "1.792",
+                    FuelType.SP98: "1.983",
+                },
+            ),
+            (
+                day,
+                {FuelType.DIESEL: diesel, FuelType.SP95: sp95, FuelType.SP98: sp98},
+            ),
+        ]
     )
 
 
@@ -432,29 +439,68 @@ async def _unload(hass: HomeAssistant, entry: MockConfigEntry) -> None:
     await hass.async_block_till_done()
 
 
-async def test_sheet_announces_when_rtl_is_stale(
+async def test_primary_announces_and_fallback_stays_on_standby(
     hass: HomeAssistant, mock_petrol_lu, price_entries
 ) -> None:
-    """The 2026-09-24 case: RTL keeps listing today, the sheet has tomorrow."""
+    """The 2026-09-25 case: the fallback's wrong Diesel is never even asked."""
     tomorrow = dt_util.now().date() + timedelta(days=1)
     mock_petrol_lu(
         price_entries,
         sheet_payload=_sheet(tomorrow, "1.905"),
+        rtl_payload=_rtl(tomorrow, 1.800),
     )
 
     entry = await _setup(hass)
     coordinator = entry.runtime_data
     fp = coordinator.fuel_prices(FuelType.DIESEL)
-    assert fp.upcoming is not None
     assert fp.upcoming.effective_date == tomorrow
     assert fp.upcoming.price_incl_vat == Decimal("1.905")
-    assert fp.has_pending_change
 
     status = coordinator.announcement_status
-    assert status["rtl_lu"]["outcome"] == "nothing_future"
-    assert status["rtl_lu"]["latest_date"] == dt_util.now().date().isoformat()
     assert status["live_sheet"]["outcome"] == "announced"
     assert status["live_sheet"]["latest_date"] == tomorrow.isoformat()
+    assert status["rtl_lu"] == {"outcome": "standby"}
+
+    await _unload(hass, entry)
+
+
+async def test_primary_disagreeing_with_provider_falls_back(
+    hass: HomeAssistant, mock_petrol_lu, price_entries
+) -> None:
+    """A stale / mis-edited feed (today's price differs) is not trusted."""
+    today = dt_util.now().date()
+    tomorrow = today + timedelta(days=1)
+    stale = sheet_json(
+        [
+            (
+                today,
+                {
+                    FuelType.DIESEL: "1.800",
+                    FuelType.SP95: "1.792",
+                    FuelType.SP98: "1.983",
+                },
+            ),
+            (
+                tomorrow,
+                {
+                    FuelType.DIESEL: "1.950",
+                    FuelType.SP95: "1.792",
+                    FuelType.SP98: "1.983",
+                },
+            ),
+        ]
+    )
+    mock_petrol_lu(
+        price_entries, sheet_payload=stale, rtl_payload=_rtl(tomorrow, 1.905)
+    )
+
+    entry = await _setup(hass)
+    coordinator = entry.runtime_data
+    assert coordinator.announcement_status["live_sheet"]["outcome"] == "inconsistent"
+    assert coordinator.announcement_status["rtl_lu"]["outcome"] == "announced"
+    assert coordinator.fuel_prices(FuelType.DIESEL).upcoming.price_incl_vat == Decimal(
+        "1.905"
+    )
 
     await _unload(hass, entry)
 
@@ -467,47 +513,156 @@ async def test_provider_row_wins_over_announcement(
         *price_entries,
         (tomorrow, {FuelType.DIESEL: (Decimal("1.900"), Decimal("1.624"))}),
     ]
-    mock_petrol_lu(entries, rtl_payload=_rtl(tomorrow, 1.950))
-
-    entry = await _setup(hass)
-    fp = entry.runtime_data.fuel_prices(FuelType.DIESEL)
-    assert fp.upcoming.price_incl_vat == Decimal("1.900")
-    assert "Conflicting announced diesel price" in caplog.text
-    assert "ignored 1.95 from rtl_lu" in caplog.text
-
-    await _unload(hass, entry)
-
-
-async def test_rtl_wins_over_sheet_and_conflict_logged_once(
-    hass: HomeAssistant, mock_petrol_lu, price_entries, caplog
-) -> None:
-    tomorrow = dt_util.now().date() + timedelta(days=1)
-    mock_petrol_lu(
-        price_entries,
-        rtl_payload=_rtl(tomorrow, 1.905),
-        sheet_payload=_sheet(tomorrow, "1.915"),
-    )
+    mock_petrol_lu(entries, sheet_payload=_sheet(tomorrow, "1.950"))
 
     entry = await _setup(hass)
     coordinator = entry.runtime_data
     assert coordinator.fuel_prices(FuelType.DIESEL).upcoming.price_incl_vat == Decimal(
-        "1.905"
+        "1.900"
     )
 
     await coordinator.async_refresh()
-    assert caplog.text.count("ignored 1.915 from live_sheet") == 1
+    assert caplog.text.count("ignored 1.950 from live_sheet") == 1
 
     await _unload(hass, entry)
+
+
+async def test_announced_price_is_the_leader_until_provider_knows(
+    hass: HomeAssistant, mock_petrol_lu, price_entries
+) -> None:
+    """A later, different feed value can't flip an announcement."""
+    tomorrow = dt_util.now().date() + timedelta(days=1)
+    announced: list = []
+    hass.bus.async_listen(EVENT_PRICE_CHANGE_ANNOUNCED, announced.append)
+    mock_petrol_lu(price_entries, sheet_payload=_sheet(tomorrow, "1.905"))
+
+    entry = await _setup(hass)
+    coordinator = entry.runtime_data
+    await hass.async_block_till_done()
+    assert len(announced) == 1
+
+    # the feed changes its mind (e.g. an editor's typo fixed the other way)
+    mock_petrol_lu(price_entries, sheet_payload=_sheet(tomorrow, "1.925"))
+    await coordinator.async_refresh()
+    await hass.async_block_till_done()
+    assert coordinator.fuel_prices(FuelType.DIESEL).upcoming.price_incl_vat == Decimal(
+        "1.905"
+    )
+    assert len(announced) == 1
+
+    await _unload(hass, entry)
+
+
+async def test_correction_when_provider_differs_in_the_evening(
+    hass: HomeAssistant, mock_petrol_lu, price_entries
+) -> None:
+    """The 2026-09-25 case: announced a drop, officially unchanged."""
+    tomorrow = dt_util.now().date() + timedelta(days=1)
+    announced: list = []
+    corrected: list = []
+    hass.bus.async_listen(EVENT_PRICE_CHANGE_ANNOUNCED, announced.append)
+    hass.bus.async_listen(EVENT_PRICE_CHANGE_CORRECTED, corrected.append)
+    mock_petrol_lu(price_entries, sheet_payload=_sheet(tomorrow, "1.825"))
+
+    entry = await _setup(hass)
+    coordinator = entry.runtime_data
+    await hass.async_block_till_done()
+    assert len(announced) == 1
+
+    # petrol.lu publishes tomorrow's row: Diesel stays at 1.865
+    entries = [
+        *price_entries,
+        (tomorrow, {FuelType.DIESEL: (Decimal("1.865"), Decimal("1.594"))}),
+    ]
+    mock_petrol_lu(entries, sheet_payload=_sheet(tomorrow, "1.825"))
+    coordinator.provider._cache = None  # skip the 5-min page cache
+    await coordinator.async_refresh()
+    await hass.async_block_till_done()
+
+    assert len(announced) == 1
+    assert len(corrected) == 1
+    (change,) = corrected[0].data["changes"]
+    assert change == {
+        "fuel": "diesel",
+        "effective_date": tomorrow.isoformat(),
+        "announced_price": 1.825,
+        "corrected_price": 1.865,
+        "current_price": 1.865,
+        "delta": 0.0,
+        "direction": "none",
+    }
+    fp = coordinator.fuel_prices(FuelType.DIESEL)
+    assert fp.upcoming.price_incl_vat == Decimal("1.865")
+    assert not fp.has_pending_change
+
+    # resolved: nothing fires again
+    await coordinator.async_refresh()
+    await hass.async_block_till_done()
+    assert len(corrected) == 1
+
+    await _unload(hass, entry)
+
+
+async def test_no_correction_when_provider_confirms(
+    hass: HomeAssistant, mock_petrol_lu, price_entries
+) -> None:
+    tomorrow = dt_util.now().date() + timedelta(days=1)
+    corrected: list = []
+    hass.bus.async_listen(EVENT_PRICE_CHANGE_CORRECTED, corrected.append)
+    mock_petrol_lu(price_entries, sheet_payload=_sheet(tomorrow, "1.905"))
+    entry = await _setup(hass)
+    coordinator = entry.runtime_data
+
+    entries = [
+        *price_entries,
+        (tomorrow, {FuelType.DIESEL: (Decimal("1.905"), Decimal("1.628"))}),
+    ]
+    mock_petrol_lu(entries, sheet_payload=_sheet(tomorrow, "1.905"))
+    coordinator.provider._cache = None  # skip the 5-min page cache
+    await coordinator.async_refresh()
+    await hass.async_block_till_done()
+
+    assert corrected == []
+    assert coordinator._last_seen["diesel"]["announced_date"] is None
+
+    await _unload(hass, entry)
+
+
+async def test_correction_after_midnight(hass: HomeAssistant, init_integration) -> None:
+    """The provider only lists the new day after midnight: still corrected."""
+    coordinator = init_integration.runtime_data
+    corrected: list = []
+    hass.bus.async_listen(EVENT_PRICE_CHANGE_CORRECTED, corrected.append)
+
+    today = dt_util.now().date()
+    yesterday = today - timedelta(days=1)
+    coordinator._last_seen = {
+        "diesel": {
+            "current_date": yesterday.isoformat(),
+            "current_price": "1.865",
+            "upcoming_date": None,
+            "upcoming_price": None,
+            "announced_date": today.isoformat(),
+            "announced_price": "1.825",
+            "announced_base": "1.865",
+        }
+    }
+    coordinator._official = {(FuelType.DIESEL, today): Decimal("1.905")}
+    await coordinator._async_detect_changes(_price_set("1.905", None))
+    await hass.async_block_till_done()
+
+    (change,) = corrected[0].data["changes"]
+    assert change["corrected_price"] == 1.905
+    assert change["announced_price"] == 1.825
+    assert change["delta"] == 0.04
+    assert change["direction"] == "up"
 
 
 async def test_implausible_announcement_is_ignored(
     hass: HomeAssistant, mock_petrol_lu, price_entries
 ) -> None:
     tomorrow = dt_util.now().date() + timedelta(days=1)
-    mock_petrol_lu(
-        price_entries,
-        sheet_payload=_sheet(tomorrow, "18.65"),
-    )
+    mock_petrol_lu(price_entries, sheet_payload=_sheet(tomorrow, "18.65"))
 
     entry = await _setup(hass)
     coordinator = entry.runtime_data
@@ -541,6 +696,30 @@ async def test_all_announcement_sources_failing_is_non_fatal(
     assert coordinator.announcement_status["live_sheet"]["outcome"] == (
         "nothing_future"
     )
+    assert coordinator.announcement_status["rtl_lu"] == {"outcome": "standby"}
+
+    await _unload(hass, entry)
+
+
+async def test_repair_issue_when_primary_down_for_days(
+    hass: HomeAssistant, mock_petrol_lu, price_entries
+) -> None:
+    mock_petrol_lu(price_entries, sheet_status=500)
+    entry = await _setup(hass)
+    coordinator = entry.runtime_data
+    registry = ir.async_get(hass)
+    assert registry.async_get_issue(DOMAIN, ISSUE_ANNOUNCEMENTS_UNAVAILABLE) is None
+
+    coordinator.primary_broken_since = dt_util.utcnow() - timedelta(
+        days=ANNOUNCE_FEED_BROKEN_ISSUE_DAYS, hours=1
+    )
+    await coordinator.async_refresh()
+    assert registry.async_get_issue(DOMAIN, ISSUE_ANNOUNCEMENTS_UNAVAILABLE)
+
+    mock_petrol_lu(price_entries)
+    await coordinator.async_refresh()
+    assert registry.async_get_issue(DOMAIN, ISSUE_ANNOUNCEMENTS_UNAVAILABLE) is None
+    assert coordinator.primary_broken_since is None
 
     await _unload(hass, entry)
 
@@ -660,7 +839,7 @@ async def test_unchanged_announcement_ends_evening_polling(
     coordinator = init_integration.runtime_data
     coordinator._cancel_late_poll()  # a setup after 17:30 may have armed one
     tomorrow = dt_util.now().date() + timedelta(days=1)
-    mock_petrol_lu(price_entries, rtl_payload=_rtl(tomorrow, 1.865))
+    mock_petrol_lu(price_entries, sheet_payload=_sheet(tomorrow, "1.865"))
     tracker = MagicMock()
     with patch(f"{_COORD}.async_track_point_in_time", tracker):
         await coordinator._async_evening_trigger(_local(17, 30))
@@ -679,6 +858,7 @@ async def test_unexpected_source_error_is_non_fatal(
     """Garbage that isn't a ProviderError must not break the update either."""
     mock_petrol_lu(
         price_entries,
+        sheet_status=500,
         rtl_payload={"id": 1, "date": "2026-13-45T00:00:00+02:00", "diesel": 2.0},
     )
 
@@ -686,9 +866,6 @@ async def test_unexpected_source_error_is_non_fatal(
     coordinator = entry.runtime_data
     assert coordinator.last_update_success
     assert coordinator.announcement_status["rtl_lu"]["outcome"] == "error"
-    assert coordinator.announcement_status["live_sheet"]["outcome"] == (
-        "nothing_future"
-    )
 
     await _unload(hass, entry)
 

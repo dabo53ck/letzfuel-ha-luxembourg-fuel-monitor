@@ -169,6 +169,10 @@
     "parse_error": {
       "title": "D'Source fir d'Pëtrolspräisser kann net gelies ginn",
       "description": "D'Präissäit gouf erreecht, mä konnt net analyséiert ginn ({error}). D'Layout vun der Säit huet sech vläicht geännert – maacht wgl. en Issue op."
+    },
+    "announcements_unavailable": {
+      "title": "De Präis fir muer erschéngt eréischt spéit",
+      "description": "Zënter {days} Deeg ass d'Quell fir d'Ukënnegung vum Präis fir muer net notzbar, et gëtt en Ersatz benotzt. Fält deen och aus, erschéngt de Präis fir muer eréischt, wann déi offiziell Präistabell en oplëscht, meeschtens spéit owes. W.e.g. d'Diagnos kontrolléieren an en Issue opmaachen, wann dat esou bleift."
     }
   }
 }

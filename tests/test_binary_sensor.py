@@ -8,7 +8,17 @@ import pytest
 from homeassistant.core import HomeAssistant
 from homeassistant.util import dt as dt_util
 
+from custom_components.letzfuel_ha.models import FuelType
+
+from .helpers import sheet_json
+
 ENTITY_ID = "binary_sensor.letzfuel_ha_price_change_pending"
+#: Today's prices in the ``price_entries`` fixture (the feed must agree).
+TODAY_PRICES = {
+    FuelType.DIESEL: "1.865",
+    FuelType.SP95: "1.792",
+    FuelType.SP98: "1.983",
+}
 
 
 async def test_off_with_no_pending_change(
@@ -26,17 +36,23 @@ async def test_off_with_no_pending_change(
 async def test_on_with_pending_change(
     hass: HomeAssistant, mock_petrol_lu, price_entries, config_entry
 ) -> None:
-    """An RTL-announced next-day price turns the sensor on with details."""
+    """An announced next-day price turns the sensor on with details."""
     tomorrow = dt_util.now().date() + timedelta(days=1)
     mock_petrol_lu(
         price_entries,
-        rtl_payload={
-            "id": 2132,
-            "date": f"{tomorrow.isoformat()}T00:00:00+02:00",
-            "98oct": 1.983,  # unchanged vs. today -> not "affected"
-            "95oct": 1.792,  # unchanged vs. today -> not "affected"
-            "diesel": 2.024,  # up from 1.865 -> affected
-        },
+        sheet_payload=sheet_json(
+            [
+                (dt_util.now().date(), TODAY_PRICES),
+                (
+                    tomorrow,
+                    {
+                        FuelType.SP98: "1.983",  # unchanged -> not "affected"
+                        FuelType.SP95: "1.792",  # unchanged -> not "affected"
+                        FuelType.DIESEL: "2.024",  # up from 1.865 -> affected
+                    },
+                ),
+            ]
+        ),
     )
 
     config_entry.add_to_hass(hass)

@@ -169,6 +169,10 @@
     "parse_error": {
       "title": "Preisquelle kann nicht gelesen werden",
       "description": "Die Preisseite wurde erreicht, konnte aber nicht ausgewertet werden ({error}). Möglicherweise hat sich das Seitenlayout geändert – bitte einen Fehlerbericht öffnen."
+    },
+    "announcements_unavailable": {
+      "title": "Preis für morgen erscheint erst spät",
+      "description": "Seit {days} Tagen ist die Quelle für die Ankündigung des morgigen Preises nicht nutzbar, es wird ein Ersatz verwendet. Fällt auch dieser aus, erscheint der Preis für morgen erst, wenn die offizielle Preistabelle ihn listet, meist spät am Abend. Bitte die Diagnose prüfen und ein Issue eröffnen, falls das anhält."
     }
   }
 }

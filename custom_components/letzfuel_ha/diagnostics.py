@@ -63,6 +63,11 @@ async def async_get_config_entry_diagnostics(
             "tracked_fuels": [f.value for f in coordinator.tracked_fuels],
             "primary_fuel": coordinator.primary_fuel.value,
             "schedule_jitter_seconds": coordinator.schedule_jitter.total_seconds(),
+            "announcement_feed_broken_since": (
+                coordinator.primary_broken_since.isoformat()
+                if coordinator.primary_broken_since
+                else None
+            ),
         },
         "announcement_sources": dict(coordinator.announcement_status),
         "data": {

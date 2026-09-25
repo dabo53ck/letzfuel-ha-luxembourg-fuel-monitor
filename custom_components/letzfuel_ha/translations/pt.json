@@ -169,6 +169,10 @@
     "parse_error": {
       "title": "Não é possível ler a fonte dos preços de combustível",
       "description": "A página de preços foi acedida, mas não pôde ser analisada ({error}). A estrutura da página pode ter mudado – por favor, abra uma issue."
+    },
+    "announcements_unavailable": {
+      "title": "O preço de amanhã só aparece tarde",
+      "description": "Há {days} dias que a fonte de anúncio do preço de amanhã não pode ser usada; está a ser usada uma fonte de reserva. Se também esta falhar, o preço de amanhã só aparece quando a tabela oficial de preços o publicar, normalmente ao fim da noite. Verifique os diagnósticos e abra um pedido se isto persistir."
     }
   }
 }

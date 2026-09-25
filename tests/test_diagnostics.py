@@ -19,5 +19,7 @@ async def test_diagnostics(hass: HomeAssistant, init_integration_vehicle) -> Non
     sources = diag["announcement_sources"]
     assert set(sources) == {"rtl_lu", "live_sheet"}
     assert sources["live_sheet"]["outcome"] == "nothing_future"
+    assert sources["rtl_lu"] == {"outcome": "standby"}
+    assert diag["coordinator"]["announcement_feed_broken_since"] is None
     # current fuel level is redacted
     assert diag["entry"]["data"]["current_level_pct"] == "**REDACTED**"

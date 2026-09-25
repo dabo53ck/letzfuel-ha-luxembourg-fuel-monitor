@@ -169,6 +169,10 @@
     "parse_error": {
       "title": "Impossible de lire la source des prix",
       "description": "La page des prix a été jointe mais n'a pas pu être analysée ({error}). La mise en page a peut-être changé – merci d'ouvrir un ticket."
+    },
+    "announcements_unavailable": {
+      "title": "Le prix de demain n'apparaît que tard",
+      "description": "Depuis {days} jours, la source d'annonce du prix de demain est inutilisable ; une source de secours est utilisée. Si elle échoue aussi, le prix de demain n'apparaît qu'une fois publié dans le tableau officiel des prix, généralement tard le soir. Vérifiez les diagnostics et ouvrez un ticket si cela persiste."
     }
   }
 }

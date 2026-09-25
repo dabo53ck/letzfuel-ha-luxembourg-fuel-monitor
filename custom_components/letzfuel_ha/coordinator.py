@@ -2,11 +2,11 @@
 
 from __future__ import annotations
 
-import asyncio
 import hashlib
 import logging
 import random
 from datetime import date, datetime, time, timedelta
+from decimal import Decimal
 from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
@@ -23,6 +23,7 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 from homeassistant.util import dt as dt_util
 
 from .const import (
+    ANNOUNCE_FEED_BROKEN_ISSUE_DAYS,
     CONF_CURRENT_LEVEL,
     CONF_LEVEL_ENTITY,
     CONF_LEVEL_SOURCE,
@@ -40,7 +41,9 @@ from .const import (
     DOMAIN,
     EVENING_RETRY_OFFSETS_MINUTES,
     EVENT_PRICE_CHANGE_ANNOUNCED,
+    EVENT_PRICE_CHANGE_CORRECTED,
     EVENT_PRICE_CHANGED,
+    ISSUE_ANNOUNCEMENTS_UNAVAILABLE,
     ISSUE_PARSE_ERROR,
     ISSUE_STALE_DATA,
     LATE_EVENING_POLL_MINUTES,
@@ -55,6 +58,7 @@ from .const import (
     PRICE_DISPLAY_EXCL,
     SCHEDULE_JITTER_MAX_SECONDS,
     STALE_AFTER_DAYS,
+    VAT_RATE_LU,
 )
 from .helpers import option_value
 from .models import FuelPrices, FuelType, PricePoint, PriceSet
@@ -67,7 +71,8 @@ from .providers import (
 from .providers.announcements import (
     AnnouncementResult,
     AnnouncementSource,
-    current_prices,
+    current_points,
+    matches_provider,
     merge_announced,
     split_plausible,
 )
@@ -76,6 +81,7 @@ from .providers.rtl_lu import RtlLuAnnouncements
 
 _LOGGER = logging.getLogger(__name__)
 _STORE_VERSION = 1
+_VAT_DECIMAL = Decimal("1") + Decimal(str(VAT_RATE_LU))
 
 type LuxFuelConfigEntry = ConfigEntry[LuxFuelCoordinator]
 
@@ -91,12 +97,15 @@ class LuxFuelCoordinator(DataUpdateCoordinator[PriceSet]):
         self.provider = get_provider(
             entry.data.get(CONF_PROVIDER, DEFAULT_PROVIDER), session
         )
-        #: Supply the announced next-day price earlier than the provider does,
-        #: in priority order (the provider's own future rows beat all of them).
-        self._announcement_sources: list[AnnouncementSource] = [
-            RtlLuAnnouncements(session),
-            LiveSheetAnnouncements(session),
-        ]
+        #: Supplies the announced next-day price earlier than the provider does.
+        self._primary_source: AnnouncementSource = LiveSheetAnnouncements(session)
+        #: Only asked while the primary feed is unusable (error / inconsistent).
+        self._fallback_source: AnnouncementSource = RtlLuAnnouncements(session)
+        #: When the primary feed became unusable (None while it is healthy).
+        self.primary_broken_since: datetime | None = None
+        #: The provider's own prices by (fuel, effective date): the official
+        #: values announcements are later checked (and corrected) against.
+        self._official: dict[tuple[FuelType, date], Decimal] = {}
         self._source_warned: set[str] = set()
         self._conflicts_warned: set[tuple[str, str, str, str]] = set()
         #: Last outcome per announcement source (exposed in diagnostics).
@@ -156,6 +165,7 @@ class LuxFuelCoordinator(DataUpdateCoordinator[PriceSet]):
             raise UpdateFailed(f"{self.provider.name}: {err}") from err
 
         self._async_clear_issue(ISSUE_PARSE_ERROR)
+        self._official = {(p.fuel, p.effective_date): p.price_incl_vat for p in history}
         history = await self._async_merge_announcements(history)
         price_set = build_price_set(history, self.tracked_fuels, self.provider)
         self._async_check_stale(price_set)
@@ -170,48 +180,49 @@ class LuxFuelCoordinator(DataUpdateCoordinator[PriceSet]):
         The provider usually lists the next day's row only late in the evening,
         so without this the ``upcoming`` price -- and the pending-change binary
         sensor, the ``price_tomorrow`` sensor, the refuel recommendation and the
-        announced event -- would come too late. Every source is optional: a
-        failing one is logged once and skipped, implausible values are dropped,
-        and the provider's own rows always win over an announcement.
+        announced event -- would come too late.
+
+        Order of trust, highest first: the provider's own rows; a price already
+        announced for that day (the "leader", so a later, different value from a
+        feed can't flip it -- only the provider can, see the correction event);
+        the primary feed; the fallback feed, which is only asked while the
+        primary feed is unusable (unreachable, unreadable, or disagreeing with
+        the provider about today's price). Implausible values are dropped.
         """
         if not option_value(self.config_entry, OPT_ANNOUNCEMENTS_ENABLED, True):
             self.announcement_status = {}
             return history
 
         today = dt_util.now().date()
-        current = current_prices(history, today)
-        results = await asyncio.gather(
-            *(
-                self._async_fetch_announcements(source, today)
-                for source in self._announcement_sources
-            )
-        )
+        current = current_points(history, today)
+        base = {fuel: point.price_incl_vat for fuel, point in current.items()}
+        batches: list[tuple[str, list[PricePoint]]] = [
+            ("announced", self._leader_points(today))
+        ]
 
-        batches: list[tuple[str, list[PricePoint]]] = []
-        for source, result in zip(self._announcement_sources, results, strict=True):
-            if result is None:
-                continue
-            kept, rejected = split_plausible(result.points, current, today)
-            if kept:
-                outcome = "announced"
-            elif rejected:
-                outcome = "implausible"
-            else:
-                outcome = "nothing_future"
+        primary = self._primary_source
+        result = await self._async_fetch_announcements(primary, today)
+        if result is not None and not matches_provider(result.rows, current):
             self._set_source_status(
-                source.key, outcome, latest_date=result.latest_date, rejected=rejected
+                primary.key, "inconsistent", latest_date=result.latest_date
             )
             _LOGGER.debug(
-                "Announcement source %s: latest date %s, %d future price(s), "
-                "%d rejected",
-                source.key,
-                result.latest_date,
-                len(kept),
-                len(rejected),
+                "Announcement source %s disagrees with %s on today's price",
+                primary.key,
+                self.provider.name,
             )
-            if rejected:
-                _LOGGER.debug("Rejected as implausible (%s): %s", source.key, rejected)
-            batches.append((source.key, kept))
+            result = None
+
+        if result is not None:
+            self._set_primary_healthy()
+            batches.append(self._accept(primary, result, base, today))
+            self.announcement_status[self._fallback_source.key] = {"outcome": "standby"}
+        else:
+            self._set_primary_broken()
+            fallback = self._fallback_source
+            fb_result = await self._async_fetch_announcements(fallback, today)
+            if fb_result is not None:
+                batches.append(self._accept(fallback, fb_result, base, today))
 
         merged, conflicts = merge_announced(history, batches)
         for conflict in conflicts:
@@ -233,6 +244,79 @@ class LuxFuelCoordinator(DataUpdateCoordinator[PriceSet]):
                 conflict.ignored_source,
             )
         return merged
+
+    def _accept(
+        self,
+        source: AnnouncementSource,
+        result: AnnouncementResult,
+        base: dict[FuelType, Decimal],
+        today: date,
+    ) -> tuple[str, list[PricePoint]]:
+        """Filter a source's points, record its status, return its batch."""
+        kept, rejected = split_plausible(result.points, base, today)
+        if kept:
+            outcome = "announced"
+        elif rejected:
+            outcome = "implausible"
+        else:
+            outcome = "nothing_future"
+        self._set_source_status(
+            source.key, outcome, latest_date=result.latest_date, rejected=rejected
+        )
+        _LOGGER.debug(
+            "Announcement source %s: latest date %s, %d future price(s), %d rejected",
+            source.key,
+            result.latest_date,
+            len(kept),
+            len(rejected),
+        )
+        if rejected:
+            _LOGGER.debug("Rejected as implausible (%s): %s", source.key, rejected)
+        return source.key, kept
+
+    def _leader_points(self, today: date) -> list[PricePoint]:
+        """Prices already announced for a future day (they stay put)."""
+        points: list[PricePoint] = []
+        for key, seen in self._last_seen.items():
+            raw_date, raw_price = (
+                seen.get("announced_date"),
+                seen.get("announced_price"),
+            )
+            if not raw_date or raw_price is None:
+                continue
+            try:
+                day, fuel = date.fromisoformat(raw_date), FuelType(key)
+                incl = Decimal(str(raw_price))
+            except (ValueError, ArithmeticError):
+                continue
+            if day > today:
+                points.append(
+                    PricePoint(
+                        effective_date=day,
+                        fuel=fuel,
+                        price_incl_vat=incl,
+                        price_excl_vat=(incl / _VAT_DECIMAL).quantize(
+                            Decimal("0.0001")
+                        ),
+                    )
+                )
+        return points
+
+    @callback
+    def _set_primary_healthy(self) -> None:
+        self.primary_broken_since = None
+        self._async_clear_issue(ISSUE_ANNOUNCEMENTS_UNAVAILABLE)
+
+    @callback
+    def _set_primary_broken(self) -> None:
+        now = dt_util.utcnow()
+        if self.primary_broken_since is None:
+            self.primary_broken_since = now
+        days = (now - self.primary_broken_since).days
+        if days >= ANNOUNCE_FEED_BROKEN_ISSUE_DAYS:
+            self._async_raise_issue(
+                ISSUE_ANNOUNCEMENTS_UNAVAILABLE, {"days": str(days)}
+            )
 
     async def _async_fetch_announcements(
         self, source: AnnouncementSource, today: date
@@ -273,10 +357,18 @@ class LuxFuelCoordinator(DataUpdateCoordinator[PriceSet]):
     # -- change detection & events ------------------------------------------
 
     async def _async_detect_changes(self, price_set: PriceSet) -> None:
-        """Fire announced / changed bus events and persist a snapshot."""
+        """Fire announced / changed / corrected events and persist a snapshot.
+
+        An announced price is remembered per fuel until the provider's official
+        price for that day is known. If the two differ, a *corrected* event
+        tells whoever acted on the announcement -- whether the official price
+        arrives the same evening or only after midnight.
+        """
+        today = dt_util.now().date()
         snapshot: dict[str, Any] = {}
         announced: list[dict[str, Any]] = []
         changed: list[dict[str, Any]] = []
+        corrected: list[dict[str, Any]] = []
 
         for fuel, fp in price_set.prices.items():
             key = fuel.value
@@ -301,7 +393,41 @@ class LuxFuelCoordinator(DataUpdateCoordinator[PriceSet]):
                     }
                 )
 
-            if fp.has_pending_change:
+            # -- resolve an earlier announcement against the official price --
+            ann_date = prev.get("announced_date")
+            ann_price = prev.get("announced_price")
+            ann_base = prev.get("announced_base")
+            resolved = None
+            if ann_date and ann_price is not None:
+                day = date.fromisoformat(ann_date)
+                official = self._official.get((fuel, day))
+                if official is not None:
+                    if float(official) != float(ann_price):
+                        base = _as_float(ann_base)
+                        if base is None:
+                            base = new_price
+                        delta = round(float(official) - base, 4)
+                        corrected.append(
+                            {
+                                "fuel": key,
+                                "effective_date": ann_date,
+                                "announced_price": float(ann_price),
+                                "corrected_price": float(official),
+                                "current_price": base,
+                                "delta": delta,
+                                "direction": "up"
+                                if delta > 0
+                                else "down"
+                                if delta < 0
+                                else "none",
+                            }
+                        )
+                    resolved, ann_date, ann_price, ann_base = ann_date, None, None, None
+                elif day < today - timedelta(days=2):
+                    ann_date, ann_price, ann_base = None, None, None
+
+            # -- announce a new next-day change (once per day and value) --
+            if fp.has_pending_change and up_date not in (ann_date, resolved):
                 seen_this = (
                     prev.get("upcoming_date") == up_date
                     and prev.get("upcoming_price") == up_price
@@ -318,26 +444,31 @@ class LuxFuelCoordinator(DataUpdateCoordinator[PriceSet]):
                             "effective_date": up_date,
                         }
                     )
+                    ann_date = up_date
+                    ann_price = up_price
+                    ann_base = str(fp.current.price_incl_vat)
 
             snapshot[key] = {
                 "current_date": cur_date,
                 "current_price": str(fp.current.price_incl_vat),
                 "upcoming_date": up_date,
                 "upcoming_price": up_price,
+                "announced_date": ann_date,
+                "announced_price": ann_price,
+                "announced_base": ann_base,
             }
 
-        if announced:
-            _LOGGER.debug("Firing %s: %s", EVENT_PRICE_CHANGE_ANNOUNCED, announced)
-            self.hass.bus.async_fire(
-                EVENT_PRICE_CHANGE_ANNOUNCED,
-                {"provider": price_set.provider_name, "changes": announced},
-            )
-        if changed:
-            _LOGGER.debug("Firing %s: %s", EVENT_PRICE_CHANGED, changed)
-            self.hass.bus.async_fire(
-                EVENT_PRICE_CHANGED,
-                {"provider": price_set.provider_name, "changes": changed},
-            )
+        for event_type, changes in (
+            (EVENT_PRICE_CHANGE_ANNOUNCED, announced),
+            (EVENT_PRICE_CHANGED, changed),
+            (EVENT_PRICE_CHANGE_CORRECTED, corrected),
+        ):
+            if changes:
+                _LOGGER.debug("Firing %s: %s", event_type, changes)
+                self.hass.bus.async_fire(
+                    event_type,
+                    {"provider": price_set.provider_name, "changes": changes},
+                )
 
         if snapshot != self._last_seen:
             self._last_seen = snapshot

@@ -11,17 +11,19 @@ pre-release identifiers included (`0.0.1-beta`, …).
 - **Evening price announcement no longer missed when a source skips it.**
   On 2026-09-24 a Diesel increase for the next day was announced around
   17:40, but the only announcement source never published it, so the change
-  only showed up at midnight as "New price in effect". The announced
-  next-day price now comes from several sources: petrol.lu's own next-day
-  row plus two additional public feeds, and the first one that has it wins.
-  If they disagree, petrol.lu wins and a warning is logged. Closes #17.
+  only showed up at midnight as "New price in effect". Tomorrow's price now
+  comes from a more reliable announcement feed, which is only trusted while it
+  agrees with petrol.lu on today's price. If it is unreachable, unreadable or
+  disagrees, a backup feed stands in. petrol.lu's own next-day row always
+  wins. Closes #17.
 - **Earlier and longer evening checks.** The evening check now starts at
   **17:30** (was 18:01) and retries every 2 minutes until 18:30, then every
   20–30 minutes (randomised) until midnight, as long as tomorrow's price is
   still unknown. The checks stop as soon as tomorrow's price is known,
   changed or not. A restart during the evening now resumes them instead of
-  waiting for the next day. A custom evening check time is kept.
-- A half-filled row in an announcement feed (prices still being entered)
+  waiting for the next day. Installs still on the old 18:01 default are
+  moved to 17:30; a custom time is kept.
+- A half-filled row in the announcement feed (prices still being entered)
   is ignored until every fuel is filled in, so a partial update can't
   trigger a premature or split announcement.
 - Announced dates are read as Luxembourg calendar days, whatever time zone
@@ -29,14 +31,23 @@ pre-release identifiers included (`0.0.1-beta`, …).
 
 ### Added
 
+- **Corrections.** Once a price has been announced for a day, it stays until
+  petrol.lu publishes the official price for that day. If the two differ, the
+  new `letzfuel_ha_price_change_corrected` event fires, the same evening or
+  after midnight. The notifications blueprint sends it as a correction that
+  replaces the earlier notification on the phone, e.g.
+  `DIESEL: 2.095 €/L (no change) instead of 2.055 €/L`.
 - **Plausibility check** for announced prices: values more than 15 % away
   from today's price, or dated more than a week ahead, are ignored.
+- **Repair issue** when the announcement feed has been unusable for 3 days in
+  a row, so a silent loss of the evening announcement gets noticed.
 - **Load spread across installs.** Each install shifts its evening and
   midnight refreshes by a fixed offset of up to one minute, so installs
   don't all query the sources at the same second.
 - **Diagnostics** show, per announcement source, when it was last checked,
   the newest date it listed and the outcome (`announced`, `nothing_future`,
-  `implausible` or `error`).
+  `implausible`, `inconsistent`, `error`, or `standby` for the backup while
+  it isn't needed), plus since when the feed has been unusable.
 
 ## [0.1.0] - 2026-09-24
 

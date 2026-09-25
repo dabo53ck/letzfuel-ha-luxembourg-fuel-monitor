@@ -104,6 +104,8 @@ def test_parse_complete_row_after_filling() -> None:
 
     assert result.latest_date == TOMORROW
     assert {p.fuel for p in result.points} == set(FuelType)
+    assert result.rows[TODAY][FuelType.DIESEL] == Decimal("2.055")
+    assert result.rows[TOMORROW][FuelType.DIESEL] == Decimal("2.095")
 
 
 def test_parse_comma_decimal() -> None:

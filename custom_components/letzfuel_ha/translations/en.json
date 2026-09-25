@@ -169,6 +169,10 @@
     "parse_error": {
       "title": "Cannot read the fuel price source",
       "description": "The price page was reached but could not be parsed ({error}). The page layout may have changed – please open an issue."
+    },
+    "announcements_unavailable": {
+      "title": "Tomorrow's price is only shown late",
+      "description": "For {days} days the announcement feed for tomorrow's price could not be used, so a backup is used instead. If that fails too, tomorrow's price only appears once the official price table lists it, usually late in the evening. Check the diagnostics and please open an issue if this persists."
     }
   }
 }

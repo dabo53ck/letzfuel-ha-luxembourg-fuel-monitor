@@ -65,9 +65,12 @@ class RtlLuAnnouncements:
     async def async_fetch(self, today: date) -> AnnouncementResult:
         """Fetch the payload; report its effective date and any future points."""
         data = await self._async_fetch()
+        latest = parse_effective_date(data)
+        points = parse_announced(data, today)
         return AnnouncementResult(
-            latest_date=parse_effective_date(data),
-            points=parse_announced(data, today),
+            latest_date=latest,
+            points=points,
+            rows={latest: {p.fuel: p.price_incl_vat for p in points}} if points else {},
         )
 
     async def _async_fetch(self) -> dict:

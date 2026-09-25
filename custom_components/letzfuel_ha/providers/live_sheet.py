@@ -95,6 +95,7 @@ def parse_sheet(data: dict, today: date) -> AnnouncementResult:
     columns = _resolve_columns(rows)
     latest: date | None = None
     points: list[PricePoint] = []
+    complete: dict[date, dict[FuelType, Decimal]] = {}
     for row in rows:
         if not isinstance(row, list) or not row:
             continue
@@ -110,6 +111,7 @@ def parse_sheet(data: dict, today: date) -> AnnouncementResult:
             # one: a half-filled row is not an announcement (yet).
             continue
         latest = day if latest is None else max(latest, day)
+        complete[day] = {fuel: p for fuel, p in prices.items() if p is not None}
         if day <= today:
             continue
         points.extend(
@@ -121,7 +123,7 @@ def parse_sheet(data: dict, today: date) -> AnnouncementResult:
             )
             for fuel, incl in prices.items()
         )
-    return AnnouncementResult(latest_date=latest, points=points)
+    return AnnouncementResult(latest_date=latest, points=points, rows=complete)
 
 
 def _resolve_columns(rows: list) -> dict[FuelType, int]:
