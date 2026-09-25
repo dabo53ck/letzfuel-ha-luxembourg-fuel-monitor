@@ -2,6 +2,7 @@
 
 The sheet lists every published maximum price (incl. VAT) as one row per
 effective date and is usually updated on the evening the change is announced.
+Only complete rows (every fuel filled in) count.
 Like the other announcement sources it is only used for future-dated rows,
 and a failure here never breaks the provider update.
 
@@ -100,21 +101,26 @@ def parse_sheet(data: dict, today: date) -> AnnouncementResult:
         day = _parse_date(row[0])
         if day is None:
             continue
+        prices = {
+            fuel: _parse_price(row[index]) if index < len(row) else None
+            for fuel, index in columns.items()
+        }
+        if any(price is None for price in prices.values()):
+            # The editors add the row first and fill the prices in one by
+            # one: a half-filled row is not an announcement (yet).
+            continue
         latest = day if latest is None else max(latest, day)
         if day <= today:
             continue
-        for fuel, index in columns.items():
-            incl = _parse_price(row[index]) if index < len(row) else None
-            if incl is None:
-                continue
-            points.append(
-                PricePoint(
-                    effective_date=day,
-                    fuel=fuel,
-                    price_incl_vat=incl,
-                    price_excl_vat=(incl / _VAT_DECIMAL).quantize(Decimal("0.0001")),
-                )
+        points.extend(
+            PricePoint(
+                effective_date=day,
+                fuel=fuel,
+                price_incl_vat=incl,
+                price_excl_vat=(incl / _VAT_DECIMAL).quantize(Decimal("0.0001")),
             )
+            for fuel, incl in prices.items()
+        )
     return AnnouncementResult(latest_date=latest, points=points)
 
 

@@ -38,7 +38,7 @@
         "title": "LëtzFuel HA settings",
         "data": {
           "update_interval_hours": "Update interval",
-          "evening_check_time": "Evening check time (catches the ~18:00 publication; retries every 2 min for 14 min, then every 5 min up to 29 min after this time, then every 20–30 min until midnight)",
+          "evening_check_time": "Evening check time (catches the publication around 17:30–18:00; while nothing is announced yet, retries every 2 min for 60 min, then every 20–30 min until midnight)",
           "announcements_enabled": "Fetch tomorrow's announced price",
           "trend_window_days": "Trend window",
           "price_display": "Price display",

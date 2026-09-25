@@ -78,24 +78,39 @@ def test_parse_nothing_future() -> None:
     assert result.points == []
 
 
-def test_parse_skips_blank_and_junk_cells() -> None:
-    payload = sheet_json([(TOMORROW, {FuelType.DIESEL: "2.095"})])
-    payload["data"][0].append(["26.09.2026", "n/a", "NaN", "0", ""])
-    payload["data"][0].append(["not a date", "1.000 €", "1.000 €", "1.000 €", ""])
+def _row(day: date, diesel: str, sp95: str = "1.835", sp98: str = "2.059") -> tuple:
+    return (day, {FuelType.DIESEL: diesel, FuelType.SP95: sp95, FuelType.SP98: sp98})
+
+
+def test_parse_skips_incomplete_rows() -> None:
+    """The editors add the row first and fill the prices in one by one."""
+    payload = sheet_json([_row(TODAY, "2.055")])
+    rows = payload["data"][0]
+    rows.append(["25.09.2026", "", "", "", ""])  # row created, still empty
+    rows.append(["26.09.2026", "1.888 €", "", "", ""])  # only SP95 so far
+    rows.append(["27.09.2026", "n/a", "NaN", "0", ""])  # junk
+    rows.append(["not a date", "1.000 €", "1.000 €", "1.000 €", ""])
 
     result = parse_sheet(payload, TODAY)
 
-    assert [(p.fuel, p.effective_date) for p in result.points] == [
-        (FuelType.DIESEL, TOMORROW)
-    ]
-    assert result.latest_date == date(2026, 9, 26)
+    assert result.points == []
+    assert result.latest_date == TODAY
+
+
+def test_parse_complete_row_after_filling() -> None:
+    payload = sheet_json([_row(TODAY, "2.055"), _row(TOMORROW, "2.095")])
+
+    result = parse_sheet(payload, TODAY)
+
+    assert result.latest_date == TOMORROW
+    assert {p.fuel for p in result.points} == set(FuelType)
 
 
 def test_parse_comma_decimal() -> None:
-    payload = sheet_json([(TOMORROW, {FuelType.DIESEL: "2,095"})])
+    payload = sheet_json([_row(TOMORROW, "2,095", "1,835", "2,059")])
 
-    (point,) = parse_sheet(payload, TODAY).points
-    assert point.price_incl_vat == Decimal("2.095")
+    by_fuel = {p.fuel: p for p in parse_sheet(payload, TODAY).points}
+    assert by_fuel[FuelType.DIESEL].price_incl_vat == Decimal("2.095")
 
 
 @pytest.mark.parametrize(

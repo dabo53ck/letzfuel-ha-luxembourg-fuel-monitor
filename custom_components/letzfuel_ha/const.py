@@ -53,18 +53,19 @@ PRICE_DISPLAY_EXCL: Final = "excl_vat"
 DEFAULT_TRACKED_FUELS: Final = [FuelType.DIESEL, FuelType.SP95, FuelType.SP98]
 DEFAULT_PRIMARY_FUEL: Final = FuelType.DIESEL
 DEFAULT_UPDATE_INTERVAL_HOURS: Final = 6
-DEFAULT_EVENING_CHECK_TIME: Final = "18:01:00"
-#: Extra refreshes fired (minutes after the evening check) when no upcoming
-#: price has appeared yet -- every 2 min for the first 14 min, then every
-#: 5 min up to 29 min after the evening check (e.g. 18:03...18:15, then
-#: 18:20/18:25/18:30 relative to the default 18:01 check time). Each retry
-#: is a no-op (skipped, not cancelled) once a pending change is found --
-#: harmless since it just checks state instead of refreshing again.
-EVENING_RETRY_OFFSETS_MINUTES: Final = (2, 4, 6, 8, 10, 12, 14, 19, 24, 29)
+DEFAULT_EVENING_CHECK_TIME: Final = "17:30:00"
+#: Extra refreshes fired (minutes after the evening check) while tomorrow's
+#: price is still unknown -- every 2 min for an hour (17:32 ... 18:30 with the
+#: default 17:30 check time). A retry is a no-op once tomorrow's price is known.
+EVENING_RETRY_OFFSETS_MINUTES: Final = tuple(range(2, 61, 2))
 #: After the last retry, keep polling until midnight while nothing has been
 #: announced yet -- each gap drawn at random from this range (minutes) so
 #: installs don't hit the sources in lockstep.
 LATE_EVENING_POLL_MINUTES: Final = (20, 30)
+#: Each install shifts its evening and midnight refreshes by a fixed offset of
+#: up to this many seconds (derived from the config entry id, so it survives
+#: restarts), so installs don't all hit the sources at the same second.
+SCHEDULE_JITTER_MAX_SECONDS: Final = 60
 #: Fixed time for the just-after-midnight refresh that promptly re-evaluates
 #: the current/upcoming rollover, instead of waiting for the next periodic
 #: poll (which can land hours later depending on when the last one ran).

@@ -16,6 +16,7 @@ from custom_components.letzfuel_ha.const import (
     CONF_PRIMARY_FUEL,
     CONF_PROVIDER,
     CONF_TRACKED_FUELS,
+    DEFAULT_EVENING_CHECK_TIME,
     DEFAULT_PROVIDER,
     DOMAIN,
     EVENING_RETRY_OFFSETS_MINUTES,
@@ -26,6 +27,7 @@ from custom_components.letzfuel_ha.const import (
     LATE_EVENING_POLL_MINUTES,
     OPT_ANNOUNCEMENTS_ENABLED,
     OPT_HISTORY_IMPORT_ENABLED,
+    SCHEDULE_JITTER_MAX_SECONDS,
     STALE_AFTER_DAYS,
 )
 from custom_components.letzfuel_ha.models import (
@@ -194,8 +196,9 @@ async def test_announcements_option_disables_rtl(
 
 
 def test_evening_retry_offsets_cadence() -> None:
-    """Regression guard: 2 min up to +14, then 5 min up to +29 (see const.py)."""
-    assert EVENING_RETRY_OFFSETS_MINUTES == (2, 4, 6, 8, 10, 12, 14, 19, 24, 29)
+    """Regression guard: every 2 min for an hour (17:32 ... 18:30 by default)."""
+    assert EVENING_RETRY_OFFSETS_MINUTES == tuple(range(2, 61, 2))
+    assert DEFAULT_EVENING_CHECK_TIME == "17:30:00"
 
 
 async def test_evening_trigger_schedules_and_resets_retries(
@@ -399,6 +402,13 @@ async def test_parse_error_issue_raised_and_cleared(
 # -- multiple announcement sources ---------------------------------------------
 
 
+def _sheet(day, diesel: str, sp95: str = "1.792", sp98: str = "1.983") -> dict:
+    """A complete sheet row (all fuels filled); SP95/SP98 at today's price."""
+    return sheet_json(
+        [(day, {FuelType.DIESEL: diesel, FuelType.SP95: sp95, FuelType.SP98: sp98})]
+    )
+
+
 def _rtl(day, diesel: float) -> dict:
     return {
         "id": 1,
@@ -429,7 +439,7 @@ async def test_sheet_announces_when_rtl_is_stale(
     tomorrow = dt_util.now().date() + timedelta(days=1)
     mock_petrol_lu(
         price_entries,
-        sheet_payload=sheet_json([(tomorrow, {FuelType.DIESEL: "1.905"})]),
+        sheet_payload=_sheet(tomorrow, "1.905"),
     )
 
     entry = await _setup(hass)
@@ -475,7 +485,7 @@ async def test_rtl_wins_over_sheet_and_conflict_logged_once(
     mock_petrol_lu(
         price_entries,
         rtl_payload=_rtl(tomorrow, 1.905),
-        sheet_payload=sheet_json([(tomorrow, {FuelType.DIESEL: "1.915"})]),
+        sheet_payload=_sheet(tomorrow, "1.915"),
     )
 
     entry = await _setup(hass)
@@ -496,13 +506,13 @@ async def test_implausible_announcement_is_ignored(
     tomorrow = dt_util.now().date() + timedelta(days=1)
     mock_petrol_lu(
         price_entries,
-        sheet_payload=sheet_json([(tomorrow, {FuelType.DIESEL: "18.65"})]),
+        sheet_payload=_sheet(tomorrow, "18.65"),
     )
 
     entry = await _setup(hass)
     coordinator = entry.runtime_data
+    # the typo'd Diesel price is dropped; the other fuels' row still counts
     assert coordinator.fuel_prices(FuelType.DIESEL).upcoming is None
-    assert coordinator.announcement_status["live_sheet"]["outcome"] == "implausible"
     assert coordinator.announcement_status["live_sheet"]["rejected"] == 1
 
     await _unload(hass, entry)
@@ -542,7 +552,7 @@ async def test_announcements_option_disables_every_source(
     mock_petrol_lu(
         price_entries,
         rtl_payload=_rtl(tomorrow, 1.905),
-        sheet_payload=sheet_json([(tomorrow, {FuelType.DIESEL: "1.905"})]),
+        sheet_payload=_sheet(tomorrow, "1.905"),
     )
 
     entry = await _setup(hass, **{OPT_ANNOUNCEMENTS_ENABLED: False})
@@ -569,14 +579,15 @@ async def test_evening_trigger_arms_randomized_late_poll(
         patch(f"{_COORD}.random.uniform", return_value=25.0) as uniform,
         patch(f"{_COORD}.async_track_point_in_time", tracker),
     ):
-        await coordinator._async_evening_trigger(_local(18, 1))
+        await coordinator._async_evening_trigger(_local(17, 30))
 
     uniform.assert_called_with(*LATE_EVENING_POLL_MINUTES)
     times = [call.args[2] for call in tracker.call_args_list]
-    # the fixed retries, then the first late poll 25 min after the last one
+    # every 2 min until 18:30, then the first late poll 25 min after that
     assert times[:-1] == [
-        _local(18, 1) + timedelta(minutes=m) for m in EVENING_RETRY_OFFSETS_MINUTES
+        _local(17, 30) + timedelta(minutes=m) for m in EVENING_RETRY_OFFSETS_MINUTES
     ]
+    assert times[-2] == _local(18, 30)
     assert times[-1] == _local(18, 55)
     assert coordinator._late_poll_deadline == _local(24)
 
@@ -618,7 +629,7 @@ async def test_late_poll_rearms_until_announced(
         tomorrow = dt_util.now().date() + timedelta(days=1)
         mock_petrol_lu(
             price_entries,
-            sheet_payload=sheet_json([(tomorrow, {FuelType.DIESEL: "1.905"})]),
+            sheet_payload=_sheet(tomorrow, "1.905"),
         )
         await coordinator._async_late_poll(_local(19, 25))
         assert coordinator._has_pending_change()
@@ -647,19 +658,19 @@ async def test_unchanged_announcement_ends_evening_polling(
 ) -> None:
     """Tomorrow announced at today's price: nothing left to wait for."""
     coordinator = init_integration.runtime_data
+    coordinator._cancel_late_poll()  # a setup after 17:30 may have armed one
     tomorrow = dt_util.now().date() + timedelta(days=1)
     mock_petrol_lu(price_entries, rtl_payload=_rtl(tomorrow, 1.865))
     tracker = MagicMock()
     with patch(f"{_COORD}.async_track_point_in_time", tracker):
-        await coordinator._async_evening_trigger(_local(18, 1))
-        # no pending change -> the fixed retries are still armed ...
-        assert tracker.call_count == len(EVENING_RETRY_OFFSETS_MINUTES)
-        # ... but no late-evening polling on top
+        await coordinator._async_evening_trigger(_local(17, 30))
+        # neither retries nor late-evening polls get armed
+        tracker.assert_not_called()
         assert coordinator._late_poll_unsub is None
 
         await coordinator._async_late_poll(_local(19))
-        assert tracker.call_count == len(EVENING_RETRY_OFFSETS_MINUTES)
-    coordinator._retry_unsubs.clear()
+        await coordinator._async_evening_retry(_local(17, 32))
+        tracker.assert_not_called()
 
 
 async def test_unexpected_source_error_is_non_fatal(
@@ -678,5 +689,56 @@ async def test_unexpected_source_error_is_non_fatal(
     assert coordinator.announcement_status["live_sheet"]["outcome"] == (
         "nothing_future"
     )
+
+    await _unload(hass, entry)
+
+
+def test_install_jitter_is_stable_and_bounded() -> None:
+    from custom_components.letzfuel_ha.coordinator import _install_jitter_seconds
+
+    values = {_install_jitter_seconds(f"entry{i}") for i in range(500)}
+    assert values <= set(range(SCHEDULE_JITTER_MAX_SECONDS + 1))
+    assert len(values) > 30  # actually spread out
+    assert _install_jitter_seconds("abc") == _install_jitter_seconds("abc")
+
+
+@pytest.mark.parametrize(
+    ("jitter", "evening", "midnight"),
+    [(0, (17, 30, 0), (0, 5, 0)), (45, (17, 30, 45), (0, 5, 45))],
+)
+async def test_schedules_apply_install_jitter(
+    hass: HomeAssistant, mock_petrol_lu, jitter, evening, midnight
+) -> None:
+    tracker = MagicMock()
+    with (
+        patch(f"{_COORD}._install_jitter_seconds", return_value=jitter),
+        patch(f"{_COORD}.async_track_time_change", tracker),
+    ):
+        entry = await _setup(hass)
+    armed = {
+        call.args[1].__name__: (
+            call.kwargs["hour"],
+            call.kwargs["minute"],
+            call.kwargs["second"],
+        )
+        for call in tracker.call_args_list
+    }
+    assert armed["_async_evening_trigger"] == evening
+    assert armed["_async_midnight_trigger"] == midnight
+    await _unload(hass, entry)
+
+
+async def test_all_implausible_announcement_reports_implausible(
+    hass: HomeAssistant, mock_petrol_lu, price_entries
+) -> None:
+    tomorrow = dt_util.now().date() + timedelta(days=1)
+    mock_petrol_lu(
+        price_entries, sheet_payload=_sheet(tomorrow, "18.65", "17.92", "19.83")
+    )
+
+    entry = await _setup(hass)
+    status = entry.runtime_data.announcement_status["live_sheet"]
+    assert status["outcome"] == "implausible"
+    assert status["rejected"] == 3
 
     await _unload(hass, entry)

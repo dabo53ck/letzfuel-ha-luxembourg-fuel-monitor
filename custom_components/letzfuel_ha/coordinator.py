@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import hashlib
 import logging
 import random
 from datetime import date, datetime, time, timedelta
@@ -52,6 +53,7 @@ from .const import (
     OPT_TREND_WINDOW_DAYS,
     OPT_UPDATE_INTERVAL_HOURS,
     PRICE_DISPLAY_EXCL,
+    SCHEDULE_JITTER_MAX_SECONDS,
     STALE_AFTER_DAYS,
 )
 from .helpers import option_value
@@ -119,6 +121,10 @@ class LuxFuelCoordinator(DataUpdateCoordinator[PriceSet]):
         self._retry_unsubs: list[CALLBACK_TYPE] = []
         self._late_poll_unsub: CALLBACK_TYPE | None = None
         self._late_poll_deadline: datetime | None = None
+        #: Fixed per-install offset for the evening and midnight refreshes.
+        self.schedule_jitter = timedelta(
+            seconds=_install_jitter_seconds(entry.entry_id)
+        )
         self._midnight_unsub: CALLBACK_TYPE | None = None
         self._level_entity_unsub: CALLBACK_TYPE | None = None
         #: Live fuel level (%) set via the number entity; overrides the option.
@@ -352,19 +358,20 @@ class LuxFuelCoordinator(DataUpdateCoordinator[PriceSet]):
 
     @callback
     def async_setup_evening_schedule(self) -> None:
-        """(Re)arm the ~18:01 refresh that catches the government publication."""
+        """(Re)arm the evening refresh that catches the government publication."""
         self._teardown_evening_schedule()
         parsed = dt_util.parse_time(
             option_value(
                 self.config_entry, OPT_EVENING_CHECK_TIME, DEFAULT_EVENING_CHECK_TIME
             )
-        ) or time(18, 1)
+        ) or time(17, 30)
+        at = _shift(parsed, self.schedule_jitter)
         self._evening_unsub = async_track_time_change(
             self.hass,
             self._async_evening_trigger,
-            hour=parsed.hour,
-            minute=parsed.minute,
-            second=parsed.second,
+            hour=at.hour,
+            minute=at.minute,
+            second=at.second,
         )
         # Set up (or restarted) after the evening check already ran today:
         # don't wait until tomorrow, keep polling for the rest of the evening.
@@ -391,8 +398,8 @@ class LuxFuelCoordinator(DataUpdateCoordinator[PriceSet]):
         self._retry_unsubs.clear()
         self._cancel_late_poll()
         await self.async_refresh()
-        if self._has_pending_change():
-            return
+        if self._has_upcoming():
+            return  # tomorrow's price is already known, changed or not
         for offset in EVENING_RETRY_OFFSETS_MINUTES:
             self._retry_unsubs.append(
                 async_track_point_in_time(
@@ -401,8 +408,6 @@ class LuxFuelCoordinator(DataUpdateCoordinator[PriceSet]):
                     now + timedelta(minutes=offset),
                 )
             )
-        if self._has_upcoming():
-            return  # announced, just unchanged -- nothing left to wait for
         self._late_poll_deadline = _next_midnight(now)
         self._schedule_late_poll(
             now + timedelta(minutes=max(EVENING_RETRY_OFFSETS_MINUTES))
@@ -410,7 +415,7 @@ class LuxFuelCoordinator(DataUpdateCoordinator[PriceSet]):
 
     async def _async_evening_retry(self, now: datetime) -> None:
         """Retry only while no next-day price has appeared yet."""
-        if self._has_pending_change():
+        if self._has_upcoming():
             return
         await self.async_refresh()
 
@@ -457,12 +462,13 @@ class LuxFuelCoordinator(DataUpdateCoordinator[PriceSet]):
         """
         self._teardown_midnight_schedule()
         parsed = dt_util.parse_time(MIDNIGHT_REFRESH_TIME) or time(0, 5)
+        at = _shift(parsed, self.schedule_jitter)
         self._midnight_unsub = async_track_time_change(
             self.hass,
             self._async_midnight_trigger,
-            hour=parsed.hour,
-            minute=parsed.minute,
-            second=parsed.second,
+            hour=at.hour,
+            minute=at.minute,
+            second=at.second,
         )
 
     @callback
@@ -630,6 +636,17 @@ class LuxFuelCoordinator(DataUpdateCoordinator[PriceSet]):
             return None
         value = point.price_incl_vat if self.use_incl_vat else point.price_excl_vat
         return float(value)
+
+
+def _install_jitter_seconds(entry_id: str) -> int:
+    """Stable 0..SCHEDULE_JITTER_MAX_SECONDS offset for this config entry."""
+    digest = hashlib.sha256(entry_id.encode()).digest()
+    return int.from_bytes(digest[:4], "big") % (SCHEDULE_JITTER_MAX_SECONDS + 1)
+
+
+def _shift(at: time, delta: timedelta) -> time:
+    """Wall-clock time ``delta`` after ``at`` (wrapping past midnight)."""
+    return (datetime.combine(date.min, at) + delta).time()
 
 
 def _next_midnight(now: datetime) -> datetime:

@@ -38,7 +38,7 @@
         "title": "Definições do LëtzFuel HA",
         "data": {
           "update_interval_hours": "Intervalo de atualização",
-          "evening_check_time": "Hora da verificação noturna (apanha a publicação por volta das 18h00; tenta novamente a cada 2 min durante 14 min, depois a cada 5 min até 29 min após esta hora e, a seguir, a cada 20–30 min até à meia-noite)",
+          "evening_check_time": "Hora da verificação noturna (apanha a publicação por volta das 17h30–18h00; enquanto nada for anunciado, tenta novamente a cada 2 min durante 60 min e, a seguir, a cada 20–30 min até à meia-noite)",
           "announcements_enabled": "Obter o preço anunciado para amanhã",
           "trend_window_days": "Janela de tendência",
           "price_display": "Apresentação do preço",

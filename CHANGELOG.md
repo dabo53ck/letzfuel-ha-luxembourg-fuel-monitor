@@ -15,11 +15,15 @@ pre-release identifiers included (`0.0.1-beta`, …).
   next-day price now comes from several sources: petrol.lu's own next-day
   row plus two additional public feeds, and the first one that has it wins.
   If they disagree, petrol.lu wins and a warning is logged. Closes #17.
-- **More evening checks.** After the existing retries up to 18:30, the
-  integration keeps checking every 20–30 minutes (randomised to spread the
-  load on the sources) until midnight, as long as nothing has been
-  announced yet. A restart during the evening now resumes these checks
-  instead of waiting for the next day.
+- **Earlier and longer evening checks.** The evening check now starts at
+  **17:30** (was 18:01) and retries every 2 minutes until 18:30, then every
+  20–30 minutes (randomised) until midnight, as long as tomorrow's price is
+  still unknown. The checks stop as soon as tomorrow's price is known,
+  changed or not. A restart during the evening now resumes them instead of
+  waiting for the next day. A custom evening check time is kept.
+- A half-filled row in an announcement feed (prices still being entered)
+  is ignored until every fuel is filled in, so a partial update can't
+  trigger a premature or split announcement.
 - Announced dates are read as Luxembourg calendar days, whatever time zone
   Home Assistant runs in.
 
@@ -27,6 +31,9 @@ pre-release identifiers included (`0.0.1-beta`, …).
 
 - **Plausibility check** for announced prices: values more than 15 % away
   from today's price, or dated more than a week ahead, are ignored.
+- **Load spread across installs.** Each install shifts its evening and
+  midnight refreshes by a fixed offset of up to one minute, so installs
+  don't all query the sources at the same second.
 - **Diagnostics** show, per announcement source, when it was last checked,
   the newest date it listed and the outcome (`announced`, `nothing_future`,
   `implausible` or `error`).
