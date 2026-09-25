@@ -25,13 +25,18 @@ answers:
 
 ### Data sources
 
-| Source | Used for |
-| --- | --- |
-| [petrol.lu](https://www.petrol.lu/en/official-prices/) (GPL) | current price, full history, statistics backfill. |
-| Additional public announcement feeds | the **announced next-day price** only (petrol.lu usually lists it late in the evening). |
+Prices come from the official maximum-price table published by
+[petrol.lu](https://www.petrol.lu/en/official-prices/) (GPL): today's price,
+the full history and the statistics backfill.
 
-> **Not affiliated** with the Groupement Pétrolier Luxembourgeois, petrol.lu, any
-> other data source, or the Luxembourg government. Always verify the price at the pump.
+petrol.lu usually adds the next day's price only late in the evening. To tell
+you about a change in time, the integration also checks a few public
+announcement feeds for **tomorrow's price** — nothing else is taken from them.
+Implausible values are ignored and petrol.lu always has the final say. You can
+turn this off in the options.
+
+> **Not affiliated** with the GPL, petrol.lu, any other data source or the
+> Luxembourg government. Always verify the price at the pump.
 
 ---
 
