@@ -604,6 +604,9 @@ async def test_late_poll_rearms_until_announced(
     hass: HomeAssistant, mock_petrol_lu, price_entries, init_integration
 ) -> None:
     coordinator = init_integration.runtime_data
+    # Set up after 18:01 (wall clock), setup already armed a real late poll;
+    # calling the callback directly below would orphan that timer.
+    coordinator._cancel_late_poll()
     coordinator._late_poll_deadline = _local(24) + timedelta(days=1)
     tracker = MagicMock()
     with patch(f"{_COORD}.async_track_point_in_time", tracker):
