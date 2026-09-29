@@ -16,13 +16,13 @@ pre-release identifiers included (`0.0.1-beta`, …).
   agrees with petrol.lu on today's price. If it is unreachable, unreadable or
   disagrees, a backup feed stands in. petrol.lu's own next-day row always
   wins. Closes #17.
-- **Earlier and longer evening checks.** The evening check now starts at
-  **17:30** (was 18:01) and retries every 2 minutes until 18:30, then every
-  20–30 minutes (randomised) until midnight, as long as tomorrow's price is
-  still unknown. The checks stop as soon as tomorrow's price is known,
-  changed or not. A restart during the evening now resumes them instead of
-  waiting for the next day. Installs still on the old 18:01 default are
-  moved to 17:30; a custom time is kept.
+- **Longer evening checks.** The evening check starts at **18:00** by
+  default (was 18:01) and, while nothing is announced yet, retries every
+  3–6 minutes (random) for up to an hour, then every 20–30 minutes
+  (randomised) until midnight. The checks stop as soon as tomorrow's price is
+  known, changed or not. A restart during the evening now resumes them
+  instead of waiting for the next day. Installs still on an earlier default
+  move to 18:00; a custom time is kept.
 - A half-filled row in the announcement feed (prices still being entered)
   is ignored until every fuel is filled in, so a partial update can't
   trigger a premature or split announcement.

@@ -38,7 +38,7 @@
         "title": "LëtzFuel HA Astellungen",
         "data": {
           "update_interval_hours": "Aktualiséierungsintervall",
-          "evening_check_time": "Auerzäit vum Owescheck (fänkt d'Verëffentlechung géint 17:30–18:00 of; soulaang näischt ugekënnegt ass, probéiert all 2 Min. fir 60 Min., duerno all 20–30 Min. bis Mëtternuecht)",
+          "evening_check_time": "Auerzäit vum Owescheck (fänkt d'Verëffentlechung géint 18:00 of; soulaang näischt ugekënnegt ass, probéiert all 3–6 Min. (zoufälleg) fir bis zu 60 Min., duerno all 20–30 Min. bis Mëtternuecht)",
           "announcements_enabled": "De muer ugekënnegte Präis ofruffen",
           "trend_window_days": "Trendfënster",
           "price_display": "Präisduerstellung",

@@ -20,7 +20,7 @@ blueprint:
       service to look up. Optionally also where tapping a notification opens.
 
     - *Evening: next-day price announced* – fires when a new price is published
-      for tomorrow (≈17:30–18:00). If the official price later turns out
+      for tomorrow (≈18:00). If the official price later turns out
       different, a correction follows (same settings, replaces the first
       notification).
 

@@ -154,7 +154,7 @@ re-adding the integration:
 | Setting | Default | Notes |
 | --- | --- | --- |
 | Update interval | 6 h | Regular polling cadence |
-| Evening check time | 17:30 | Extra refresh to catch the publication; while nothing has been announced yet it retries every **2 min** for an hour, then every **20–30 min** (random) until midnight |
+| Evening check time | 18:00 | Extra refresh to catch the publication; while nothing has been announced yet it retries every **3–6 min** (random) for up to an hour, then every **20–30 min** (random) until midnight |
 | Fetch tomorrow's announced price | on | Also ask the announcement feed (or its backup) for the next-day price, so it shows up in the evening. Implausible values are ignored. Turn off to rely on petrol.lu alone. |
 | Trend window | 14 days | Sample window for the trend sensors |
 | Price display | Incl. VAT | Show prices with or without VAT |

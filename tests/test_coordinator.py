@@ -20,7 +20,8 @@ from custom_components.letzfuel_ha.const import (
     DEFAULT_EVENING_CHECK_TIME,
     DEFAULT_PROVIDER,
     DOMAIN,
-    EVENING_RETRY_OFFSETS_MINUTES,
+    EVENING_RETRY_STEP_MINUTES,
+    EVENING_RETRY_WINDOW_MINUTES,
     EVENT_PRICE_CHANGE_ANNOUNCED,
     EVENT_PRICE_CHANGE_CORRECTED,
     EVENT_PRICE_CHANGED,
@@ -33,6 +34,7 @@ from custom_components.letzfuel_ha.const import (
     SCHEDULE_JITTER_MAX_SECONDS,
     STALE_AFTER_DAYS,
 )
+from custom_components.letzfuel_ha.coordinator import LuxFuelCoordinator
 from custom_components.letzfuel_ha.models import (
     FuelPrices,
     FuelType,
@@ -189,9 +191,16 @@ async def test_announcements_option_disables_rtl(
 
 
 def test_evening_retry_offsets_cadence() -> None:
-    """Regression guard: every 2 min for an hour (17:32 ... 18:30 by default)."""
-    assert EVENING_RETRY_OFFSETS_MINUTES == tuple(range(2, 61, 2))
-    assert DEFAULT_EVENING_CHECK_TIME == "17:30:00"
+    """Regression guard: random 3-6 min gaps, none later than an hour."""
+    assert DEFAULT_EVENING_CHECK_TIME == "18:00:00"
+    low, high = EVENING_RETRY_STEP_MINUTES
+    for _ in range(200):
+        offsets = LuxFuelCoordinator._evening_retry_offsets()
+        gaps = [b - a for a, b in zip([0.0, *offsets], offsets, strict=False)]
+        assert offsets
+        assert all(low <= gap <= high for gap in gaps)
+        assert offsets[-1] <= EVENING_RETRY_WINDOW_MINUTES
+        assert offsets[-1] + high > EVENING_RETRY_WINDOW_MINUTES
 
 
 async def test_evening_trigger_schedules_and_resets_retries(
@@ -203,13 +212,15 @@ async def test_evening_trigger_schedules_and_resets_retries(
     """
     coordinator = init_integration.runtime_data
 
-    await coordinator._async_evening_trigger(dt_util.utcnow())
-    assert len(coordinator._retry_unsubs) == len(EVENING_RETRY_OFFSETS_MINUTES)
-    first_batch = list(coordinator._retry_unsubs)
+    fixed = [5.0, 10.0, 15.0]
+    with patch.object(LuxFuelCoordinator, "_evening_retry_offsets", return_value=fixed):
+        await coordinator._async_evening_trigger(dt_util.utcnow())
+        assert len(coordinator._retry_unsubs) == len(fixed)
+        first_batch = list(coordinator._retry_unsubs)
 
-    # Simulates the next day's trigger -- must reset, not pile onto, the list.
-    await coordinator._async_evening_trigger(dt_util.utcnow())
-    assert len(coordinator._retry_unsubs) == len(EVENING_RETRY_OFFSETS_MINUTES)
+        # Simulates the next day's trigger -- must reset, not pile onto, the list.
+        await coordinator._async_evening_trigger(dt_util.utcnow())
+        assert len(coordinator._retry_unsubs) == len(fixed)
 
     # Cancel both batches. In production the first batch's real
     # async_track_point_in_time timers would already have fired by the time
@@ -754,20 +765,22 @@ async def test_evening_trigger_arms_randomized_late_poll(
 ) -> None:
     coordinator = init_integration.runtime_data
     tracker = MagicMock()
+    offsets = [5.0 * n for n in range(1, 13)]  # 18:05 ... 19:00
     with (
+        patch.object(
+            LuxFuelCoordinator, "_evening_retry_offsets", return_value=offsets
+        ),
         patch(f"{_COORD}.random.uniform", return_value=25.0) as uniform,
         patch(f"{_COORD}.async_track_point_in_time", tracker),
     ):
-        await coordinator._async_evening_trigger(_local(17, 30))
+        await coordinator._async_evening_trigger(_local(18))
 
     uniform.assert_called_with(*LATE_EVENING_POLL_MINUTES)
     times = [call.args[2] for call in tracker.call_args_list]
-    # every 2 min until 18:30, then the first late poll 25 min after that
-    assert times[:-1] == [
-        _local(17, 30) + timedelta(minutes=m) for m in EVENING_RETRY_OFFSETS_MINUTES
-    ]
-    assert times[-2] == _local(18, 30)
-    assert times[-1] == _local(18, 55)
+    # the drawn retries, then the first late poll 25 min after the last one
+    assert times[:-1] == [_local(18) + timedelta(minutes=m) for m in offsets]
+    assert times[-2] == _local(19)
+    assert times[-1] == _local(19, 25)
     assert coordinator._late_poll_deadline == _local(24)
 
 
@@ -794,7 +807,7 @@ async def test_late_poll_rearms_until_announced(
     hass: HomeAssistant, mock_petrol_lu, price_entries, init_integration
 ) -> None:
     coordinator = init_integration.runtime_data
-    # Set up after 18:01 (wall clock), setup already armed a real late poll;
+    # Set up after 18:00 (wall clock), setup already armed a real late poll;
     # calling the callback directly below would orphan that timer.
     coordinator._cancel_late_poll()
     coordinator._late_poll_deadline = _local(24) + timedelta(days=1)
@@ -821,7 +834,7 @@ async def test_late_poll_rearms_until_announced(
 async def test_setup_after_evening_check_starts_late_polling(
     hass: HomeAssistant, mock_petrol_lu, freezer, hour: int, armed: bool
 ) -> None:
-    """A restart at 20:40 (after the 18:01 check) still polls that evening."""
+    """A restart at 20:40 (after the 18:00 check) still polls that evening."""
     freezer.move_to(_local(hour, 40))
 
     entry = await _setup(hass)
@@ -837,18 +850,18 @@ async def test_unchanged_announcement_ends_evening_polling(
 ) -> None:
     """Tomorrow announced at today's price: nothing left to wait for."""
     coordinator = init_integration.runtime_data
-    coordinator._cancel_late_poll()  # a setup after 17:30 may have armed one
+    coordinator._cancel_late_poll()  # a setup after 18:00 may have armed one
     tomorrow = dt_util.now().date() + timedelta(days=1)
     mock_petrol_lu(price_entries, sheet_payload=_sheet(tomorrow, "1.865"))
     tracker = MagicMock()
     with patch(f"{_COORD}.async_track_point_in_time", tracker):
-        await coordinator._async_evening_trigger(_local(17, 30))
+        await coordinator._async_evening_trigger(_local(18))
         # neither retries nor late-evening polls get armed
         tracker.assert_not_called()
         assert coordinator._late_poll_unsub is None
 
         await coordinator._async_late_poll(_local(19))
-        await coordinator._async_evening_retry(_local(17, 32))
+        await coordinator._async_evening_retry(_local(18, 4))
         tracker.assert_not_called()
 
 
@@ -881,7 +894,7 @@ def test_install_jitter_is_stable_and_bounded() -> None:
 
 @pytest.mark.parametrize(
     ("jitter", "evening", "midnight"),
-    [(0, (17, 30, 0), (0, 5, 0)), (45, (17, 30, 45), (0, 5, 45))],
+    [(0, (18, 0, 0), (0, 5, 0)), (45, (18, 0, 45), (0, 5, 45))],
 )
 async def test_schedules_apply_install_jitter(
     hass: HomeAssistant, mock_petrol_lu, jitter, evening, midnight

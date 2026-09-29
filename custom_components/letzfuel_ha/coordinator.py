@@ -39,7 +39,8 @@ from .const import (
     DEFAULT_TREND_WINDOW_DAYS,
     DEFAULT_UPDATE_INTERVAL_HOURS,
     DOMAIN,
-    EVENING_RETRY_OFFSETS_MINUTES,
+    EVENING_RETRY_STEP_MINUTES,
+    EVENING_RETRY_WINDOW_MINUTES,
     EVENT_PRICE_CHANGE_ANNOUNCED,
     EVENT_PRICE_CHANGE_CORRECTED,
     EVENT_PRICE_CHANGED,
@@ -495,7 +496,7 @@ class LuxFuelCoordinator(DataUpdateCoordinator[PriceSet]):
             option_value(
                 self.config_entry, OPT_EVENING_CHECK_TIME, DEFAULT_EVENING_CHECK_TIME
             )
-        ) or time(17, 30)
+        ) or time(18, 0)
         at = _shift(parsed, self.schedule_jitter)
         self._evening_unsub = async_track_time_change(
             self.hass,
@@ -531,7 +532,8 @@ class LuxFuelCoordinator(DataUpdateCoordinator[PriceSet]):
         await self.async_refresh()
         if self._has_upcoming():
             return  # tomorrow's price is already known, changed or not
-        for offset in EVENING_RETRY_OFFSETS_MINUTES:
+        offsets = self._evening_retry_offsets()
+        for offset in offsets:
             self._retry_unsubs.append(
                 async_track_point_in_time(
                     self.hass,
@@ -540,9 +542,21 @@ class LuxFuelCoordinator(DataUpdateCoordinator[PriceSet]):
                 )
             )
         self._late_poll_deadline = _next_midnight(now)
-        self._schedule_late_poll(
-            now + timedelta(minutes=max(EVENING_RETRY_OFFSETS_MINUTES))
-        )
+        self._schedule_late_poll(now + timedelta(minutes=offsets[-1]))
+
+    @staticmethod
+    def _evening_retry_offsets() -> list[float]:
+        """Minutes after the evening check for each retry, drawn fresh at random.
+
+        Consecutive gaps are 3-6 min; the last retry lands within the hour.
+        """
+        low, high = EVENING_RETRY_STEP_MINUTES
+        offsets: list[float] = []
+        total = random.uniform(low, high)
+        while total <= EVENING_RETRY_WINDOW_MINUTES:
+            offsets.append(total)
+            total += random.uniform(low, high)
+        return offsets
 
     async def _async_evening_retry(self, now: datetime) -> None:
         """Retry only while no next-day price has appeared yet."""

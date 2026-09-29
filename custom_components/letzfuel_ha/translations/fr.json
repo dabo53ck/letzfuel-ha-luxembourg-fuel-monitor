@@ -38,7 +38,7 @@
         "title": "Paramètres de LëtzFuel HA",
         "data": {
           "update_interval_hours": "Intervalle de mise à jour",
-          "evening_check_time": "Heure du contrôle du soir (capte la publication vers 17h30–18h00 ; tant que rien n'est annoncé, réessais toutes les 2 min pendant 60 min, puis toutes les 20 à 30 min jusqu'à minuit)",
+          "evening_check_time": "Heure du contrôle du soir (capte la publication vers 18h00 ; tant que rien n'est annoncé, réessais toutes les 3 à 6 min (aléatoire) pendant 60 min au plus, puis toutes les 20 à 30 min jusqu'à minuit)",
           "announcements_enabled": "Récupérer le prix annoncé pour demain",
           "trend_window_days": "Fenêtre de tendance",
           "price_display": "Affichage du prix",

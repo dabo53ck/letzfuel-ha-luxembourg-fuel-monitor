@@ -20,7 +20,8 @@ from custom_components.letzfuel_ha.const import (
 @pytest.mark.parametrize(
     ("stored", "expected"),
     [
-        ("18:01:00", "17:30:00"),  # the old default moves with the new one
+        ("18:01:00", "18:00:00"),  # an earlier default moves with the new one
+        ("17:30:00", "18:00:00"),
         ("18:15:00", "18:15:00"),  # a custom time is kept
     ],
 )
@@ -43,7 +44,7 @@ async def test_migrates_old_default_evening_time(
     assert await hass.config_entries.async_setup(entry.entry_id)
     await hass.async_block_till_done()
 
-    assert entry.minor_version == 2
+    assert entry.minor_version == 3
     assert entry.options[OPT_EVENING_CHECK_TIME] == expected
 
     await hass.config_entries.async_unload(entry.entry_id)

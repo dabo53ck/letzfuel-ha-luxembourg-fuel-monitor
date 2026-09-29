@@ -53,13 +53,16 @@ PRICE_DISPLAY_EXCL: Final = "excl_vat"
 DEFAULT_TRACKED_FUELS: Final = [FuelType.DIESEL, FuelType.SP95, FuelType.SP98]
 DEFAULT_PRIMARY_FUEL: Final = FuelType.DIESEL
 DEFAULT_UPDATE_INTERVAL_HOURS: Final = 6
-DEFAULT_EVENING_CHECK_TIME: Final = "17:30:00"
-#: The default before 0.1.1; migrated to the new default (see __init__.py).
-LEGACY_EVENING_CHECK_TIME: Final = "18:01:00"
-#: Extra refreshes fired (minutes after the evening check) while tomorrow's
-#: price is still unknown -- every 2 min for an hour (17:32 ... 18:30 with the
-#: default 17:30 check time). A retry is a no-op once tomorrow's price is known.
-EVENING_RETRY_OFFSETS_MINUTES: Final = tuple(range(2, 61, 2))
+DEFAULT_EVENING_CHECK_TIME: Final = "18:00:00"
+#: Earlier defaults; a config entry still holding one moves to the current
+#: default (see __init__.py). Custom times are left alone.
+OLD_EVENING_CHECK_DEFAULTS: Final = frozenset({"18:01:00", "17:30:00"})
+#: Extra refreshes fired while tomorrow's price is still unknown: the gap
+#: between two retries is drawn at random from this range (minutes), for up to
+#: the window below after the evening check. A retry is a no-op once tomorrow's
+#: price is known.
+EVENING_RETRY_STEP_MINUTES: Final = (3, 6)
+EVENING_RETRY_WINDOW_MINUTES: Final = 60
 #: After the last retry, keep polling until midnight while nothing has been
 #: announced yet -- each gap drawn at random from this range (minutes) so
 #: installs don't hit the sources in lockstep.
