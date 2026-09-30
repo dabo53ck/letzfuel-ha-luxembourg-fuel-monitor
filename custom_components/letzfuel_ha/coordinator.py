@@ -58,7 +58,7 @@ from .const import (
     SCHEDULE_JITTER_MAX_SECONDS,
     STALE_AFTER_DAYS,
     UPDATE_INTERVAL_HOURS,
-    VAT_RATE_LU,
+    VAT_DIVISOR,
 )
 from .helpers import option_value
 from .models import FuelPrices, FuelType, PricePoint, PriceSet
@@ -81,7 +81,6 @@ from .providers.rtl_lu import RtlLuAnnouncements
 
 _LOGGER = logging.getLogger(__name__)
 _STORE_VERSION = 1
-_VAT_DECIMAL = Decimal("1") + Decimal(str(VAT_RATE_LU))
 
 type LuxFuelConfigEntry = ConfigEntry[LuxFuelCoordinator]
 
@@ -290,9 +289,7 @@ class LuxFuelCoordinator(DataUpdateCoordinator[PriceSet]):
                         effective_date=day,
                         fuel=fuel,
                         price_incl_vat=incl,
-                        price_excl_vat=(incl / _VAT_DECIMAL).quantize(
-                            Decimal("0.0001")
-                        ),
+                        price_excl_vat=(incl / VAT_DIVISOR).quantize(Decimal("0.0001")),
                     )
                 )
         return points
@@ -649,12 +646,6 @@ class LuxFuelCoordinator(DataUpdateCoordinator[PriceSet]):
     def _has_upcoming(self) -> bool:
         """True once tomorrow's price is known -- changed or not."""
         return bool(self.data and any(fp.upcoming for fp in self.data.prices.values()))
-
-    @callback
-    def _has_pending_change(self) -> bool:
-        return bool(
-            self.data and any(fp.has_pending_change for fp in self.data.prices.values())
-        )
 
     # -- repair issues ---------------------------------------------------------
 

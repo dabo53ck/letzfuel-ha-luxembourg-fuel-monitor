@@ -351,8 +351,6 @@ def _clean_options(user_input: dict[str, Any]) -> dict[str, Any]:
         # Stored as None rather than dropped: a missing key would fall back to
         # the size entered during the initial setup (see ``option_value``).
         options[CONF_TANK_SIZE] = None
-    if options.get(CONF_CURRENT_LEVEL) is None:
-        options.pop(CONF_CURRENT_LEVEL, None)
     if options.get(CONF_LEVEL_SOURCE) != LEVEL_SOURCE_ENTITY or not options.get(
         CONF_LEVEL_ENTITY
     ):

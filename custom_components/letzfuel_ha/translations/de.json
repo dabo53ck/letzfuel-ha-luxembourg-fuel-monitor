@@ -39,7 +39,7 @@
         "title": "Einstellungen für LëtzFuel HA",
         "data": {
           "evening_check_time": "Uhrzeit der Abendprüfung (erfasst die Veröffentlichung gegen 18:00; solange nichts angekündigt ist, Wiederholungen alle 3–6 Min. (zufällig) für bis zu 60 Min., danach alle 20–30 Min. bis Mitternacht)",
-          "announcements_enabled": "Morgen angekündigten Preis abrufen",
+          "announcements_enabled": "Den für morgen angekündigten Preis abrufen",
           "trend_window_days": "Trendfenster",
           "price_display": "Preisanzeige",
           "tracked_fuels": "Zu verfolgende Kraftstoffe",
@@ -100,7 +100,7 @@
           "refuel_today": "Heute tanken",
           "wait": "Warten",
           "no_change": "Keine Änderung",
-          "awaiting_price": "Neuer Preis abwarten"
+          "awaiting_price": "Neuen Preis abwarten"
         }
       },
       "last_price_update": { "name": "Letzte Preisaktualisierung" },

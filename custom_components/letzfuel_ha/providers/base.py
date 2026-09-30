@@ -50,18 +50,6 @@ class FuelProvider(ABC):
         prices the evening before they take effect.
         """
 
-    async def async_get_last_update(self) -> date | None:
-        """Return the effective date of the most recent (non-future) price change."""
-        history = await self.async_get_history()
-        today = dt_util.now().date()
-        past = sorted(p.effective_date for p in history if p.effective_date <= today)
-        return past[-1] if past else None
-
-    async def async_get_current_prices(self, fuels: Iterable[FuelType]) -> PriceSet:
-        """Resolve current / previous / upcoming prices for ``fuels``."""
-        history = await self.async_get_history()
-        return build_price_set(history, fuels, self)
-
 
 def build_price_set(
     history: list[PricePoint],

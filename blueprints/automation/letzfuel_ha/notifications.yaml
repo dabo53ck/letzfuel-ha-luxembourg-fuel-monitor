@@ -417,6 +417,9 @@ variables:
   #: trigger above — triggers are evaluated before `variables:`, so the
   #: trigger can't reference this. Keep both in sync if you ever fork this.
   rec_entity: sensor.letzfuel_ha_refuel_recommendation
+  #: The fuel the "Primary fuel" choices resolve to (diesel if the
+  #: recommendation sensor has no value).
+  primary_fuel: "{{ state_attr(rec_entity, 'primary_fuel') or 'diesel' }}"
   rec_enabled: !input rec_enabled
   rec_on_states: !input rec_on_states
   rec_notify_no_change: !input rec_notify_no_change
@@ -536,10 +539,9 @@ variables:
   threshold_fuel_ok: >-
     {% set trig_fuel_map = {'threshold_diesel': 'diesel', 'threshold_sp95': 'sp95', 'threshold_sp98': 'sp98'} %}
     {% set fired_fuel = trig_fuel_map.get(trigger.id) %}
-    {% set primary = state_attr(rec_entity, 'primary_fuel') or 'diesel' %}
     {% set wf = namespace(v=[]) %}
     {% for f in threshold_fuels %}
-      {% set wf.v = wf.v + ([primary] if f == 'primary' else [f]) %}
+      {% set wf.v = wf.v + ([primary_fuel] if f == 'primary' else [f]) %}
     {% endfor %}
     {{ fired_fuel is not none and fired_fuel in (wf.v | unique | list) }}
   matched_changes: >-
@@ -560,10 +562,9 @@ variables:
       {% set cfg_dir = 'both' %}
       {% set cfg_md = 0 %}
     {% endif %}
-    {% set primary = state_attr(rec_entity, 'primary_fuel') or 'diesel' %}
     {% set wf = namespace(v=[]) %}
     {% for f in want_raw %}
-      {% set wf.v = wf.v + ([primary] if f == 'primary' else [f]) %}
+      {% set wf.v = wf.v + ([primary_fuel] if f == 'primary' else [f]) %}
     {% endfor %}
     {% set want = wf.v | unique | list %}
     {% set out = namespace(v=[]) %}
@@ -598,10 +599,9 @@ variables:
        if (trigger is defined and trigger.id == 'corrected' and trigger.event is defined
            and trigger.event.data is defined and trigger.event.data.changes is defined)
        else [] %}
-    {% set primary = state_attr(rec_entity, 'primary_fuel') or 'diesel' %}
     {% set wf = namespace(v=[]) %}
     {% for f in announced_fuels %}
-      {% set wf.v = wf.v + ([primary] if f == 'primary' else [f]) %}
+      {% set wf.v = wf.v + ([primary_fuel] if f == 'primary' else [f]) %}
     {% endfor %}
     {% set want = wf.v | unique | list %}
     {% set md = announced_min_delta | float(0) %}

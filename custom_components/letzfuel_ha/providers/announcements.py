@@ -54,20 +54,6 @@ class Conflict:
     ignored_source: str
 
 
-def current_prices(
-    history: Iterable[PricePoint], today: date
-) -> dict[FuelType, Decimal]:
-    """Latest price in effect today, per fuel (incl. VAT)."""
-    latest: dict[FuelType, PricePoint] = {}
-    for point in history:
-        if point.effective_date > today:
-            continue
-        prev = latest.get(point.fuel)
-        if prev is None or point.effective_date >= prev.effective_date:
-            latest[point.fuel] = point
-    return {fuel: point.price_incl_vat for fuel, point in latest.items()}
-
-
 def current_points(
     history: Iterable[PricePoint], today: date
 ) -> dict[FuelType, PricePoint]:

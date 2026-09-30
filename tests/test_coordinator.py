@@ -824,7 +824,7 @@ async def test_late_poll_rearms_until_announced(
             sheet_payload=_sheet(tomorrow, "1.905"),
         )
         await coordinator._async_late_poll(_local(19, 25))
-        assert coordinator._has_pending_change()
+        assert coordinator.data.prices[FuelType.DIESEL].has_pending_change
         assert tracker.call_count == 1
 
     coordinator._late_poll_unsub = None  # the MagicMock "unsub" needs no cleanup

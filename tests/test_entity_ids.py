@@ -44,7 +44,7 @@ EXPECTED = {
 }
 
 
-@pytest.mark.parametrize("language", ["en", "de", "fr", "lb"])
+@pytest.mark.parametrize("language", ["en", "de", "fr", "lb", "it", "pt"])
 async def test_entity_ids_are_language_independent(
     hass: HomeAssistant, mock_petrol_lu, language: str
 ) -> None:

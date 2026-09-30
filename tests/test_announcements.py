@@ -9,7 +9,6 @@ from custom_components.letzfuel_ha.const import ANNOUNCE_MAX_DAYS_AHEAD
 from custom_components.letzfuel_ha.models import FuelType, PricePoint
 from custom_components.letzfuel_ha.providers.announcements import (
     current_points,
-    current_prices,
     matches_provider,
     merge_announced,
     split_plausible,
@@ -24,14 +23,15 @@ def _pt(day: date, price: str, fuel: FuelType = FuelType.DIESEL) -> PricePoint:
     return PricePoint(day, fuel, D(price), D(price))
 
 
-def test_current_prices_ignores_future_rows() -> None:
+def test_current_points_ignores_future_rows() -> None:
     history = [
         _pt(TODAY - timedelta(days=3), "2.000"),
         _pt(TODAY, "2.055"),
         _pt(TOMORROW, "2.095"),
         _pt(TODAY, "1.835", FuelType.SP95),
     ]
-    assert current_prices(history, TODAY) == {
+    current = current_points(history, TODAY)
+    assert {fuel: point.price_incl_vat for fuel, point in current.items()} == {
         FuelType.DIESEL: D("2.055"),
         FuelType.SP95: D("1.835"),
     }

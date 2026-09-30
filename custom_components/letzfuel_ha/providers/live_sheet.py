@@ -2,9 +2,9 @@
 
 The sheet lists every published maximum price (incl. VAT) as one row per
 effective date and is usually updated on the evening the change is announced.
-Only complete rows (every fuel filled in) count.
-Like the other announcement sources it is only used for future-dated rows,
-and a failure here never breaks the provider update.
+Only complete rows (every fuel filled in) count. Future-dated rows are the
+announced prices; earlier rows are used to check the sheet against the
+provider's current price. A failure here never breaks the provider update.
 
 Undocumented third-party feed: keep it optional and fail soft.
 """
@@ -18,18 +18,13 @@ from decimal import Decimal, InvalidOperation
 
 from aiohttp import ClientError, ClientSession
 
-from ..const import USER_AGENT_VERSION, VAT_RATE_LU
+from ..const import USER_AGENT, VAT_DIVISOR
 from ..models import FuelType, PricePoint
 from .announcements import AnnouncementResult
 from .base import ProviderConnectionError, ProviderParseError
 
 LIVE_SHEET_URL = "https://live-data.jifo.co/a3c240af-d4a8-4f7d-933b-14167f9a0d4b"
-_USER_AGENT = (
-    f"HomeAssistant-LetzFuelHA/{USER_AGENT_VERSION} "
-    "(+https://github.com/dabo53ck/letzfuel-ha-luxembourg-fuel-monitor)"
-)
 _REQUEST_TIMEOUT = 20
-_VAT_DECIMAL = Decimal("1") + Decimal(str(VAT_RATE_LU))
 _DATE_RE = re.compile(r"^\s*(\d{1,2})\.(\d{1,2})\.(\d{4})\s*$")
 
 # Header substrings -> fuel. Check "98"/"95" before the generic term.
@@ -58,7 +53,7 @@ class LiveSheetAnnouncements:
         try:
             async with self._session.get(
                 LIVE_SHEET_URL,
-                headers={"User-Agent": _USER_AGENT},
+                headers={"User-Agent": USER_AGENT},
                 timeout=_REQUEST_TIMEOUT,
             ) as response:
                 if response.status != 200:
@@ -119,7 +114,7 @@ def parse_sheet(data: dict, today: date) -> AnnouncementResult:
                 effective_date=day,
                 fuel=fuel,
                 price_incl_vat=incl,
-                price_excl_vat=(incl / _VAT_DECIMAL).quantize(Decimal("0.0001")),
+                price_excl_vat=(incl / VAT_DIVISOR).quantize(Decimal("0.0001")),
             )
             for fuel, incl in prices.items()
         )

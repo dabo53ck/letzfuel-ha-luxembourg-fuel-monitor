@@ -77,7 +77,7 @@ async def test_fetch_http_error(
     src = RtlLuAnnouncements(async_get_clientsession(hass))
 
     with pytest.raises(ProviderConnectionError):
-        await src.async_get_announced_points(TODAY)
+        await src.async_fetch(TODAY)
 
 
 async def test_fetch_ok(
@@ -86,7 +86,7 @@ async def test_fetch_ok(
     aioclient_mock.get(RTL_CURRENT_URL, json=_payload("2026-09-03"))
     src = RtlLuAnnouncements(async_get_clientsession(hass))
 
-    points = await src.async_get_announced_points(TODAY)
+    points = (await src.async_fetch(TODAY)).points
     assert {p.fuel for p in points} == {
         FuelType.DIESEL,
         FuelType.SP95,

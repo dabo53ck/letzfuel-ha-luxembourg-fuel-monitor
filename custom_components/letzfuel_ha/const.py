@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from decimal import Decimal
 from typing import Final
 
 from .models import FuelType
@@ -17,6 +18,11 @@ DEFAULT_PROVIDER: Final = "petrol_lu"
 #: User-Agent string (manifest.json's "version" is HA's own source of truth
 #: for the integration as a whole; keep this in sync by hand at release time).
 USER_AGENT_VERSION: Final = "0.1.1"
+#: Sent with every request to the price sources.
+USER_AGENT: Final = (
+    f"HomeAssistant-LetzFuelHA/{USER_AGENT_VERSION} "
+    "(+https://github.com/dabo53ck/letzfuel-ha-luxembourg-fuel-monitor)"
+)
 
 # --- Config entry keys ---------------------------------------------------------
 CONF_PROVIDER: Final = "provider"
@@ -88,7 +94,7 @@ MAX_TREND_WINDOW_DAYS: Final = 90
 
 #: How many days of history the coordinator keeps in memory for trend maths.
 RECENT_HISTORY_DAYS: Final = 120
-#: Data older than this (with a failing fetch) raises a repair issue.
+#: A newest price older than this many days raises a repair issue.
 STALE_AFTER_DAYS: Final = 14
 
 # --- Announcement plausibility ---------------------------------------------
@@ -151,5 +157,7 @@ UNIT_EUR_PER_LITER: Final = "€/L"
 #: Luxembourg standard VAT rate (informational attribute only; the source
 #: publishes both incl. and excl. VAT figures directly).
 VAT_RATE_LU: Final = 0.17
+#: Divisor that turns a VAT-inclusive price into the VAT-exclusive one.
+VAT_DIVISOR: Final = Decimal("1") + Decimal(str(VAT_RATE_LU))
 #: Effective dates are Luxembourg calendar days.
 LU_TIME_ZONE: Final = "Europe/Luxembourg"
