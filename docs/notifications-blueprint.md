@@ -73,8 +73,7 @@ Default is English.
 Home Assistant has no built-in blueprint version tracking or update check —
 re-importing always silently overwrites whatever you had. The blueprint's
 `description` (visible on the Blueprints page and while editing an automation
-built from it) carries a version marker and a one-line summary of what
-changed, so you can tell at a glance whether you're on the latest — the
+built from it) carries a version marker, so you can tell at a glance whether you're on the latest — the
 blueprint's title itself is deliberately version-free and stays stable.
 From `0.0.1-beta` on, that marker follows the integration's own release
 number instead of the earlier separate v1–v7 counter, so both stay in sync.
@@ -98,7 +97,7 @@ Tapping a notification opens something useful instead of just the app:
 
 | Notification | Opens |
 | --- | --- |
-| Price change announced / new price in effect | the price sensor of the (first) fuel it's about |
+| Price change announced / correction / new price in effect | the price sensor of the (first) fuel it's about |
 | Price threshold | the price sensor of the fuel that dropped below your target |
 | Refuel recommendation and Live countdown | the *Refuel recommendation* sensor |
 
@@ -159,7 +158,7 @@ fork it and change the wording); the inputs below only control *whether* and
 Fires on the `letzfuel_ha_price_change_announced` event — a new price has been
 published for tomorrow (Luxembourg publishes around 18:00 the day before). The
 message shows the date it takes effect in Luxembourg's regional format,
-`DD/MM/YYYY` (e.g. `SP95 −2,8 ct/L → 1,84 €/L (10/09/2026)`) — fixed, not a
+`DD/MM/YYYY` (e.g. `SP95: -2,8 ct/L → 1,840 €/L (10/09/2026)`) — fixed, not a
 setting.
 
 | Input | Meaning |
@@ -182,9 +181,8 @@ new price **actually applies** (usually just after midnight).
 
 ### Refuel recommendation
 
-Fires when `sensor.letzfuel_ha_refuel_recommendation` changes. Nothing to
-configure beyond enabling it — the blueprint always watches that one, stable
-entity.
+Fires when `sensor.letzfuel_ha_refuel_recommendation` changes. There is no
+entity to pick — the blueprint always watches that one, stable entity.
 
 | Input | Meaning |
 | --- | --- |
@@ -270,7 +268,7 @@ Minimum change `0.03`, Priority *Critical*. Leave every other type off.
 | Symptom | Cause / fix |
 | --- | --- |
 | No notification at all | Confirm the device is picked in **Devices** and still paired (Settings → Companion App). Check the automation trace (Automations → ⋮ → Traces). |
-| Notifications don't group | Shouldn't happen — grouping is fixed and not user-configurable. Check the trace for the `notification_data` variable. |
+| Notifications don't group | Shouldn't happen — grouping is fixed, there is no setting for it. Check the trace for the `notification_data` variable. |
 | *Critical* doesn't pierce Do Not Disturb | iOS: *Critical Alerts* not allowed for the HA app. Android: another app owns a Do-Not-Disturb override, or the phone blocks the alarm channel. |
 | Announced/effective/threshold never fires | No price change has been published yet, or your **Fuels / Direction / Minimum change** filtered it out. Confirm the `letzfuel_ha_price_change_announced` event in Developer Tools → Events. |
 | Refuel recommendation never fires | You renamed `sensor.letzfuel_ha_refuel_recommendation` — see the note in [Refuel recommendation](#refuel-recommendation). |

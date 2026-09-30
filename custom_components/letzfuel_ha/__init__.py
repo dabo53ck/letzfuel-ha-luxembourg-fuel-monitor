@@ -14,6 +14,7 @@ from .const import (
     BRAND_ICON_URL,
     DEFAULT_EVENING_CHECK_TIME,
     DEFAULT_HISTORY_IMPORT_MONTHS,
+    LEGACY_OPT_UPDATE_INTERVAL_HOURS,
     OLD_EVENING_CHECK_DEFAULTS,
     OPT_EVENING_CHECK_TIME,
     OPT_HISTORY_IMPORT_ENABLED,
@@ -75,18 +76,19 @@ async def async_migrate_entry(hass: HomeAssistant, entry: LuxFuelConfigEntry) ->
     """Migrate an older config entry."""
     if entry.version > 1:
         return False  # from a newer, incompatible version
-    if entry.minor_version < 3:
+    if entry.minor_version < 4:
         # Saving the options once stores the default explicitly, so an
         # untouched earlier default would otherwise stick forever; a custom
-        # time is left alone.
+        # time is left alone. The update interval is no longer a setting.
         data, options = dict(entry.data), dict(entry.options)
         for values in (data, options):
             if values.get(OPT_EVENING_CHECK_TIME) in OLD_EVENING_CHECK_DEFAULTS:
                 values[OPT_EVENING_CHECK_TIME] = DEFAULT_EVENING_CHECK_TIME
+            values.pop(LEGACY_OPT_UPDATE_INTERVAL_HOURS, None)
         hass.config_entries.async_update_entry(
-            entry, data=data, options=options, minor_version=3
+            entry, data=data, options=options, minor_version=4
         )
-        _LOGGER.debug("Migrated config entry to version 1.3")
+        _LOGGER.debug("Migrated config entry to version 1.4")
     return True
 
 

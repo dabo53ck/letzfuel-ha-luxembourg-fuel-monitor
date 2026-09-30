@@ -26,6 +26,7 @@
     "error": {
       "cannot_connect": "D'Source fir d'Pëtrolspräisser konnt net erreecht ginn. Iwwerpréift Är Verbindung a probéiert et nach eng Kéier.",
       "parse_error": "D'Source fir d'Pëtrolspräisser gouf erreecht, mä hiren Inhalt konnt net gelies ginn. Maacht wgl. en Issue op.",
+      "primary_not_tracked": "D'Haapt Pëtrol's Zort muss ee vun de verfollegte Pëtrol Zorte sinn.",
       "level_entity_required": "Wielt d'Entitéit fir den Tankfëllstand aus – oder stellt d'Source zréck op manuell."
     },
     "abort": {
@@ -37,7 +38,6 @@
       "init": {
         "title": "LëtzFuel HA Astellungen",
         "data": {
-          "update_interval_hours": "Aktualiséierungsintervall",
           "evening_check_time": "Auerzäit vum Owescheck (fänkt d'Verëffentlechung géint 18:00 of; soulaang näischt ugekënnegt ass, probéiert all 3–6 Min. (zoufälleg) fir bis zu 60 Min., duerno all 20–30 Min. bis Mëtternuecht)",
           "announcements_enabled": "De muer ugekënnegte Präis ofruffen",
           "trend_window_days": "Trendfënster",
@@ -56,6 +56,7 @@
       }
     },
     "error": {
+      "primary_not_tracked": "D'Haapt Pëtrol's Zort muss ee vun de verfollegte Pëtrol Zorte sinn.",
       "level_entity_required": "Wielt d'Entitéit fir den Tankfëllstand aus – oder stellt d'Source zréck op manuell."
     }
   },
@@ -164,7 +165,7 @@
   "issues": {
     "stale_data": {
       "title": "D'Pëtrolspräisser sinn net méi aktuell",
-      "description": "De läschte verëffentlechte Präis ass {age_days} Deeg al an d'Source kann net aktualiséiert ginn. Iwwerpréift d'Präissäit an d'Logbicher vun der Integratioun."
+      "description": "De läschte verëffentlechte Präis ass {age_days} Deeg al. D'Source verëffentlecht vläicht näischt méi oder huet sech geännert. Iwwerpréift d'Präissäit an d'Logbicher vun der Integratioun."
     },
     "parse_error": {
       "title": "D'Source fir d'Pëtrolspräisser kann net gelies ginn",

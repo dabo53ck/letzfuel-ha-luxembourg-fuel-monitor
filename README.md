@@ -48,7 +48,7 @@ announced, a correction follows. You can turn this off in the options.
 | --- | --- |
 | **Current prices** | `sensor.*_price` for each tracked fuel (€/L, incl. or excl. VAT), with rich attributes |
 | **Daily change** | `sensor.*_change` — signed €/L move at the last price change, with percentage and dates |
-| **Trend** | `sensor.*_trend` — `rising` / `falling` / `stable` over a configurable window |
+| **Trend** | `sensor.*_trend` — `rising` / `falling` / `stable` over a rolling window (see Options) |
 | **Next-day awareness** | `binary_sensor.price_change_pending`, `sensor.*_price_tomorrow`, `sensor.refuel_recommendation` |
 | **Events** | `letzfuel_ha_price_change_announced`, `letzfuel_ha_price_change_corrected` and `letzfuel_ha_price_changed` for automations |
 | **Notifications** | one import-and-go [notification blueprint](docs/notifications-blueprint.md) — per-type priority, 6 languages, presence gate |
@@ -143,7 +143,8 @@ All configuration is through the UI.
 : Set your tank size to unlock the cost sensors, then choose where the current
   fuel level comes from:
   - **Manual** – a starting level here, then adjust it live from the
-    `number.*_current_fuel_level` slider (put it on a dashboard).
+    `number.*_current_fuel_level` slider (put it on a dashboard). The level
+    survives restarts, so you only nudge it after driving or refuelling.
   - **From another entity** – pick an entity whose state is the tank fill level
     as a percentage (0–100). The slider is not created in this mode.
     See [Reading the fuel level from another entity](#reading-the-fuel-level-from-another-entity).
@@ -153,7 +154,6 @@ re-adding the integration:
 
 | Setting | Default | Notes |
 | --- | --- | --- |
-| Update interval | 6 h | Regular polling cadence |
 | Evening check time | 18:00 | Extra refresh to catch the publication; while nothing has been announced yet it retries every **3–6 min** (random) for up to an hour, then every **20–30 min** (random) until midnight |
 | Fetch tomorrow's announced price | on | Also ask the announcement feed (or its backup) for the next-day price, so it shows up in the evening. Implausible values are ignored. Turn off to rely on petrol.lu alone. |
 | Trend window | 14 days | Sample window for the trend sensors |
@@ -169,23 +169,21 @@ re-adding the integration:
 
 ## Entity reference
 
-Entity IDs are prefixed with the device name, e.g. `sensor.letzfuel_ha_diesel_price`.
+Entity IDs are prefixed with `letzfuel_ha_`, e.g. `sensor.letzfuel_ha_diesel_price`.
 Sensors marked *disabled by default* can be enabled from the entity settings.
 `*_trend` and `*_price_tomorrow` are enabled by default **only for the primary
 fuel**; the other tracked fuels' copies start disabled.
 
-> **Language note:** entity names are translated, so on a non-English Home
-> Assistant the auto-generated entity IDs follow that language — e.g. on a German
-> system the diesel price sensor is `sensor.letzfuel_ha_diesel_preis`,
-> the change sensor `..._diesel_anderung`, the recommendation `..._tankempfehlung`.
-> The examples below use the English IDs; check **Developer Tools → States** (or
-> rename the entities) for yours.
+> **Language note:** entity names are translated, but entity IDs are always
+> English, whatever language Home Assistant runs in — e.g. the diesel price
+> sensor is `sensor.letzfuel_ha_diesel_price` everywhere. Entities that already
+> exist keep the ID they were created with.
 
-### Per fuel (`diesel`, `sp95`, `sp98`)
+### Per fuel (`diesel`, `sp95_e10`, `sp98`)
 
 | Entity | State | Key attributes |
 | --- | --- | --- |
-| `sensor.*_<fuel>_price` | current max price, €/L | `currency`, `effective_date`, `price_incl_vat`, `price_excl_vat`, `vat_rate`, `previous_price`, `previous_effective_date`, `price_since`, `next_price`, `next_effective_date`, `source`, `source_url` |
+| `sensor.*_<fuel>_price` | current max price, €/L | `currency`, `fuel_type`, `effective_date`, `price_incl_vat`, `price_excl_vat`, `vat_rate`, `previous_price`, `previous_effective_date`, `price_since`, `next_price`, `next_effective_date`, `source`, `source_url` |
 | `sensor.*_<fuel>_change` | signed €/L move at last change | `current_price`, `previous_price`, `percentage_change`, `change_date`, `days_at_current_price` |
 | `sensor.*_<fuel>_trend` *(primary fuel on by default)* | `rising` / `falling` / `stable` | `trend_strength` (€/L per week), `trend_window_days`, `samples_used`, `window_start`, `window_end` |
 | `sensor.*_<fuel>_price_tomorrow` *(primary fuel on by default)* | announced next-day price or *unknown* | `effective_date`, `change_vs_today`, `direction` |
@@ -238,9 +236,6 @@ Typical sources (`sensor`, `number` and `input_number` entities are offered):
 
 > If that entity is later renamed or removed, the stored reference is **not**
 > updated automatically — re-pick it in Options.
-
-The level survives restarts, so once you set it you only nudge it after driving
-or refuelling.
 
 ---
 
@@ -305,8 +300,18 @@ data:
       direction: none
 ```
 
-`letzfuel_ha_price_changed` fires the day a new price actually takes effect (same
-shape, `old_price` / `new_price`).
+`letzfuel_ha_price_changed` fires the day a new price actually takes effect:
+
+```yaml
+event_type: letzfuel_ha_price_changed
+data:
+  provider: "petrol.lu (Groupement Pétrolier Luxembourgeois)"
+  changes:
+    - fuel: diesel
+      old_price: 2.055
+      new_price: 2.095
+      effective_date: "2026-09-26"
+```
 
 ---
 
@@ -349,7 +354,7 @@ Current price, refuel advice and trend at a glance, with a price-history graph
 
 ### Options
 
-![Options dialog: update interval, evening check time, announcements, trend window, price display, tracked fuels, tank size, fuel level source, history import](docs/options.png)
+![Options dialog: evening check time, announcements, trend window, price display, tracked fuels, tank size, fuel level source, history import](docs/options.png)
 
 ### Dashboard card YAML
 

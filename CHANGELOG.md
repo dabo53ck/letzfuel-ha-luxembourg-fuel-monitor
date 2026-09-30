@@ -20,14 +20,31 @@ pre-release identifiers included (`0.0.1-beta`, …).
   default (was 18:01) and, while nothing is announced yet, retries every
   3–6 minutes (random) for up to an hour, then every 20–30 minutes
   (randomised) until midnight. The checks stop as soon as tomorrow's price is
-  known, changed or not. A restart during the evening now resumes them
-  instead of waiting for the next day. Installs still on an earlier default
+  known, changed or not. A restart during the evening keeps the late polling
+  going instead of waiting for the next day. Installs still on an earlier default
   move to 18:00; a custom time is kept.
 - A half-filled row in the announcement feed (prices still being entered)
   is ignored until every fuel is filled in, so a partial update can't
   trigger a premature or split announcement.
 - Announced dates are read as Luxembourg calendar days, whatever time zone
   Home Assistant runs in.
+- **No repeated "Refuel today" notification** after a failed refresh: the
+  blueprint ignores the recommendation sensor going `unavailable` and coming
+  back. The notification text is now consistent across all types: a plain `-`
+  as the minus sign, a colon after the fuel name in the announcement
+  (`DIESEL: -3.8 ct/L → 1.865 €/L (30/09/2026)`), prices always with three
+  decimals, and no trailing period on the recommendation. Re-import the
+  blueprint.
+- **Tank size can be cleared again** in the Options; it used to come back from
+  the value entered during setup.
+- **The primary fuel must be one of the tracked fuels**, both in the setup and
+  in the Options. Before, a primary fuel that wasn't tracked left the
+  recommendation and vehicle sensors without a value.
+- **Imported price history follows the price display setting.** With prices
+  shown without VAT the imported history used the VAT-inclusive values, which
+  made the graph jump where it met the live values.
+- The "prices are out of date" repair issue no longer claims the source cannot
+  be refreshed.
 
 ### Added
 
@@ -48,6 +65,12 @@ pre-release identifiers included (`0.0.1-beta`, …).
   the newest date it listed and the outcome (`announced`, `nothing_future`,
   `implausible`, `inconsistent`, `error`, or `standby` for the backup while
   it isn't needed), plus since when the feed has been unusable.
+
+### Changed
+
+- The update interval is no longer an option: the regular refresh runs every
+  6 hours, next to the evening and midnight checks. A stored value is
+  dropped.
 
 ## [0.1.0] - 2026-09-24
 

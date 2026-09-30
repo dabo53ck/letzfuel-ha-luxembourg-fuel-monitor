@@ -12,6 +12,7 @@ from custom_components.letzfuel_ha.const import (
     CONF_TRACKED_FUELS,
     DEFAULT_PROVIDER,
     DOMAIN,
+    LEGACY_OPT_UPDATE_INTERVAL_HOURS,
     OPT_EVENING_CHECK_TIME,
     OPT_HISTORY_IMPORT_ENABLED,
 )
@@ -38,14 +39,19 @@ async def test_migrates_old_default_evening_time(
             CONF_TRACKED_FUELS: ["diesel"],
             CONF_PRIMARY_FUEL: "diesel",
         },
-        options={OPT_HISTORY_IMPORT_ENABLED: False, OPT_EVENING_CHECK_TIME: stored},
+        options={
+            OPT_HISTORY_IMPORT_ENABLED: False,
+            OPT_EVENING_CHECK_TIME: stored,
+            LEGACY_OPT_UPDATE_INTERVAL_HOURS: 12,
+        },
     )
     entry.add_to_hass(hass)
     assert await hass.config_entries.async_setup(entry.entry_id)
     await hass.async_block_till_done()
 
-    assert entry.minor_version == 3
+    assert entry.minor_version == 4
     assert entry.options[OPT_EVENING_CHECK_TIME] == expected
+    assert LEGACY_OPT_UPDATE_INTERVAL_HOURS not in entry.options
 
     await hass.config_entries.async_unload(entry.entry_id)
     await hass.async_block_till_done()

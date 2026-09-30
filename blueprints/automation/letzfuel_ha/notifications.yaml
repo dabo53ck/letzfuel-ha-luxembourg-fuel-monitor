@@ -361,6 +361,10 @@ triggers:
   - trigger: state
     id: recommend
     entity_id: sensor.letzfuel_ha_refuel_recommendation
+    # A failed refresh makes the sensor `unavailable`; going there and coming
+    # back is not a change of recommendation, so it must not notify again.
+    not_from: [unavailable, unknown]
+    not_to: [unavailable, unknown]
   # `template` instead of `numeric_state` -- these three fuels aren't
   # necessarily all tracked (see the integration's Fuels option), and a
   # numeric_state trigger errors at load time if its entity doesn't exist.
@@ -368,9 +372,7 @@ triggers:
   # has_value() all work, unlike a limited `enabled:` template), evaluated
   # per state change rather than validated once at load, so a not-yet-
   # existing entity just renders false instead of erroring -- and it starts
-  # working on its own the moment that fuel's sensor appears. Still exposes
-  # trigger.to_state/trigger.entity_id like a state trigger would, so the
-  # message-building template below needs no changes.
+  # working on its own the moment that fuel's sensor appears.
   - trigger: template
     id: threshold_diesel
     value_template: >-
@@ -571,7 +573,7 @@ variables:
       {% set d = (c.delta | float(new_p - old_p)) if c.delta is defined else (new_p - old_p) %}
       {% set dir = 'up' if d > 0 else 'down' %}
       {% set dir_ok = cfg_dir == 'both' or (cfg_dir == 'up' and dir == 'up') or (cfg_dir == 'down' and dir == 'down') %}
-      {% set price_str = (new_p | string).replace('.', strings.decimal) %}
+      {% set price_str = ('%.3f' | format(new_p)).replace('.', strings.decimal) %}
       {% set delta_str = (((d | abs) * 100) | round(1) | string).replace('.', strings.decimal) %}
       {#- effective_date is a plain YYYY-MM-DD calendar-date string from the
           integration — split/rejoin to Luxembourg's DD/MM/YYYY instead of
@@ -620,7 +622,7 @@ variables:
              'price_str': ('%.3f' | format(new_p)).replace('.', strings.decimal),
              'announced_str': ('%.3f' | format(ann)).replace('.', strings.decimal),
              'change_str': strings.no_change if (d | abs) < 0.0005
-               else (('+' if d > 0 else '−') ~ (((d | abs) * 100) | round(1) | string).replace('.', strings.decimal) ~ ' ct/L'),
+               else (('+' if d > 0 else '-') ~ (((d | abs) * 100) | round(1) | string).replace('.', strings.decimal) ~ ' ct/L'),
              'date_str': dp[2] ~ '/' ~ dp[1] ~ '/' ~ dp[0] }] %}
       {% endif %}
     {% endfor %}
@@ -664,7 +666,7 @@ actions:
               message: >-
                 {% set lines = namespace(v=[]) %}
                 {%- for c in matched_changes %}
-                {%- set lines.v = lines.v + [(c.fuel | upper) ~ ' ' ~ ('+' if c.direction == 'up' else '−') ~ c.delta_str ~ ' ct/L → ' ~ c.price_str ~ ' €/L (' ~ c.date_str ~ ')'] %}
+                {%- set lines.v = lines.v + [(c.fuel | upper) ~ ': ' ~ ('+' if c.direction == 'up' else '-') ~ c.delta_str ~ ' ct/L → ' ~ c.price_str ~ ' €/L (' ~ c.date_str ~ ')'] %}
                 {%- endfor %}
                 {{ lines.v | join('\n') }}
               msg_tag: letzfuel_announced
@@ -724,7 +726,7 @@ actions:
               message: >-
                 {% set lines = namespace(v=[]) %}
                 {%- for c in matched_changes %}
-                {%- set lines.v = lines.v + [(c.fuel | upper) ~ ': ' ~ c.price_str ~ ' €/L (' ~ ('+' if c.direction == 'up' else '−') ~ c.delta_str ~ ' ct/L)'] %}
+                {%- set lines.v = lines.v + [(c.fuel | upper) ~ ': ' ~ c.price_str ~ ' €/L (' ~ ('+' if c.direction == 'up' else '-') ~ c.delta_str ~ ' ct/L)'] %}
                 {%- endfor %}
                 {{ lines.v | join('\n') }}
               msg_tag: letzfuel_effective
@@ -734,16 +736,17 @@ actions:
       # ---------- Refuel recommendation ----------
       - conditions:
           - "{{ trigger.id == 'recommend' and rec_enabled }}"
+          - "{{ trigger.to_state is not none and trigger.from_state is not none }}"
           - >-
             {{ trigger.to_state.state in rec_on_states
                or (rec_notify_no_change and trigger.to_state.state == 'no_change') }}
-          - "{{ trigger.from_state is none or trigger.from_state.state != trigger.to_state.state }}"
+          - "{{ trigger.from_state.state != trigger.to_state.state }}"
           - "{{ presence_ok or (rec_priority == 'critical' and presence_critical_overrides) }}"
         sequence:
           - variables:
               title: "{{ strings.rec_title }}"
               message: >-
-                {{ strings.rec_states.get(trigger.to_state.state, trigger.to_state.state | replace('_', ' ')) }}.
+                {{ strings.rec_states.get(trigger.to_state.state, trigger.to_state.state | replace('_', ' ')) }}
               msg_tag: letzfuel_recommendation
               priority: "{{ rec_priority }}"
           - *deliver
@@ -784,8 +787,9 @@ actions:
       # ---------- Live countdown to midnight: start ----------
       - conditions:
           - "{{ trigger.id == 'recommend' and live_countdown_enabled }}"
+          - "{{ trigger.to_state is not none and trigger.from_state is not none }}"
           - "{{ trigger.to_state.state == 'refuel_today' }}"
-          - "{{ trigger.from_state is none or trigger.from_state.state != 'refuel_today' }}"
+          - "{{ trigger.from_state.state != 'refuel_today' }}"
         sequence:
           - variables:
               #: Seconds from now until the next local midnight. today_at('00:00')
@@ -812,8 +816,9 @@ actions:
       # inside the 8h Live-Activity limit even on the latest possible start.
       - conditions:
           - "{{ trigger.id == 'recommend' and live_countdown_enabled }}"
+          - "{{ trigger.to_state is not none and trigger.from_state is not none }}"
           - "{{ trigger.to_state.state != 'refuel_today' }}"
-          - "{{ trigger.from_state is not none and trigger.from_state.state == 'refuel_today' }}"
+          - "{{ trigger.from_state.state == 'refuel_today' }}"
         sequence:
           - alias: End the Live Activity / Live Update on every selected device
             repeat:

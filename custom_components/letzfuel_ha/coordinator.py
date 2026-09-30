@@ -37,7 +37,6 @@ from .const import (
     DEFAULT_PROVIDER,
     DEFAULT_TRACKED_FUELS,
     DEFAULT_TREND_WINDOW_DAYS,
-    DEFAULT_UPDATE_INTERVAL_HOURS,
     DOMAIN,
     EVENING_RETRY_STEP_MINUTES,
     EVENING_RETRY_WINDOW_MINUTES,
@@ -55,10 +54,10 @@ from .const import (
     OPT_EVENING_CHECK_TIME,
     OPT_PRICE_DISPLAY,
     OPT_TREND_WINDOW_DAYS,
-    OPT_UPDATE_INTERVAL_HOURS,
     PRICE_DISPLAY_EXCL,
     SCHEDULE_JITTER_MAX_SECONDS,
     STALE_AFTER_DAYS,
+    UPDATE_INTERVAL_HOURS,
     VAT_RATE_LU,
 )
 from .helpers import option_value
@@ -111,16 +110,11 @@ class LuxFuelCoordinator(DataUpdateCoordinator[PriceSet]):
         self._conflicts_warned: set[tuple[str, str, str, str]] = set()
         #: Last outcome per announcement source (exposed in diagnostics).
         self.announcement_status: dict[str, dict[str, Any]] = {}
-        interval_hours = int(
-            option_value(
-                entry, OPT_UPDATE_INTERVAL_HOURS, DEFAULT_UPDATE_INTERVAL_HOURS
-            )
-        )
         super().__init__(
             hass,
             _LOGGER,
             name=DOMAIN,
-            update_interval=timedelta(hours=interval_hours),
+            update_interval=timedelta(hours=UPDATE_INTERVAL_HOURS),
             config_entry=entry,
         )
         self._store: Store[dict[str, Any]] = Store(

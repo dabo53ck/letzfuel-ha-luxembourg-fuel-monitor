@@ -26,6 +26,7 @@
     "error": {
       "cannot_connect": "Could not reach the fuel price source. Check your connection and try again.",
       "parse_error": "The fuel price source was reached but its content could not be read. Please open an issue.",
+      "primary_not_tracked": "The primary fuel must be one of the fuels to track.",
       "level_entity_required": "Choose the entity to read the fuel level from, or set the source back to manual."
     },
     "abort": {
@@ -37,7 +38,6 @@
       "init": {
         "title": "LëtzFuel HA settings",
         "data": {
-          "update_interval_hours": "Update interval",
           "evening_check_time": "Evening check time (catches the publication around 18:00; while nothing is announced yet, retries every 3–6 min (random) for up to 60 min, then every 20–30 min until midnight)",
           "announcements_enabled": "Fetch tomorrow's announced price",
           "trend_window_days": "Trend window",
@@ -56,6 +56,7 @@
       }
     },
     "error": {
+      "primary_not_tracked": "The primary fuel must be one of the fuels to track.",
       "level_entity_required": "Choose the entity to read the fuel level from, or set the source back to manual."
     }
   },
@@ -164,7 +165,7 @@
   "issues": {
     "stale_data": {
       "title": "Fuel prices are out of date",
-      "description": "The newest published price is {age_days} days old and the source cannot be refreshed. Check the price page and the integration logs."
+      "description": "The newest published price is {age_days} days old. The source may have stopped publishing or has changed. Check the price page and the integration logs."
     },
     "parse_error": {
       "title": "Cannot read the fuel price source",

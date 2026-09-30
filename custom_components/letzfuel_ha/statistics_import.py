@@ -75,7 +75,9 @@ async def _async_import(
         if len(points) < 2:
             continue
 
-        rows = _daily_statistics(StatisticData, points, since, today)
+        rows = _daily_statistics(
+            StatisticData, points, since, today, use_incl_vat=coordinator.use_incl_vat
+        )
         if not rows:
             continue
 
@@ -97,8 +99,14 @@ def _daily_statistics(
     points: list[PricePoint],
     since: date,
     today: date,
+    *,
+    use_incl_vat: bool = True,
 ) -> list:
-    """Forward-fill the change points into one statistics row per day."""
+    """Forward-fill the change points into one statistics row per day.
+
+    The prices follow the price display setting, so the imported history lines
+    up with the values the sensor records from now on.
+    """
     tz = dt_util.get_default_time_zone()
     rows: list = []
     idx = 0
@@ -107,7 +115,10 @@ def _daily_statistics(
 
     while day <= today:
         while idx < len(points) and points[idx].effective_date <= day:
-            current_price = float(points[idx].price_incl_vat)
+            point = points[idx]
+            current_price = float(
+                point.price_incl_vat if use_incl_vat else point.price_excl_vat
+            )
             idx += 1
         if current_price is not None:
             start = dt_util.start_of_local_day(day).astimezone(tz)

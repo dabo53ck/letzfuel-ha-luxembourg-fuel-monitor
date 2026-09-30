@@ -36,7 +36,6 @@ LEVEL_SOURCES: Final = [LEVEL_SOURCE_MANUAL, LEVEL_SOURCE_ENTITY]
 LEVEL_ENTITY_DOMAINS: Final = ["sensor", "number", "input_number"]
 
 # --- Options keys ------------------------------------------------------------
-OPT_UPDATE_INTERVAL_HOURS: Final = "update_interval_hours"
 OPT_EVENING_CHECK_TIME: Final = "evening_check_time"
 OPT_TREND_WINDOW_DAYS: Final = "trend_window_days"
 OPT_PRICE_DISPLAY: Final = "price_display"
@@ -52,10 +51,13 @@ PRICE_DISPLAY_EXCL: Final = "excl_vat"
 # --- Defaults --------------------------------------------------------------
 DEFAULT_TRACKED_FUELS: Final = [FuelType.DIESEL, FuelType.SP95, FuelType.SP98]
 DEFAULT_PRIMARY_FUEL: Final = FuelType.DIESEL
-DEFAULT_UPDATE_INTERVAL_HOURS: Final = 6
+#: Regular polling cadence (the evening and midnight refreshes are separate).
+UPDATE_INTERVAL_HOURS: Final = 6
 DEFAULT_EVENING_CHECK_TIME: Final = "18:00:00"
 #: Earlier defaults; a config entry still holding one moves to the current
 #: default (see __init__.py). Custom times are left alone.
+#: Option key of the removed update-interval setting (dropped by the migration).
+LEGACY_OPT_UPDATE_INTERVAL_HOURS: Final = "update_interval_hours"
 OLD_EVENING_CHECK_DEFAULTS: Final = frozenset({"18:01:00", "17:30:00"})
 #: Extra refreshes fired while tomorrow's price is still unknown: the gap
 #: between two retries is drawn at random from this range (minutes), for up to
@@ -81,8 +83,6 @@ DEFAULT_TREND_WINDOW_DAYS: Final = 14
 DEFAULT_HISTORY_IMPORT_MONTHS: Final = 12
 DEFAULT_PRICE_DISPLAY: Final = PRICE_DISPLAY_INCL
 
-MIN_UPDATE_INTERVAL_HOURS: Final = 1
-MAX_UPDATE_INTERVAL_HOURS: Final = 24
 MIN_TREND_WINDOW_DAYS: Final = 3
 MAX_TREND_WINDOW_DAYS: Final = 90
 

@@ -26,6 +26,7 @@
     "error": {
       "cannot_connect": "Die Preisquelle konnte nicht erreicht werden. Prüfen Sie Ihre Verbindung und versuchen Sie es erneut.",
       "parse_error": "Die Preisquelle wurde erreicht, ihr Inhalt konnte aber nicht gelesen werden. Bitte einen Fehlerbericht öffnen.",
+      "primary_not_tracked": "Der Hauptkraftstoff muss zu den zu verfolgenden Kraftstoffen gehören.",
       "level_entity_required": "Wählen Sie die Entität für den Füllstand aus – oder stellen Sie die Quelle zurück auf manuell."
     },
     "abort": {
@@ -37,7 +38,6 @@
       "init": {
         "title": "Einstellungen für LëtzFuel HA",
         "data": {
-          "update_interval_hours": "Aktualisierungsintervall",
           "evening_check_time": "Uhrzeit der Abendprüfung (erfasst die Veröffentlichung gegen 18:00; solange nichts angekündigt ist, Wiederholungen alle 3–6 Min. (zufällig) für bis zu 60 Min., danach alle 20–30 Min. bis Mitternacht)",
           "announcements_enabled": "Morgen angekündigten Preis abrufen",
           "trend_window_days": "Trendfenster",
@@ -56,6 +56,7 @@
       }
     },
     "error": {
+      "primary_not_tracked": "Der Hauptkraftstoff muss zu den zu verfolgenden Kraftstoffen gehören.",
       "level_entity_required": "Wählen Sie die Entität für den Füllstand aus – oder stellen Sie die Quelle zurück auf manuell."
     }
   },
@@ -164,7 +165,7 @@
   "issues": {
     "stale_data": {
       "title": "Kraftstoffpreise sind veraltet",
-      "description": "Der neueste veröffentlichte Preis ist {age_days} Tage alt und die Quelle kann nicht aktualisiert werden. Prüfen Sie die Preisseite und die Integrationsprotokolle."
+      "description": "Der neueste veröffentlichte Preis ist {age_days} Tage alt. Die Quelle veröffentlicht möglicherweise nichts mehr oder hat sich geändert. Prüfen Sie die Preisseite und die Integrationsprotokolle."
     },
     "parse_error": {
       "title": "Preisquelle kann nicht gelesen werden",
