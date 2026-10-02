@@ -80,7 +80,7 @@ send_notification:
       selector:
         text:
     preview:
-      required: false
+      required: true
       default: false
       selector:
         boolean:
