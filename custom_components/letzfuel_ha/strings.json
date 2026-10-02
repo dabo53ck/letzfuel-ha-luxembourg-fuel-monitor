@@ -291,7 +291,7 @@
         "step": {
           "confirm": {
             "title": "Turn off the blueprint automation",
-            "description": "LëtzFuel HA now sends the notifications itself (Settings > Devices and services > LëtzFuel HA > Recipient). The automation {automations} uses the notifications blueprint and sends the same notifications again, so every notification arrives twice.\n\nFor the standard notifications this automation is no longer needed. Keep it only for your own actions or texts, and switch off the types you now get from the integration. Otherwise turn it off here, or delete it under Settings > Automations and scenes.\n\nSubmit to turn off {automations}."
+            "description": "LëtzFuel HA now sends the notifications itself (Settings > Devices and services > LëtzFuel HA > Add recipient). The automation {automations} uses the notifications blueprint and sends the same notifications again, so every notification arrives twice.\n\nFor the standard notifications this automation is no longer needed. Keep it only for your own actions or texts, and switch off the types you now get from the integration. Otherwise turn it off here, or delete it under Settings > Automations and scenes.\n\nSubmit to turn off {automations}."
           }
         }
       }

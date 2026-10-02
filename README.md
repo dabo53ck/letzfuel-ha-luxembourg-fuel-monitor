@@ -190,7 +190,8 @@ Prices refresh every 6 hours, plus the evening check and a refresh just after
 midnight.
 
 **Options** (⚙️ on the integration card) let you change everything below without
-re-adding the integration:
+re-adding the integration. Tank size and fuel level are on the **Vehicle**
+page, everything else on **General**:
 
 | Setting | Default | Notes |
 | --- | --- | --- |
@@ -378,9 +379,10 @@ data:
 ## 30-day average, month high / low, and derivative trend
 
 The integration deliberately does **not** keep its own price database. Home Assistant's
-built-in helpers already do this well, and on setup the published price history is
+built-in helpers already do this well. On setup the published price history is
 backfilled into each `sensor.*_price` entity's own long-term statistics, so its
-history graph and these helpers have data from before you installed it:
+history graph has data from before you installed it; the helpers below read the
+recorded states and fill up from then on:
 
 **30-day average**: add a [Statistics helper](https://www.home-assistant.io/integrations/statistics/):
 

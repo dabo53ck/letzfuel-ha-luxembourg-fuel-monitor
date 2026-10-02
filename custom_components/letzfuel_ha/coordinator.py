@@ -77,8 +77,8 @@ from .providers.announcements import (
     merge_announced,
     split_plausible,
 )
+from .providers.backup_feed import BackupFeedAnnouncements
 from .providers.live_sheet import LiveSheetAnnouncements
-from .providers.rtl_lu import RtlLuAnnouncements
 
 _LOGGER = logging.getLogger(__name__)
 _STORE_VERSION = 1
@@ -100,7 +100,7 @@ class LuxFuelCoordinator(DataUpdateCoordinator[PriceSet]):
         #: Supplies the announced next-day price earlier than the provider does.
         self._primary_source: AnnouncementSource = LiveSheetAnnouncements(session)
         #: Only asked while the primary feed is unusable (error / inconsistent).
-        self._fallback_source: AnnouncementSource = RtlLuAnnouncements(session)
+        self._fallback_source: AnnouncementSource = BackupFeedAnnouncements(session)
         #: When the primary feed became unusable (None while it is healthy).
         self.primary_broken_since: datetime | None = None
         #: The provider's own prices by (fuel, effective date): the official

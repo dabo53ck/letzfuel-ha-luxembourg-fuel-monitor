@@ -291,7 +291,7 @@
         "step": {
           "confirm": {
             "title": "Disattiva l'automazione del blueprint",
-            "description": "LëtzFuel HA ora invia le notifiche da solo (Impostazioni > Dispositivi e servizi > LëtzFuel HA > Destinatario). L'automazione {automations} usa il blueprint delle notifiche e invia le stesse notifiche una seconda volta, quindi ogni notifica arriva due volte.\n\nPer le notifiche standard questa automazione non serve più. Tienila solo per azioni o testi tuoi e disattiva lì i tipi che ora arrivano dall'integrazione. Altrimenti disattivala qui o eliminala in Impostazioni > Automazioni e scene.\n\nInvia per disattivare {automations}."
+            "description": "LëtzFuel HA ora invia le notifiche da solo (Impostazioni > Dispositivi e servizi > LëtzFuel HA > Aggiungi destinatario). L'automazione {automations} usa il blueprint delle notifiche e invia le stesse notifiche una seconda volta, quindi ogni notifica arriva due volte.\n\nPer le notifiche standard questa automazione non serve più. Tienila solo per azioni o testi tuoi e disattiva lì i tipi che ora arrivano dall'integrazione. Altrimenti disattivala qui o eliminala in Impostazioni > Automazioni e scene.\n\nInvia per disattivare {automations}."
           }
         }
       }

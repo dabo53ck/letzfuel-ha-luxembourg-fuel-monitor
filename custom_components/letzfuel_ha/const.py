@@ -79,7 +79,7 @@ SCHEDULE_JITTER_MAX_SECONDS: Final = 60
 #: Fixed time for the just-after-midnight refresh that promptly re-evaluates
 #: the current/upcoming rollover, instead of waiting for the next periodic
 #: poll (which can land hours later depending on when the last one ran).
-#: Not user-configurable -- unlike the evening check there's no external
+#: Not a user option: unlike the evening check there's no external
 #: publish schedule to chase, so no retries are needed either.
 MIDNIGHT_REFRESH_TIME: Final = "00:05:00"
 DEFAULT_TREND_WINDOW_DAYS: Final = 14

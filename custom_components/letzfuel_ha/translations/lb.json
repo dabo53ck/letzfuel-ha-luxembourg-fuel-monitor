@@ -291,7 +291,7 @@
         "step": {
           "confirm": {
             "title": "Blueprint-Automatisatioun ausschalten",
-            "description": "LëtzFuel HA schéckt d'Notifikatiounen elo selwer (Astellungen > Apparater a Servicer > LëtzFuel HA > Empfänger). D'Automatisatioun {automations} benotzt de Notifikatiouns-Blueprint a schéckt dës Notifikatiounen nach eng Kéier, dofir kënnt all Notifikatioun duebel.\n\nFir d'Standard-Notifikatioune gëtt dës Automatisatioun net méi gebraucht. Behaalt se just fir eegen Aktiounen oder Texter a schalt do d'Typpen aus, déi elo vun der Integratioun kommen. Soss schalt se hei aus oder läscht se ënner Astellungen > Automatisatiounen & Szenen.\n\nOfschécke schalt {automations} aus."
+            "description": "LëtzFuel HA schéckt d'Notifikatiounen elo selwer (Astellungen > Apparater a Servicer > LëtzFuel HA > Empfänger derbäisetzen). D'Automatisatioun {automations} benotzt de Notifikatiouns-Blueprint a schéckt dës Notifikatiounen nach eng Kéier, dofir kënnt all Notifikatioun duebel.\n\nFir d'Standard-Notifikatioune gëtt dës Automatisatioun net méi gebraucht. Behaalt se just fir eegen Aktiounen oder Texter a schalt do d'Typpen aus, déi elo vun der Integratioun kommen. Soss schalt se hei aus oder läscht se ënner Astellungen > Automatisatiounen & Szenen.\n\nOfschécke schalt {automations} aus."
           }
         }
       }

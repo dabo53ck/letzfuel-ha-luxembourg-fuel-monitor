@@ -21,8 +21,8 @@ from custom_components.letzfuel_ha.const import (
 @pytest.mark.parametrize(
     ("stored", "expected"),
     [
-        ("18:01:00", "18:01:00"),  # the one-off move to 18:00 is gone again
-        ("17:30:00", "17:30:00"),
+        ("18:01:00", "18:01:00"),  # no migration of the evening time
+        ("19:00:00", "19:00:00"),
     ],
 )
 async def test_migration_keeps_the_evening_time(
