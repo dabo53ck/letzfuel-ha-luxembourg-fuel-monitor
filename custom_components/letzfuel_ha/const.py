@@ -60,6 +60,8 @@ DEFAULT_PRIMARY_FUEL: Final = FuelType.DIESEL
 #: Regular polling cadence (the evening and midnight refreshes are separate).
 UPDATE_INTERVAL_HOURS: Final = 6
 DEFAULT_EVENING_CHECK_TIME: Final = "18:00:00"
+#: Option key of the removed update-interval setting (dropped by the migration).
+LEGACY_OPT_UPDATE_INTERVAL_HOURS: Final = "update_interval_hours"
 #: Extra refreshes fired while tomorrow's price is still unknown: the gap
 #: between two retries is drawn at random from this range (minutes), for up to
 #: the window below after the evening check. A retry is a no-op once tomorrow's
