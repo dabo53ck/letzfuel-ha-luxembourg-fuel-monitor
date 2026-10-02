@@ -1,7 +1,14 @@
 blueprint:
   name: LëtzFuel HA - Notifications
   description: >-
-    ![version](https://img.shields.io/badge/version-0.1.2-blue)
+    ![version](https://img.shields.io/badge/version-0.2.0-blue)
+
+
+    **This blueprint has moved and will be removed in a later release.**
+    LëtzFuel HA 0.2.0 sends the notifications itself (Settings > Devices and
+    services > LëtzFuel HA > Add notification). For your own actions and
+    texts, use the blueprint's new home:
+    https://github.com/dabo53ck/letzfuel-ha-notifications-blueprint
 
 
     One automation that turns the LëtzFuel HA integration's events and sensors

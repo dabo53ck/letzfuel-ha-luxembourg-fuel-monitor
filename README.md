@@ -51,7 +51,7 @@ announced, a correction follows. You can turn this off in the options.
 | **Trend** | `sensor.*_trend`: `rising` / `falling` / `stable` over a rolling window (see Options) |
 | **Next-day awareness** | `binary_sensor.price_change_pending`, `sensor.*_price_tomorrow`, `sensor.refuel_recommendation` |
 | **Events** | `letzfuel_ha_price_change_announced`, `letzfuel_ha_price_change_corrected` and `letzfuel_ha_price_changed` for automations |
-| **Notifications** | one import-and-go [notification blueprint](docs/notifications-blueprint.md): per-type priority, 6 languages, presence gate |
+| **Notifications** | built in: one notification target per person or device, per-type priority, 6 languages, presence gate; a separate [blueprint](https://github.com/dabo53ck/letzfuel-ha-notifications-blueprint) for your own actions and texts |
 | **Vehicle analytics** | full-tank / refill / cost-change sensors (when a tank size is set); fuel level from a live `number` slider or read from another entity |
 | **Services** | `calculate_fill_cost`, `calculate_trip_cost` (response services) |
 | **History** | On setup, past prices are imported into Home Assistant long-term statistics |
@@ -86,16 +86,52 @@ directory and restart.
 
 ## Notifications
 
-One import covers all of it: next-day price alerts, "new price in effect",
-refuel recommendation and a price-threshold watch. Every type is opt-in, with
-per-type priority (including *critical* to bypass Do Not Disturb), a language
-picker (English/German/French/Lëtzebuergesch/Português/Italiano) and a
-presence gate. Just pick
-your phone(s) from a device picker, no notify service to configure.
+> **Changed in 0.2.0: notifications are built in.** If you used the
+> notifications blueprint before, read
+> [Coming from the blueprint](#coming-from-the-blueprint) below, otherwise you
+> get every notification twice.
 
-[![Open your Home Assistant instance and show the blueprint import dialog.](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2Fdabo53ck%2Fletzfuel-ha-luxembourg-fuel-monitor%2Fblob%2Fmain%2Fblueprints%2Fautomation%2Fletzfuel_ha%2Fnotifications.yaml)
+LëtzFuel HA sends the notifications itself: next-day price announcements (with
+corrections), "new price in effect", the refuel recommendation, a live
+countdown to midnight and a price threshold. Every type is opt-in, with its own
+priority (including *critical* to bypass Do Not Disturb), six languages and an
+optional presence gate.
 
-Full walkthrough: [docs/notifications-blueprint.md](docs/notifications-blueprint.md).
+**Set it up:** Settings → Devices and services → LëtzFuel HA → **Add
+notification**. Give the target a name, pick the phone(s) or tablet(s) with the
+Home Assistant Companion app, check the language (Home Assistant's own is
+preselected) and open the sections of the types you want. Add one target per
+person or device if they want different notifications; each can be edited or
+deleted on its own.
+
+| Type | When |
+| --- | --- |
+| Evening: price announced for tomorrow | a new price is published (around 18:00); a correction replaces it if the official price turns out different |
+| New price in effect | the day a new price applies, just after midnight |
+| Refuel recommendation | the recommendation changes to a state you picked |
+| Live countdown to midnight | a Lock Screen countdown while the recommendation is "Refuel today" |
+| Price threshold | a price drops below your target (once, until it goes above again) |
+
+### Coming from the blueprint
+
+Up to 0.1.2 the notifications came from a blueprint. You now have two choices:
+
+1. **Use the built-in notifications (recommended).** Add a notification target
+   as above, then turn off or delete your blueprint automation. As long as both
+   run, a repair issue reminds you and can turn the automation off for you.
+2. **Keep using the blueprint**, for example for your own actions (Telegram,
+   TTS, lights) or texts. It moved to its own repository,
+   [letzfuel-ha-notifications-blueprint](https://github.com/dabo53ck/letzfuel-ha-notifications-blueprint):
+   1. Import it from there.
+   2. Open your automation, ⋮ → **Edit in YAML**, and change only the path:
+      `use_blueprint: path: dabo53ck/letzfuel_ha_notifications.yaml`. All
+      your settings stay.
+   3. Delete the old blueprint under **Blueprints**.
+
+   You don't need to delete or recreate the automation.
+
+The old blueprint in this repository still works for now, but gets no new
+features and will be removed in a later release.
 
 <details>
 <summary>Roll your own instead</summary>

@@ -4,6 +4,40 @@ All notable changes to this project are documented here. The format loosely
 follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). SemVer,
 pre-release identifiers included (`0.0.1-beta`, …).
 
+## [0.2.0] - unreleased
+
+> **Breaking change for notifications.** Notifications are now built into the
+> integration. If you used the notifications blueprint, either add a
+> notification target and turn the blueprint automation off, or move to the
+> blueprint's new repository. Otherwise every notification arrives twice. See
+> [Coming from the blueprint](README.md#coming-from-the-blueprint).
+
+### Added
+
+- **Built-in notifications.** Add one notification target per person or
+  device (Settings → Devices and services → LëtzFuel HA → Add notification):
+  devices, language (Home Assistant's by default), tap target, presence gate
+  and one section per type, with the same texts and options as the
+  blueprint. A restart doesn't repeat a notification, and the price threshold
+  notifies once per crossing.
+- **Repair issue for double notifications** when a notification target exists
+  while an automation from a notifications blueprint is still on. Its fix
+  button turns the automation off.
+
+### Changed
+
+- The options are split into two pages, **General** and **Vehicle**.
+- Requires Home Assistant **2026.7** or newer.
+- The notifications blueprint moved to its own repository,
+  [letzfuel-ha-notifications-blueprint](https://github.com/dabo53ck/letzfuel-ha-notifications-blueprint),
+  with its own versions. The copy in this repository is kept for now and
+  removed in a later release.
+
+### Removed
+
+- The one-off move of earlier evening check defaults to 18:00 (0.1.1) is
+  gone, so a time you set yourself is never changed again.
+
 ## [0.1.2] - 2026-10-02
 
 ### Fixed
