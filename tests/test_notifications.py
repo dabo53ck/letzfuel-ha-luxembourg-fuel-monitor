@@ -366,8 +366,10 @@ async def test_threshold_fires_once_when_crossed(
     mock_petrol_lu(
         cheaper, sheet_payload=sheet_json([(dt_util.now().date(), sheet_today)])
     )
-    await entry.runtime_data.async_refresh()
-    await entry.runtime_data.async_refresh()
+    coordinator = entry.runtime_data
+    coordinator.provider._cache = None  # skip the 5-min page cache
+    await coordinator.async_refresh()
+    await coordinator.async_refresh()  # still below: no second notification
     await hass.async_block_till_done()
 
     assert len(calls) == 1
