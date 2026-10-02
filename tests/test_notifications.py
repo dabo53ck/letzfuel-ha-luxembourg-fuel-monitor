@@ -1,4 +1,4 @@
-"""Tests for the built-in notifications and the notification target flow."""
+"""Tests for the built-in notifications and the recipient flow."""
 
 from __future__ import annotations
 
@@ -478,7 +478,7 @@ async def test_send_notification_without_targets(
     await _unload(hass, entry)
 
 
-# -- the notification target flow ----------------------------------------------------
+# -- the recipient flow ----------------------------------------------------
 
 
 def _form(device_id: str | None, name: str = "Phone") -> dict[str, Any]:

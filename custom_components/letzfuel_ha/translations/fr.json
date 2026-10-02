@@ -241,15 +241,15 @@
     },
     "send_notification": {
       "name": "Envoyer une notification",
-      "description": "Envoie maintenant un type de notification de prix, avec les prix actuels. La langue, les carburants, la priorité et la cible au toucher de la cible de notification s'appliquent ; l'activation du type et la présence sont ignorées.",
+      "description": "Envoie maintenant un type de notification de prix, avec les prix actuels. La langue, les carburants, la priorité et la cible au toucher du destinataire s'appliquent ; l'activation du type et la présence sont ignorées.",
       "fields": {
         "type": {
           "name": "Type",
           "description": "Quelle notification envoyer."
         },
         "target": {
-          "name": "Cible de notification",
-          "description": "Nom d'une cible de notification. Laisser vide pour toutes."
+          "name": "Destinataire",
+          "description": "Nom d'un destinataire. Laisser vide pour tous."
         },
         "preview": {
           "name": "Aperçu seulement",
@@ -266,10 +266,10 @@
       "message": "Aucune donnée de prix disponible pour {fuel}."
     },
     "no_notification_targets": {
-      "message": "Aucune cible de notification n'est encore configurée. Ajoutez-en une sous Paramètres > Appareils et services > LëtzFuel HA."
+      "message": "Aucun destinataire n'est encore configuré. Ajoutez-en un sous Paramètres > Appareils et services > LëtzFuel HA."
     },
     "unknown_notification_target": {
-      "message": "Il n'y a pas de cible de notification nommée {target}."
+      "message": "Il n'y a pas de destinataire nommé {target}."
     }
   },
   "issues": {
@@ -291,7 +291,7 @@
         "step": {
           "confirm": {
             "title": "Désactiver l'automatisation du blueprint",
-            "description": "LëtzFuel HA envoie désormais les notifications lui-même (Paramètres > Appareils et services > LëtzFuel HA > Notification). L'automatisation {automations} utilise le blueprint de notifications et envoie les mêmes notifications une deuxième fois, chaque notification arrive donc en double.\n\nPour les notifications standard, cette automatisation n'est plus nécessaire. Gardez-la seulement pour vos propres actions ou textes et désactivez-y les types que l'intégration envoie maintenant. Sinon, désactivez-la ici ou supprimez-la dans Paramètres > Automatisations et scènes.\n\nValider désactive {automations}."
+            "description": "LëtzFuel HA envoie désormais les notifications lui-même (Paramètres > Appareils et services > LëtzFuel HA > Destinataire). L'automatisation {automations} utilise le blueprint de notifications et envoie les mêmes notifications une deuxième fois, chaque notification arrive donc en double.\n\nPour les notifications standard, cette automatisation n'est plus nécessaire. Gardez-la seulement pour vos propres actions ou textes et désactivez-y les types que l'intégration envoie maintenant. Sinon, désactivez-la ici ou supprimez-la dans Paramètres > Automatisations et scènes.\n\nValider désactive {automations}."
           }
         }
       }
@@ -300,12 +300,12 @@
   "config_subentries": {
     "notification": {
       "initiate_flow": {
-        "user": "Ajouter une notification"
+        "user": "Ajouter un destinataire"
       },
-      "entry_type": "Notification",
+      "entry_type": "Destinataire",
       "step": {
         "user": {
-          "title": "Ajouter une cible de notification",
+          "title": "Ajouter un destinataire",
           "description": "Qui reçoit les notifications sur les prix des carburants, sur quels appareils et pour quoi. Chaque type s'active séparément.",
           "data": {
             "name": "Nom",
@@ -384,7 +384,7 @@
           }
         },
         "reconfigure": {
-          "title": "Modifier la cible de notification",
+          "title": "Modifier le destinataire",
           "description": "Qui reçoit les notifications sur les prix des carburants, sur quels appareils et pour quoi. Chaque type s'active séparément.",
           "data": {
             "name": "Nom",

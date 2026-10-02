@@ -241,15 +241,15 @@
     },
     "send_notification": {
       "name": "Notifikatioun schécken",
-      "description": "Schéckt elo eng Zort vu Präis-Notifikatioun mat den aktuelle Präisser. Sprooch, Pëtrolszorten, Prioritéit an dat, wat beim Tippen opgeet, kommen aus dem Zil fir d'Notifikatiounen. Ob d'Zort ageschalt ass an ob een doheem ass, spillt keng Roll.",
+      "description": "Schéckt elo eng Zort vu Präis-Notifikatioun mat den aktuelle Präisser. Sprooch, Pëtrolszorten, Prioritéit an dat, wat beim Tippen opgeet, kommen aus den Astellunge vum Empfänger. Ob d'Zort ageschalt ass an ob een doheem ass, spillt keng Roll.",
       "fields": {
         "type": {
           "name": "Zort",
           "description": "Wéi eng Notifikatioun geschéckt gëtt."
         },
         "target": {
-          "name": "Zil fir d'Notifikatiounen",
-          "description": "Numm vun engem Zil fir d'Notifikatiounen. Eidel loosse fir all."
+          "name": "Empfänger",
+          "description": "Numm vun engem Empfänger. Eidel loosse fir all."
         },
         "preview": {
           "name": "Just Virschau",
@@ -266,10 +266,10 @@
       "message": "Keng Präisdaten fir {fuel} verfügbar."
     },
     "no_notification_targets": {
-      "message": "Et ass nach keen Zil fir d'Notifikatiounen ageriicht. Setz eent ënner Astellungen > Apparater a Servicer > LëtzFuel HA derbäi."
+      "message": "Et ass nach keen Empfänger ageriicht. Setz een ënner Astellungen > Apparater a Servicer > LëtzFuel HA derbäi."
     },
     "unknown_notification_target": {
-      "message": "Et gëtt keen Zil fir d'Notifikatioune mam Numm {target}."
+      "message": "Et gëtt keen Empfänger mam Numm {target}."
     }
   },
   "issues": {
@@ -291,7 +291,7 @@
         "step": {
           "confirm": {
             "title": "Blueprint-Automatisatioun ausschalten",
-            "description": "LëtzFuel HA schéckt d'Notifikatiounen elo selwer (Astellungen > Apparater a Servicer > LëtzFuel HA > Notifikatioun). D'Automatisatioun {automations} benotzt de Notifikatiouns-Blueprint a schéckt dës Notifikatiounen nach eng Kéier, dofir kënnt all Notifikatioun duebel.\n\nFir d'Standard-Notifikatioune gëtt dës Automatisatioun net méi gebraucht. Behaalt se just fir eegen Aktiounen oder Texter a schalt do d'Typpen aus, déi elo vun der Integratioun kommen. Soss schalt se hei aus oder läscht se ënner Astellungen > Automatisatiounen & Szenen.\n\nOfschécke schalt {automations} aus."
+            "description": "LëtzFuel HA schéckt d'Notifikatiounen elo selwer (Astellungen > Apparater a Servicer > LëtzFuel HA > Empfänger). D'Automatisatioun {automations} benotzt de Notifikatiouns-Blueprint a schéckt dës Notifikatiounen nach eng Kéier, dofir kënnt all Notifikatioun duebel.\n\nFir d'Standard-Notifikatioune gëtt dës Automatisatioun net méi gebraucht. Behaalt se just fir eegen Aktiounen oder Texter a schalt do d'Typpen aus, déi elo vun der Integratioun kommen. Soss schalt se hei aus oder läscht se ënner Astellungen > Automatisatiounen & Szenen.\n\nOfschécke schalt {automations} aus."
           }
         }
       }
@@ -300,12 +300,12 @@
   "config_subentries": {
     "notification": {
       "initiate_flow": {
-        "user": "Notifikatioun derbäisetzen"
+        "user": "Empfänger derbäisetzen"
       },
-      "entry_type": "Notifikatioun",
+      "entry_type": "Empfänger",
       "step": {
         "user": {
-          "title": "Zil fir d'Notifikatiounen derbäisetzen",
+          "title": "Empfänger derbäisetzen",
           "description": "Wien d'Notifikatiounen iwwer d'Pëtrolspräisser kritt, op wéi engen Apparater a fir wat. All Typ ka separat ageschalt ginn.",
           "data": {
             "name": "Numm",
@@ -384,7 +384,7 @@
           }
         },
         "reconfigure": {
-          "title": "Zil fir d'Notifikatiounen änneren",
+          "title": "Empfänger änneren",
           "description": "Wien d'Notifikatiounen iwwer d'Pëtrolspräisser kritt, op wéi engen Apparater a fir wat. All Typ ka separat ageschalt ginn.",
           "data": {
             "name": "Numm",

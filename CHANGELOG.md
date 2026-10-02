@@ -8,23 +8,23 @@ pre-release identifiers included (`0.0.1-beta`, …).
 
 > **Breaking change for notifications.** Notifications are now built into the
 > integration. If you used the notifications blueprint, either add a
-> notification target and turn the blueprint automation off, or move to the
+> recipient and turn the blueprint automation off, or move to the
 > blueprint's new repository. Otherwise every notification arrives twice. See
 > [Coming from the blueprint](README.md#coming-from-the-blueprint).
 
 ### Added
 
-- **Built-in notifications.** Add one notification target per person or
-  device (Settings → Devices and services → LëtzFuel HA → Add notification):
+- **Built-in notifications.** Add one recipient per person or
+  device (Settings → Devices and services → LëtzFuel HA → Add recipient):
   devices, language (Home Assistant's by default), tap target, presence gate
   and one section per type, with the same texts and options as the
   blueprint. A restart doesn't repeat a notification, and the price threshold
   notifies once per crossing.
-- **Repair issue for double notifications** when a notification target exists
+- **Repair issue for double notifications** when a recipient exists
   while an automation from a notifications blueprint is still on. Its fix
   button turns the automation off.
 - **Action `letzfuel_ha.send_notification`** sends one notification type now,
-  with the current prices, to all notification targets or one. With
+  with the current prices, to all recipients or one. With
   `preview` it only returns what would be sent.
 
 ### Changed

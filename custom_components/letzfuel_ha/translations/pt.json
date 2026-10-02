@@ -241,15 +241,15 @@
     },
     "send_notification": {
       "name": "Enviar notificação",
-      "description": "Envia agora um tipo de notificação de preço, com os preços atuais. Aplicam-se o idioma, os combustíveis, a prioridade e o destino ao tocar do destino de notificação; ignora-se se o tipo está ativado e a presença.",
+      "description": "Envia agora um tipo de notificação de preço, com os preços atuais. Aplicam-se o idioma, os combustíveis, a prioridade e o destino ao tocar do destinatário; ignora-se se o tipo está ativado e a presença.",
       "fields": {
         "type": {
           "name": "Tipo",
           "description": "Que notificação enviar."
         },
         "target": {
-          "name": "Destino de notificação",
-          "description": "Nome de um destino de notificação. Deixar vazio para todos."
+          "name": "Destinatário",
+          "description": "Nome de um destinatário. Deixar vazio para todos."
         },
         "preview": {
           "name": "Só pré-visualizar",
@@ -266,10 +266,10 @@
       "message": "Não há dados de preço disponíveis para {fuel}."
     },
     "no_notification_targets": {
-      "message": "Ainda não há nenhum destino de notificação configurado. Adicione um em Definições > Dispositivos e serviços > LëtzFuel HA."
+      "message": "Ainda não há nenhum destinatário configurado. Adicione um em Definições > Dispositivos e serviços > LëtzFuel HA."
     },
     "unknown_notification_target": {
-      "message": "Não existe nenhum destino de notificação chamado {target}."
+      "message": "Não existe nenhum destinatário chamado {target}."
     }
   },
   "issues": {
@@ -291,7 +291,7 @@
         "step": {
           "confirm": {
             "title": "Desativar a automação do blueprint",
-            "description": "O LëtzFuel HA envia agora as notificações ele próprio (Definições > Dispositivos e serviços > LëtzFuel HA > Notificação). A automação {automations} usa o blueprint de notificações e envia as mesmas notificações outra vez, por isso cada notificação chega em duplicado.\n\nPara as notificações normais, esta automação já não é necessária. Mantenha-a só para ações ou textos seus e desative nela os tipos que agora vêm da integração. Caso contrário, desative-a aqui ou apague-a em Definições > Automações e cenas.\n\nSubmeter desativa {automations}."
+            "description": "O LëtzFuel HA envia agora as notificações ele próprio (Definições > Dispositivos e serviços > LëtzFuel HA > Destinatário). A automação {automations} usa o blueprint de notificações e envia as mesmas notificações outra vez, por isso cada notificação chega em duplicado.\n\nPara as notificações normais, esta automação já não é necessária. Mantenha-a só para ações ou textos seus e desative nela os tipos que agora vêm da integração. Caso contrário, desative-a aqui ou apague-a em Definições > Automações e cenas.\n\nSubmeter desativa {automations}."
           }
         }
       }
@@ -300,12 +300,12 @@
   "config_subentries": {
     "notification": {
       "initiate_flow": {
-        "user": "Adicionar notificação"
+        "user": "Adicionar destinatário"
       },
-      "entry_type": "Notificação",
+      "entry_type": "Destinatário",
       "step": {
         "user": {
-          "title": "Adicionar um destino de notificação",
+          "title": "Adicionar destinatário",
           "description": "Quem recebe as notificações sobre os preços dos combustíveis, em que dispositivos e para quê. Cada tipo pode ser ativado separadamente.",
           "data": {
             "name": "Nome",
@@ -384,7 +384,7 @@
           }
         },
         "reconfigure": {
-          "title": "Editar o destino de notificação",
+          "title": "Editar destinatário",
           "description": "Quem recebe as notificações sobre os preços dos combustíveis, em que dispositivos e para quê. Cada tipo pode ser ativado separadamente.",
           "data": {
             "name": "Nome",

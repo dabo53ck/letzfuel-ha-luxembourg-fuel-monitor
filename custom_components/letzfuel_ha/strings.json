@@ -241,15 +241,15 @@
     },
     "send_notification": {
       "name": "Send notification",
-      "description": "Sends one type of fuel price notification now, with the current prices. The target's language, fuels, priority and tap target apply; whether the type is switched on and presence are ignored.",
+      "description": "Sends one type of fuel price notification now, with the current prices. The recipient's language, fuels, priority and tap target apply; whether the type is switched on and presence are ignored.",
       "fields": {
         "type": {
           "name": "Type",
           "description": "Which notification to send."
         },
         "target": {
-          "name": "Notification target",
-          "description": "Name of a notification target. Leave empty for all."
+          "name": "Recipient",
+          "description": "Name of a recipient. Leave empty for all."
         },
         "preview": {
           "name": "Preview only",
@@ -266,10 +266,10 @@
       "message": "No price data available for {fuel}."
     },
     "no_notification_targets": {
-      "message": "No notification target is set up yet. Add one under Settings > Devices and services > LëtzFuel HA."
+      "message": "No recipient is set up yet. Add one under Settings > Devices and services > LëtzFuel HA."
     },
     "unknown_notification_target": {
-      "message": "There is no notification target named {target}."
+      "message": "There is no recipient named {target}."
     }
   },
   "issues": {
@@ -291,7 +291,7 @@
         "step": {
           "confirm": {
             "title": "Turn off the blueprint automation",
-            "description": "LëtzFuel HA now sends the notifications itself (Settings > Devices and services > LëtzFuel HA > Notification). The automation {automations} uses the notifications blueprint and sends the same notifications again, so every notification arrives twice.\n\nFor the standard notifications this automation is no longer needed. Keep it only for your own actions or texts, and switch off the types you now get from the integration. Otherwise turn it off here, or delete it under Settings > Automations and scenes.\n\nSubmit to turn off {automations}."
+            "description": "LëtzFuel HA now sends the notifications itself (Settings > Devices and services > LëtzFuel HA > Recipient). The automation {automations} uses the notifications blueprint and sends the same notifications again, so every notification arrives twice.\n\nFor the standard notifications this automation is no longer needed. Keep it only for your own actions or texts, and switch off the types you now get from the integration. Otherwise turn it off here, or delete it under Settings > Automations and scenes.\n\nSubmit to turn off {automations}."
           }
         }
       }
@@ -300,12 +300,12 @@
   "config_subentries": {
     "notification": {
       "initiate_flow": {
-        "user": "Add notification"
+        "user": "Add recipient"
       },
-      "entry_type": "Notification",
+      "entry_type": "Recipient",
       "step": {
         "user": {
-          "title": "Add a notification target",
+          "title": "Add recipient",
           "description": "Who gets fuel price notifications, on which devices and for what. Every type can be switched on separately.",
           "data": {
             "name": "Name",
@@ -384,7 +384,7 @@
           }
         },
         "reconfigure": {
-          "title": "Edit notification target",
+          "title": "Edit recipient",
           "description": "Who gets fuel price notifications, on which devices and for what. Every type can be switched on separately.",
           "data": {
             "name": "Name",

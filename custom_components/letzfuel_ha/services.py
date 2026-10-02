@@ -2,7 +2,7 @@
 
 The two cost services are response-only helpers for automations and scripts:
 they compute a cost from the currently published prices and return it.
-send_notification sends one notification type to the notification targets now.
+send_notification sends one notification type to the recipients now.
 """
 
 from __future__ import annotations

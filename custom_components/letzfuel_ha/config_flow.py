@@ -247,7 +247,7 @@ class LuxFuelConfigFlow(ConfigFlow, domain=DOMAIN):
     def async_get_supported_subentry_types(
         cls, config_entry: ConfigEntry
     ) -> dict[str, type[ConfigSubentryFlow]]:
-        """Notification targets are added as subentries."""
+        """Recipients are added as subentries."""
         return {SUBENTRY_NOTIFICATION: NotificationSubentryFlow}
 
 
@@ -417,7 +417,7 @@ def _clean_vehicle(user_input: dict[str, Any]) -> dict[str, Any]:
     return values
 
 
-# -- notification targets (config subentries) ---------------------------------
+# -- recipients (config subentries) ---------------------------------
 
 _FUEL_CHOICES = [FUEL_CHOICE_PRIMARY, *_FUEL_OPTIONS]
 _PRIORITIES = [PRIORITY_NORMAL, PRIORITY_ELEVATED, PRIORITY_CRITICAL]
@@ -592,7 +592,7 @@ def _split_target(user_input: dict[str, Any]) -> tuple[str, dict[str, Any]]:
 
 
 class NotificationSubentryFlow(ConfigSubentryFlow):
-    """Add or edit a notification target."""
+    """Add or edit a recipient."""
 
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None

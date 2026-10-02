@@ -1,4 +1,4 @@
-"""Built-in phone notifications, one set of settings per notification target.
+"""Built-in phone notifications, one set of settings per recipient.
 
 Each target is a config subentry (see config_flow.py). The coordinator hands
 over the price events it fires and every successful update; this module turns
@@ -223,7 +223,7 @@ def threshold_line(fuel: str, price: float, limit: float, t: Mapping[str, Any]) 
 
 
 class Notifier:
-    """Sends the notifications of every notification target of an entry."""
+    """Sends the notifications of every recipient of an entry."""
 
     def __init__(self, hass: HomeAssistant, coordinator: LuxFuelCoordinator) -> None:
         self.hass = hass

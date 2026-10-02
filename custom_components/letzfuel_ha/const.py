@@ -137,7 +137,7 @@ EVENT_PRICE_CHANGE_CORRECTED: Final = f"{DOMAIN}_price_change_corrected"
 ISSUE_STALE_DATA: Final = "stale_data"
 ISSUE_PARSE_ERROR: Final = "parse_error"
 ISSUE_ANNOUNCEMENTS_UNAVAILABLE: Final = "announcements_unavailable"
-#: A notification target exists while an automation from one of the
+#: A recipient exists while an automation from one of the
 #: notifications blueprints is still on, so every notification comes twice.
 ISSUE_DUPLICATE_NOTIFICATIONS: Final = "duplicate_notifications"
 

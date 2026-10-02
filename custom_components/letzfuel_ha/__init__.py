@@ -111,7 +111,7 @@ def _settings(entry: LuxFuelConfigEntry) -> tuple[dict[str, Any], dict[str, Any]
 
 
 async def _async_entry_updated(hass: HomeAssistant, entry: LuxFuelConfigEntry) -> None:
-    """Reload on a settings change; a notification target change needs none."""
+    """Reload on a settings change; a recipient change needs none."""
     coordinator = entry.runtime_data
     if _settings(entry) != coordinator.settings_snapshot:
         await hass.config_entries.async_reload(entry.entry_id)

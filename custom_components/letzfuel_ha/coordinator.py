@@ -133,7 +133,7 @@ class LuxFuelCoordinator(DataUpdateCoordinator[PriceSet]):
         self._level_entity_unsub: CALLBACK_TYPE | None = None
         #: Live fuel level (%) set via the number entity; overrides the option.
         self.manual_fuel_level: float | None = None
-        #: Sends the built-in notifications of every notification target.
+        #: Sends the built-in notifications of every recipient.
         self.notifier = Notifier(hass, self)
         #: (data, options) at setup; set in __init__.py, decides about reloads.
         self.settings_snapshot: tuple[dict[str, Any], dict[str, Any]] = ({}, {})

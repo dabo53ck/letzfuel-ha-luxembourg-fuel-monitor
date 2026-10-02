@@ -1,6 +1,6 @@
 """Repair issue when built-in notifications and a blueprint automation overlap.
 
-With a notification target set up, an automation built from one of the
+With a recipient set up, an automation built from one of the
 notifications blueprints sends the same notifications a second time. The
 blueprint is recognised by its ``source_url``: Home Assistant picks the file
 path itself when a blueprint is imported, so the path is not reliable.
