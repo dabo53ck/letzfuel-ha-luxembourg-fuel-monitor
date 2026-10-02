@@ -62,6 +62,7 @@ from .const import (
 )
 from .helpers import option_value
 from .models import FuelPrices, FuelType, PricePoint, PriceSet
+from .notifications import Notifier
 from .providers import (
     ProviderConnectionError,
     ProviderParseError,
@@ -132,12 +133,17 @@ class LuxFuelCoordinator(DataUpdateCoordinator[PriceSet]):
         self._level_entity_unsub: CALLBACK_TYPE | None = None
         #: Live fuel level (%) set via the number entity; overrides the option.
         self.manual_fuel_level: float | None = None
+        #: Sends the built-in notifications of every notification target.
+        self.notifier = Notifier(hass, self)
+        #: (data, options) at setup; set in __init__.py, decides about reloads.
+        self.settings_snapshot: tuple[dict[str, Any], dict[str, Any]] = ({}, {})
 
     # -- lifecycle ---------------------------------------------------------
 
     async def _async_setup(self) -> None:
         """Load persisted change-detection state before the first refresh."""
         self._last_seen = await self._store.async_load() or {}
+        await self.notifier.async_load()
 
     async def async_shutdown(self) -> None:
         """Cancel scheduled callbacks on unload."""
@@ -164,6 +170,7 @@ class LuxFuelCoordinator(DataUpdateCoordinator[PriceSet]):
         price_set = build_price_set(history, self.tracked_fuels, self.provider)
         self._async_check_stale(price_set)
         await self._async_detect_changes(price_set)
+        await self.notifier.async_handle_update(price_set)
         return price_set
 
     async def _async_merge_announcements(
@@ -465,6 +472,9 @@ class LuxFuelCoordinator(DataUpdateCoordinator[PriceSet]):
         if snapshot != self._last_seen:
             self._last_seen = snapshot
             await self._store.async_save(snapshot)
+
+        if announced or changed or corrected:
+            await self.notifier.async_handle_events(announced, changed, corrected)
 
     def _async_check_stale(self, price_set: PriceSet) -> None:
         """Raise/clear a repair issue when the newest price is very old."""

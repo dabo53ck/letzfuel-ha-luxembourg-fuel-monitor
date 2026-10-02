@@ -62,7 +62,7 @@ announced, a correction follows. You can turn this off in the options.
 
 ## Requirements
 
-Home Assistant **2025.12** or newer.
+Home Assistant **2026.7** or newer.
 
 ## Installation
 

@@ -15,9 +15,9 @@ jobs:
       matrix:
         include:
           # Declared minimum (see hacs.json)
-          - name: "HA 2025.12"
-            python: "3.13"
-            ha_constraint: "homeassistant>=2025.12.0,<2026.0.0"
+          - name: "HA 2026.7"
+            python: "3.14"
+            ha_constraint: "homeassistant>=2026.7.0,<2026.8.0"
           # Latest stable (what most users, and the maintainer, actually run)
           - name: "HA latest"
             python: "3.14"

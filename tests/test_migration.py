@@ -21,12 +21,11 @@ from custom_components.letzfuel_ha.const import (
 @pytest.mark.parametrize(
     ("stored", "expected"),
     [
-        ("18:01:00", "18:00:00"),  # an earlier default moves with the new one
-        ("17:30:00", "18:00:00"),
-        ("18:15:00", "18:15:00"),  # a custom time is kept
+        ("18:01:00", "18:01:00"),  # the one-off move to 18:00 is gone again
+        ("17:30:00", "17:30:00"),
     ],
 )
-async def test_migrates_old_default_evening_time(
+async def test_migration_keeps_the_evening_time(
     hass: HomeAssistant, mock_petrol_lu, stored: str, expected: str
 ) -> None:
     entry = MockConfigEntry(

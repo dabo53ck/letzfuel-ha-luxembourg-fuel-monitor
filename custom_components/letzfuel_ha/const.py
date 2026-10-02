@@ -17,7 +17,7 @@ DEFAULT_PROVIDER: Final = "petrol_lu"
 #: Single source of truth for the version number both scrapers put in their
 #: User-Agent string (manifest.json's "version" is HA's own source of truth
 #: for the integration as a whole; keep this in sync by hand at release time).
-USER_AGENT_VERSION: Final = "0.1.2"
+USER_AGENT_VERSION: Final = "0.2.0"
 #: Sent with every request to the price sources.
 USER_AGENT: Final = (
     f"HomeAssistant-LetzFuelHA/{USER_AGENT_VERSION} "
@@ -60,11 +60,6 @@ DEFAULT_PRIMARY_FUEL: Final = FuelType.DIESEL
 #: Regular polling cadence (the evening and midnight refreshes are separate).
 UPDATE_INTERVAL_HOURS: Final = 6
 DEFAULT_EVENING_CHECK_TIME: Final = "18:00:00"
-#: Earlier defaults; a config entry still holding one moves to the current
-#: default (see __init__.py). Custom times are left alone.
-#: Option key of the removed update-interval setting (dropped by the migration).
-LEGACY_OPT_UPDATE_INTERVAL_HOURS: Final = "update_interval_hours"
-OLD_EVENING_CHECK_DEFAULTS: Final = frozenset({"18:01:00", "17:30:00"})
 #: Extra refreshes fired while tomorrow's price is still unknown: the gap
 #: between two retries is drawn at random from this range (minutes), for up to
 #: the window below after the evening check. A retry is a no-op once tomorrow's
@@ -140,6 +135,38 @@ EVENT_PRICE_CHANGE_CORRECTED: Final = f"{DOMAIN}_price_change_corrected"
 ISSUE_STALE_DATA: Final = "stale_data"
 ISSUE_PARSE_ERROR: Final = "parse_error"
 ISSUE_ANNOUNCEMENTS_UNAVAILABLE: Final = "announcements_unavailable"
+#: A notification target exists while an automation from one of the
+#: notifications blueprints is still on, so every notification comes twice.
+ISSUE_DUPLICATE_NOTIFICATIONS: Final = "duplicate_notifications"
+
+# --- Notifications -----------------------------------------------------------
+#: Fired by the automation integration after its configuration is reloaded.
+EVENT_AUTOMATION_RELOADED: Final = "automation_reloaded"
+SUBENTRY_NOTIFICATION: Final = "notification"
+#: Keys of a notification subentry's data.
+NOTIFY_DEVICES: Final = "devices"
+NOTIFY_LANGUAGE: Final = "language"
+NOTIFY_TAP_PATH: Final = "tap_dashboard_path"
+NOTIFY_PRESENCE: Final = "presence"
+NOTIFY_ANNOUNCED: Final = "announced"
+NOTIFY_EFFECTIVE: Final = "effective"
+NOTIFY_RECOMMENDATION: Final = "recommendation"
+NOTIFY_COUNTDOWN: Final = "countdown"
+NOTIFY_THRESHOLD: Final = "threshold"
+#: "Primary fuel" in a fuel choice follows the integration's primary fuel.
+FUEL_CHOICE_PRIMARY: Final = "primary"
+PRIORITY_NORMAL: Final = "normal"
+PRIORITY_ELEVATED: Final = "elevated"
+PRIORITY_CRITICAL: Final = "critical"
+#: Served by the integration itself (see __init__.py).
+NOTIFY_GROUP: Final = "letzfuel_ha"
+#: Automations built from these blueprints send the same notifications; a
+#: blueprint counts when its source_url contains one of these.
+NOTIFICATION_BLUEPRINT_SOURCES: Final = (
+    "dabo53ck/letzfuel-ha-notifications-blueprint",
+    "dabo53ck/letzfuel-ha-luxembourg-fuel-monitor/blob/main/blueprints/automation/letzfuel_ha/notifications.yaml",
+    "dabo53ck/letzfuel-ha-luxembourg-fuel-monitor/blob/dev/blueprints/automation/letzfuel_ha/notifications.yaml",
+)
 
 # --- Services --------------------------------------------------------------
 SERVICE_CALCULATE_FILL_COST: Final = "calculate_fill_cost"

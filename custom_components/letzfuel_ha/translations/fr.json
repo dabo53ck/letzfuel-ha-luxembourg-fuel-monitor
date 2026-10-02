@@ -36,7 +36,14 @@
   "options": {
     "step": {
       "init": {
-        "title": "Paramètres de LëtzFuel HA",
+        "title": "Paramètres LëtzFuel HA",
+        "menu_options": {
+          "general": "Général",
+          "vehicle": "Véhicule"
+        }
+      },
+      "general": {
+        "title": "Général",
         "data": {
           "evening_check_time": "Heure du contrôle du soir (capte la publication vers 18h00 ; tant que rien n'est annoncé, réessais toutes les 3 à 6 min (aléatoire) pendant 60 min au plus, puis toutes les 20 à 30 min jusqu'à minuit)",
           "announcements_enabled": "Récupérer le prix annoncé pour demain",
@@ -44,11 +51,16 @@
           "price_display": "Affichage du prix",
           "tracked_fuels": "Carburants à suivre",
           "primary_fuel": "Carburant principal",
-          "tank_size": "Taille du réservoir",
-          "level_source": "Source du niveau de carburant",
-          "level_entity_id": "Entité du niveau de carburant",
           "history_import_enabled": "Importer l'historique des prix dans les statistiques long terme",
           "history_import_months": "Profondeur d'import de l'historique"
+        }
+      },
+      "vehicle": {
+        "title": "Véhicule",
+        "data": {
+          "tank_size": "Taille du réservoir",
+          "level_source": "Source du niveau de carburant",
+          "level_entity_id": "Entité du niveau de carburant"
         },
         "data_description": {
           "level_entity_id": "Son état doit être le niveau du réservoir en pourcentage (0-100). Utilisé uniquement quand la source est « Depuis une autre entité »."
@@ -79,12 +91,60 @@
         "manual": "Manuel (curseur réglable)",
         "entity": "Depuis une autre entité"
       }
+    },
+    "notify_fuel": {
+      "options": {
+        "primary": "Carburant principal",
+        "diesel": "Diesel",
+        "sp95": "SP95 (E10)",
+        "sp98": "SP98"
+      }
+    },
+    "notify_direction": {
+      "options": {
+        "both": "Hausse et baisse",
+        "up": "Hausses uniquement",
+        "down": "Baisses uniquement"
+      }
+    },
+    "notify_priority": {
+      "options": {
+        "normal": "Normale",
+        "elevated": "Élevée",
+        "critical": "Critique (ignore Ne pas déranger)"
+      }
+    },
+    "notify_recommendation": {
+      "options": {
+        "refuel_today": "Faire le plein aujourd'hui",
+        "wait": "Attendre"
+      }
+    },
+    "notify_presence_mode": {
+      "options": {
+        "home": "À la maison",
+        "away": "Absent"
+      }
+    },
+    "notify_language": {
+      "options": {
+        "en": "English",
+        "de": "Deutsch",
+        "fr": "Français",
+        "lb": "Lëtzebuergesch",
+        "pt": "Português",
+        "it": "Italiano"
+      }
     }
   },
   "entity": {
     "sensor": {
-      "price": { "name": "Prix {fuel}" },
-      "change": { "name": "Variation {fuel}" },
+      "price": {
+        "name": "Prix {fuel}"
+      },
+      "change": {
+        "name": "Variation {fuel}"
+      },
       "trend": {
         "name": "Tendance {fuel}",
         "state": {
@@ -93,7 +153,9 @@
           "stable": "Stable"
         }
       },
-      "price_tomorrow": { "name": "Prix {fuel} demain" },
+      "price_tomorrow": {
+        "name": "Prix {fuel} demain"
+      },
       "refuel_recommendation": {
         "name": "Recommandation de plein",
         "state": {
@@ -103,17 +165,31 @@
           "awaiting_price": "En attente du nouveau prix"
         }
       },
-      "last_price_update": { "name": "Dernière mise à jour du prix" },
-      "days_since_last_change": { "name": "Jours depuis le dernier changement" },
-      "full_tank_cost": { "name": "Coût d'un plein" },
-      "refill_cost": { "name": "Coût du complément" },
-      "full_tank_cost_change": { "name": "Variation du coût d'un plein" }
+      "last_price_update": {
+        "name": "Dernière mise à jour du prix"
+      },
+      "days_since_last_change": {
+        "name": "Jours depuis le dernier changement"
+      },
+      "full_tank_cost": {
+        "name": "Coût d'un plein"
+      },
+      "refill_cost": {
+        "name": "Coût du complément"
+      },
+      "full_tank_cost_change": {
+        "name": "Variation du coût d'un plein"
+      }
     },
     "binary_sensor": {
-      "price_change_pending": { "name": "Changement de prix imminent" }
+      "price_change_pending": {
+        "name": "Changement de prix imminent"
+      }
     },
     "number": {
-      "current_fuel_level": { "name": "Niveau de carburant actuel" }
+      "current_fuel_level": {
+        "name": "Niveau de carburant actuel"
+      }
     }
   },
   "services": {
@@ -174,6 +250,188 @@
     "announcements_unavailable": {
       "title": "Le prix de demain n'apparaît que tard",
       "description": "Depuis {days} jours, la source d'annonce du prix de demain est inutilisable ; une source de secours est utilisée. Si elle échoue aussi, le prix de demain n'apparaît qu'une fois publié dans le tableau officiel des prix, généralement tard le soir. Vérifiez les diagnostics et ouvrez un ticket si cela persiste."
+    },
+    "duplicate_notifications": {
+      "title": "Les notifications carburant arrivent en double",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Désactiver l'automatisation du blueprint",
+            "description": "LëtzFuel HA envoie désormais les notifications lui-même (Paramètres > Appareils et services > LëtzFuel HA > Notification). L'automatisation {automations} utilise le blueprint de notifications et envoie les mêmes notifications une deuxième fois, chaque notification arrive donc en double.\n\nPour les notifications standard, cette automatisation n'est plus nécessaire. Gardez-la seulement pour vos propres actions ou textes et désactivez-y les types que l'intégration envoie maintenant. Sinon, désactivez-la ici ou supprimez-la dans Paramètres > Automatisations et scènes.\n\nValider désactive {automations}."
+          }
+        }
+      }
+    }
+  },
+  "config_subentries": {
+    "notification": {
+      "initiate_flow": {
+        "user": "Ajouter une notification"
+      },
+      "entry_type": "Notification",
+      "step": {
+        "user": {
+          "title": "Ajouter une cible de notification",
+          "description": "Qui reçoit les notifications sur les prix des carburants, sur quels appareils et pour quoi. Chaque type s'active séparément.",
+          "data": {
+            "name": "Nom",
+            "devices": "Appareils",
+            "language": "Langue des notifications",
+            "tap_dashboard_path": "Tableau de bord ouvert en touchant une notification (facultatif)"
+          },
+          "data_description": {
+            "devices": "Téléphones et tablettes avec l'application Home Assistant Companion.",
+            "tap_dashboard_path": "Laisser vide pour ouvrir les détails du prix du carburant ou de la recommandation. Ou saisir une vue de tableau de bord, par exemple /lovelace/fuel."
+          },
+          "sections": {
+            "announced": {
+              "name": "Le soir : prix annoncé pour demain",
+              "data": {
+                "enabled": "Activer",
+                "fuels": "Carburants",
+                "direction": "Sens",
+                "min_delta": "Variation minimale",
+                "priority": "Priorité"
+              },
+              "data_description": {
+                "min_delta": "Ignorer les variations plus petites. 0 = toute variation."
+              },
+              "description": "Si le prix officiel diffère ensuite, une correction remplace la notification."
+            },
+            "effective": {
+              "name": "Nouveau prix en vigueur",
+              "data": {
+                "enabled": "Activer",
+                "fuels": "Carburants",
+                "direction": "Sens",
+                "min_delta": "Variation minimale",
+                "priority": "Priorité"
+              },
+              "data_description": {
+                "min_delta": "Ignorer les variations plus petites. 0 = toute variation."
+              }
+            },
+            "recommendation": {
+              "name": "Recommandation de plein",
+              "data": {
+                "enabled": "Activer",
+                "states": "Notifier quand elle devient",
+                "no_change": "Notifier aussi en l'absence de changement",
+                "priority": "Priorité"
+              }
+            },
+            "countdown": {
+              "name": "Compte à rebours jusqu'à minuit",
+              "description": "Un compte à rebours sur l'écran verrouillé (iOS Live Activity, Android Live Update) tant que la recommandation est Faire le plein aujourd'hui. S'ajoute à la recommandation.",
+              "data": {
+                "enabled": "Activer"
+              }
+            },
+            "threshold": {
+              "name": "Seuil de prix",
+              "data": {
+                "enabled": "Activer",
+                "fuels": "Carburants",
+                "below": "Notifier quand le prix est sous",
+                "priority": "Priorité"
+              }
+            },
+            "presence": {
+              "name": "Seulement à la maison / absent",
+              "data": {
+                "entity": "Personne ou groupe",
+                "mode": "Envoyer seulement si",
+                "critical_overrides": "Les notifications critiques l'ignorent"
+              },
+              "data_description": {
+                "entity": "Laisser vide pour toujours envoyer."
+              }
+            }
+          }
+        },
+        "reconfigure": {
+          "title": "Modifier la cible de notification",
+          "description": "Qui reçoit les notifications sur les prix des carburants, sur quels appareils et pour quoi. Chaque type s'active séparément.",
+          "data": {
+            "name": "Nom",
+            "devices": "Appareils",
+            "language": "Langue des notifications",
+            "tap_dashboard_path": "Tableau de bord ouvert en touchant une notification (facultatif)"
+          },
+          "data_description": {
+            "devices": "Téléphones et tablettes avec l'application Home Assistant Companion.",
+            "tap_dashboard_path": "Laisser vide pour ouvrir les détails du prix du carburant ou de la recommandation. Ou saisir une vue de tableau de bord, par exemple /lovelace/fuel."
+          },
+          "sections": {
+            "announced": {
+              "name": "Le soir : prix annoncé pour demain",
+              "data": {
+                "enabled": "Activer",
+                "fuels": "Carburants",
+                "direction": "Sens",
+                "min_delta": "Variation minimale",
+                "priority": "Priorité"
+              },
+              "data_description": {
+                "min_delta": "Ignorer les variations plus petites. 0 = toute variation."
+              },
+              "description": "Si le prix officiel diffère ensuite, une correction remplace la notification."
+            },
+            "effective": {
+              "name": "Nouveau prix en vigueur",
+              "data": {
+                "enabled": "Activer",
+                "fuels": "Carburants",
+                "direction": "Sens",
+                "min_delta": "Variation minimale",
+                "priority": "Priorité"
+              },
+              "data_description": {
+                "min_delta": "Ignorer les variations plus petites. 0 = toute variation."
+              }
+            },
+            "recommendation": {
+              "name": "Recommandation de plein",
+              "data": {
+                "enabled": "Activer",
+                "states": "Notifier quand elle devient",
+                "no_change": "Notifier aussi en l'absence de changement",
+                "priority": "Priorité"
+              }
+            },
+            "countdown": {
+              "name": "Compte à rebours jusqu'à minuit",
+              "description": "Un compte à rebours sur l'écran verrouillé (iOS Live Activity, Android Live Update) tant que la recommandation est Faire le plein aujourd'hui. S'ajoute à la recommandation.",
+              "data": {
+                "enabled": "Activer"
+              }
+            },
+            "threshold": {
+              "name": "Seuil de prix",
+              "data": {
+                "enabled": "Activer",
+                "fuels": "Carburants",
+                "below": "Notifier quand le prix est sous",
+                "priority": "Priorité"
+              }
+            },
+            "presence": {
+              "name": "Seulement à la maison / absent",
+              "data": {
+                "entity": "Personne ou groupe",
+                "mode": "Envoyer seulement si",
+                "critical_overrides": "Les notifications critiques l'ignorent"
+              },
+              "data_description": {
+                "entity": "Laisser vide pour toujours envoyer."
+              }
+            }
+          }
+        }
+      },
+      "error": {
+        "no_devices": "Choisissez au moins un appareil."
+      }
     }
   }
 }
