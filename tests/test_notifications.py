@@ -30,9 +30,11 @@ from custom_components.letzfuel_ha.const import (
     DOMAIN,
     ISSUE_DUPLICATE_NOTIFICATIONS,
     OPT_HISTORY_IMPORT_ENABLED,
+    RECOMMENDATION_STATES,
     SUBENTRY_NOTIFICATION,
 )
 from custom_components.letzfuel_ha.models import FuelType
+from custom_components.letzfuel_ha.notification_texts import TEXTS
 from custom_components.letzfuel_ha.notifications import (
     announced_lines,
     corrected_lines,
@@ -226,6 +228,11 @@ def test_payload_priorities() -> None:
     assert (
         payload("tag", "elevated", {})["push"]["interruption-level"] == "time-sensitive"
     )
+
+
+def test_every_recommendation_has_a_text() -> None:
+    for language in TEXTS.values():
+        assert set(language["rec_states"]) == set(RECOMMENDATION_STATES)
 
 
 @pytest.mark.parametrize(
