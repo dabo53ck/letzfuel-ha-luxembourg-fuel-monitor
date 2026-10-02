@@ -112,6 +112,8 @@ deleted on its own.
 | Live countdown to midnight | a Lock Screen countdown while the recommendation is "Refuel today" |
 | Price threshold | a price drops below your target (once, until it goes above again) |
 
+<img src="docs/live-activity.jpg" alt="iOS Lock Screen: a Live Activity counting down to midnight above the refuel recommendation and price announced notifications" width="320">
+
 ### Coming from the blueprint
 
 Up to 0.1.2 the notifications came from a blueprint. You now have two choices:
