@@ -1,7 +1,7 @@
 blueprint:
   name: LëtzFuel HA - Notifications
   description: >-
-    ![version](https://img.shields.io/badge/version-0.1.1-blue)
+    ![version](https://img.shields.io/badge/version-0.1.2-blue)
 
 
     One automation that turns the LëtzFuel HA integration's events and sensors
@@ -544,10 +544,13 @@ variables:
       {% set wf.v = wf.v + ([primary_fuel] if f == 'primary' else [f]) %}
     {% endfor %}
     {{ fired_fuel is not none and fired_fuel in (wf.v | unique | list) }}
+  #: Only the announced and effective events carry price changes; a
+  #: correction has a different shape and is handled by matched_corrections.
   matched_changes: >-
     {% set raw = trigger.event.data.changes
-       if (trigger is defined and trigger.event is defined
-           and trigger.event.data is defined and trigger.event.data.changes is defined)
+       if (trigger is defined and trigger.id in ['announced', 'effective']
+           and trigger.event is defined and trigger.event.data is defined
+           and trigger.event.data.changes is defined)
        else [] %}
     {% if trigger.id == 'announced' %}
       {% set want_raw = announced_fuels %}
