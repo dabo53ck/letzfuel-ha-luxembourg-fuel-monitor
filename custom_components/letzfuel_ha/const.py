@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from decimal import Decimal
 from typing import Final
 
 from .models import FuelType
@@ -16,7 +17,12 @@ DEFAULT_PROVIDER: Final = "petrol_lu"
 #: Single source of truth for the version number both scrapers put in their
 #: User-Agent string (manifest.json's "version" is HA's own source of truth
 #: for the integration as a whole; keep this in sync by hand at release time).
-USER_AGENT_VERSION: Final = "0.1.0"
+USER_AGENT_VERSION: Final = "0.1.1"
+#: Sent with every request to the price sources.
+USER_AGENT: Final = (
+    f"HomeAssistant-LetzFuelHA/{USER_AGENT_VERSION} "
+    "(+https://github.com/dabo53ck/letzfuel-ha-luxembourg-fuel-monitor)"
+)
 
 # --- Config entry keys ---------------------------------------------------------
 CONF_PROVIDER: Final = "provider"
@@ -36,13 +42,13 @@ LEVEL_SOURCES: Final = [LEVEL_SOURCE_MANUAL, LEVEL_SOURCE_ENTITY]
 LEVEL_ENTITY_DOMAINS: Final = ["sensor", "number", "input_number"]
 
 # --- Options keys ------------------------------------------------------------
-OPT_UPDATE_INTERVAL_HOURS: Final = "update_interval_hours"
 OPT_EVENING_CHECK_TIME: Final = "evening_check_time"
 OPT_TREND_WINDOW_DAYS: Final = "trend_window_days"
 OPT_PRICE_DISPLAY: Final = "price_display"
 OPT_HISTORY_IMPORT_ENABLED: Final = "history_import_enabled"
 OPT_HISTORY_IMPORT_MONTHS: Final = "history_import_months"
-#: Fetch the announced next-day price from RTL.lu (petrol.lu does not carry it).
+#: Also ask the announcement feed (and its fallback) for the next-day price
+#: (petrol.lu usually lists it only late in the evening).
 OPT_ANNOUNCEMENTS_ENABLED: Final = "announcements_enabled"
 
 PRICE_DISPLAY_INCL: Final = "incl_vat"
@@ -51,15 +57,28 @@ PRICE_DISPLAY_EXCL: Final = "excl_vat"
 # --- Defaults --------------------------------------------------------------
 DEFAULT_TRACKED_FUELS: Final = [FuelType.DIESEL, FuelType.SP95, FuelType.SP98]
 DEFAULT_PRIMARY_FUEL: Final = FuelType.DIESEL
-DEFAULT_UPDATE_INTERVAL_HOURS: Final = 6
-DEFAULT_EVENING_CHECK_TIME: Final = "18:01:00"
-#: Extra refreshes fired (minutes after the evening check) when no upcoming
-#: price has appeared yet -- every 2 min for the first 14 min, then every
-#: 5 min up to 29 min after the evening check (e.g. 18:03...18:15, then
-#: 18:20/18:25/18:30 relative to the default 18:01 check time). Each retry
-#: is a no-op (skipped, not cancelled) once a pending change is found --
-#: harmless since it just checks state instead of refreshing again.
-EVENING_RETRY_OFFSETS_MINUTES: Final = (2, 4, 6, 8, 10, 12, 14, 19, 24, 29)
+#: Regular polling cadence (the evening and midnight refreshes are separate).
+UPDATE_INTERVAL_HOURS: Final = 6
+DEFAULT_EVENING_CHECK_TIME: Final = "18:00:00"
+#: Earlier defaults; a config entry still holding one moves to the current
+#: default (see __init__.py). Custom times are left alone.
+#: Option key of the removed update-interval setting (dropped by the migration).
+LEGACY_OPT_UPDATE_INTERVAL_HOURS: Final = "update_interval_hours"
+OLD_EVENING_CHECK_DEFAULTS: Final = frozenset({"18:01:00", "17:30:00"})
+#: Extra refreshes fired while tomorrow's price is still unknown: the gap
+#: between two retries is drawn at random from this range (minutes), for up to
+#: the window below after the evening check. A retry is a no-op once tomorrow's
+#: price is known.
+EVENING_RETRY_STEP_MINUTES: Final = (3, 6)
+EVENING_RETRY_WINDOW_MINUTES: Final = 60
+#: After the last retry, keep polling until midnight while nothing has been
+#: announced yet -- each gap drawn at random from this range (minutes) so
+#: installs don't hit the sources in lockstep.
+LATE_EVENING_POLL_MINUTES: Final = (20, 30)
+#: Each install shifts its evening and midnight refreshes by a fixed offset of
+#: up to this many seconds (derived from the config entry id, so it survives
+#: restarts), so installs don't all hit the sources at the same second.
+SCHEDULE_JITTER_MAX_SECONDS: Final = 60
 #: Fixed time for the just-after-midnight refresh that promptly re-evaluates
 #: the current/upcoming rollover, instead of waiting for the next periodic
 #: poll (which can land hours later depending on when the last one ran).
@@ -70,15 +89,22 @@ DEFAULT_TREND_WINDOW_DAYS: Final = 14
 DEFAULT_HISTORY_IMPORT_MONTHS: Final = 12
 DEFAULT_PRICE_DISPLAY: Final = PRICE_DISPLAY_INCL
 
-MIN_UPDATE_INTERVAL_HOURS: Final = 1
-MAX_UPDATE_INTERVAL_HOURS: Final = 24
 MIN_TREND_WINDOW_DAYS: Final = 3
 MAX_TREND_WINDOW_DAYS: Final = 90
 
 #: How many days of history the coordinator keeps in memory for trend maths.
 RECENT_HISTORY_DAYS: Final = 120
-#: Data older than this (with a failing fetch) raises a repair issue.
+#: A newest price older than this many days raises a repair issue.
 STALE_AFTER_DAYS: Final = 14
+
+# --- Announcement plausibility ---------------------------------------------
+#: Announced prices further ahead than this (days) are ignored.
+ANNOUNCE_MAX_DAYS_AHEAD: Final = 7
+#: Announced prices further than this fraction from today's price are ignored.
+ANNOUNCE_MAX_DEVIATION: Final = 0.15
+#: Raise a repair issue once the announcement feed has been unusable (and the
+#: fallback in use) for this many days in a row.
+ANNOUNCE_FEED_BROKEN_ISSUE_DAYS: Final = 3
 
 # --- Trend classification -------------------------------------------------
 TREND_RISING: Final = "rising"
@@ -107,10 +133,13 @@ RECOMMENDATION_STATES: Final = [
 # --- Events --------------------------------------------------------------------
 EVENT_PRICE_CHANGE_ANNOUNCED: Final = f"{DOMAIN}_price_change_announced"
 EVENT_PRICE_CHANGED: Final = f"{DOMAIN}_price_changed"
+#: An announced price turned out different once the official price was known.
+EVENT_PRICE_CHANGE_CORRECTED: Final = f"{DOMAIN}_price_change_corrected"
 
 # --- Repair issues ---------------------------------------------------------
 ISSUE_STALE_DATA: Final = "stale_data"
 ISSUE_PARSE_ERROR: Final = "parse_error"
+ISSUE_ANNOUNCEMENTS_UNAVAILABLE: Final = "announcements_unavailable"
 
 # --- Services --------------------------------------------------------------
 SERVICE_CALCULATE_FILL_COST: Final = "calculate_fill_cost"
@@ -128,3 +157,7 @@ UNIT_EUR_PER_LITER: Final = "€/L"
 #: Luxembourg standard VAT rate (informational attribute only; the source
 #: publishes both incl. and excl. VAT figures directly).
 VAT_RATE_LU: Final = 0.17
+#: Divisor that turns a VAT-inclusive price into the VAT-exclusive one.
+VAT_DIVISOR: Final = Decimal("1") + Decimal(str(VAT_RATE_LU))
+#: Effective dates are Luxembourg calendar days.
+LU_TIME_ZONE: Final = "Europe/Luxembourg"

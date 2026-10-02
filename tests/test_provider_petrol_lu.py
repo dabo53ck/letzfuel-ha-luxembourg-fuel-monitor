@@ -35,9 +35,6 @@ def test_parse_sample_html() -> None:
     assert diesel[date(2026, 9, 1)].price_excl_vat == Decimal("1.5940")
     assert diesel[date(2026, 8, 18)].price_incl_vat == Decimal("1.840")
 
-    # Heating-oil columns are blank ("-") and must be ignored, not crash.
-    assert all(p.fuel in set(FuelType) for p in points)
-
 
 def test_parse_no_table_raises() -> None:
     with pytest.raises(ProviderParseError):

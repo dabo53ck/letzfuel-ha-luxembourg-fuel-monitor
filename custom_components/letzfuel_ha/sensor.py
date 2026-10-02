@@ -38,7 +38,6 @@ from .models import FUEL_LABELS, FuelType
 
 ValueFn = Callable[[LuxFuelCoordinator, "FuelType | None"], StateType | datetime]
 AttrsFn = Callable[[LuxFuelCoordinator, "FuelType | None"], Mapping[str, Any]]
-AvailFn = Callable[[LuxFuelCoordinator, "FuelType | None"], bool]
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -47,9 +46,7 @@ class LuxFuelSensorDescription(SensorEntityDescription):
 
     value_fn: ValueFn
     attributes_fn: AttrsFn | None = None
-    available_fn: AvailFn | None = None
     per_fuel: bool = False
-    needs_tank: bool = False
     #: Enabled by default only for the configured primary fuel (disabled for the
     #: other tracked fuels). Ignored for non per-fuel sensors.
     primary_only_default: bool = False
@@ -62,10 +59,6 @@ def _pct_change(current: float, previous: float) -> float | None:
     if not previous:
         return None
     return round((current - previous) / previous * 100, 3)
-
-
-def _display(coordinator: LuxFuelCoordinator, point: Any) -> float | None:
-    return coordinator.display_price(point)
 
 
 # --- per-fuel value / attribute functions --------------------------------
@@ -93,7 +86,9 @@ def _price_attrs(
         "price_excl_vat": float(fp.current.price_excl_vat),
         "vat_rate": VAT_RATE_LU,
         "price_since": fp.current_since.isoformat(),
-        "previous_price": (_display(coordinator, fp.previous) if fp.previous else None),
+        "previous_price": (
+            coordinator.display_price(fp.previous) if fp.previous else None
+        ),
         "previous_effective_date": (
             fp.previous.effective_date.isoformat() if fp.previous else None
         ),
@@ -101,7 +96,7 @@ def _price_attrs(
         "source_url": data.source_url if data else None,
     }
     if fp.upcoming is not None:
-        attrs["next_price"] = _display(coordinator, fp.upcoming)
+        attrs["next_price"] = coordinator.display_price(fp.upcoming)
         attrs["next_effective_date"] = fp.upcoming.effective_date.isoformat()
     return attrs
 
@@ -425,7 +420,6 @@ VEHICLE_SENSORS: tuple[LuxFuelSensorDescription, ...] = (
     LuxFuelSensorDescription(
         key="full_tank_cost",
         translation_key="full_tank_cost",
-        needs_tank=True,
         device_class=SensorDeviceClass.MONETARY,
         native_unit_of_measurement=CURRENCY_EURO,
         value_fn=_full_tank_value,
@@ -434,7 +428,6 @@ VEHICLE_SENSORS: tuple[LuxFuelSensorDescription, ...] = (
     LuxFuelSensorDescription(
         key="refill_cost",
         translation_key="refill_cost",
-        needs_tank=True,
         device_class=SensorDeviceClass.MONETARY,
         native_unit_of_measurement=CURRENCY_EURO,
         value_fn=_refill_value,
@@ -443,7 +436,6 @@ VEHICLE_SENSORS: tuple[LuxFuelSensorDescription, ...] = (
     LuxFuelSensorDescription(
         key="full_tank_cost_change",
         translation_key="full_tank_cost_change",
-        needs_tank=True,
         device_class=SensorDeviceClass.MONETARY,
         native_unit_of_measurement=CURRENCY_EURO,
         value_fn=_full_tank_change_value,

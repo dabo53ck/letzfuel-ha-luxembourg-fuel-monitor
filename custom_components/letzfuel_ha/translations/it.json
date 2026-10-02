@@ -26,6 +26,7 @@
     "error": {
       "cannot_connect": "Impossibile raggiungere la fonte dei prezzi del carburante. Controlla la connessione e riprova.",
       "parse_error": "La fonte dei prezzi è stata raggiunta, ma non è stato possibile leggerne il contenuto. Apri una issue.",
+      "primary_not_tracked": "Il carburante principale deve essere tra i carburanti da monitorare.",
       "level_entity_required": "Scegli l'entità da cui leggere il livello di carburante, oppure riporta l'origine su manuale."
     },
     "abort": {
@@ -37,8 +38,7 @@
       "init": {
         "title": "Impostazioni di LëtzFuel HA",
         "data": {
-          "update_interval_hours": "Intervallo di aggiornamento",
-          "evening_check_time": "Orario del controllo serale (intercetta la pubblicazione verso le 18:00; riprova ogni 2 min per 14 min, poi ogni 5 min fino a 29 min dopo quest'ora)",
+          "evening_check_time": "Orario del controllo serale (intercetta la pubblicazione verso le 18:00; finché non è annunciato nulla, riprova ogni 3-6 min (a caso) per un massimo di 60 min, poi ogni 20-30 min fino a mezzanotte)",
           "announcements_enabled": "Recupera il prezzo annunciato per domani",
           "trend_window_days": "Finestra di tendenza",
           "price_display": "Visualizzazione del prezzo",
@@ -56,6 +56,7 @@
       }
     },
     "error": {
+      "primary_not_tracked": "Il carburante principale deve essere tra i carburanti da monitorare.",
       "level_entity_required": "Scegli l'entità da cui leggere il livello di carburante, oppure riporta l'origine su manuale."
     }
   },
@@ -164,11 +165,15 @@
   "issues": {
     "stale_data": {
       "title": "I prezzi dei carburanti non sono aggiornati",
-      "description": "Il prezzo pubblicato più recente ha {age_days} giorni e la fonte non può essere aggiornata. Controlla la pagina dei prezzi e i log dell'integrazione."
+      "description": "Il prezzo pubblicato più recente ha {age_days} giorni. La fonte potrebbe aver smesso di pubblicare o essere cambiata. Controlla la pagina dei prezzi e i log dell'integrazione."
     },
     "parse_error": {
       "title": "Impossibile leggere la fonte dei prezzi del carburante",
       "description": "La pagina dei prezzi è stata raggiunta ma non è stato possibile analizzarla ({error}). La struttura della pagina potrebbe essere cambiata: apri una issue."
+    },
+    "announcements_unavailable": {
+      "title": "Il prezzo di domani appare solo tardi",
+      "description": "Da {days} giorni la fonte per l'annuncio del prezzo di domani non è utilizzabile; viene usata una fonte di riserva. Se anche questa non funziona, il prezzo di domani appare solo quando la tabella ufficiale dei prezzi lo riporta, di solito in tarda serata. Controlla la diagnostica e apri una segnalazione se il problema persiste."
     }
   }
 }

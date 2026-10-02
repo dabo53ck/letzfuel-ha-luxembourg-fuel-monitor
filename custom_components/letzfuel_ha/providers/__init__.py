@@ -21,8 +21,6 @@ _PROVIDER_CLASSES: dict[str, type[FuelProvider]] = {
     PetrolLuProvider.key: PetrolLuProvider,
 }
 
-AVAILABLE_PROVIDERS: tuple[str, ...] = tuple(_PROVIDER_CLASSES)
-
 
 def get_provider(key: str, session: ClientSession) -> FuelProvider:
     """Instantiate the provider registered under ``key``."""
@@ -34,7 +32,6 @@ def get_provider(key: str, session: ClientSession) -> FuelProvider:
 
 
 __all__ = [
-    "AVAILABLE_PROVIDERS",
     "FuelProvider",
     "ProviderConnectionError",
     "ProviderError",

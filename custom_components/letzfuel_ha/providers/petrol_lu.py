@@ -21,22 +21,17 @@ from decimal import Decimal, InvalidOperation
 
 from aiohttp import ClientError, ClientSession
 
-from ..const import USER_AGENT_VERSION, VAT_RATE_LU
+from ..const import USER_AGENT, VAT_DIVISOR
 from ..models import FuelType, PricePoint
 from .base import FuelProvider, ProviderConnectionError, ProviderParseError
 
 _LOGGER = logging.getLogger(__name__)
 
 SOURCE_URL = "https://www.petrol.lu/en/official-prices/"
-_USER_AGENT = (
-    f"HomeAssistant-LetzFuelHA/{USER_AGENT_VERSION} "
-    "(+https://github.com/dabo53ck/letzfuel-ha-luxembourg-fuel-monitor)"
-)
 _REQUEST_TIMEOUT = 30
 _CACHE_TTL = 300  # seconds
 
 _DATE_RE = re.compile(r"(\d{2})/(\d{2})/(\d{4})")
-_VAT_DECIMAL = Decimal("1") + Decimal(str(VAT_RATE_LU))
 
 # Header substrings -> fuel. Order matters: check "98"/"95" before generic terms.
 _HEADER_MATCHERS: tuple[tuple[str, FuelType], ...] = (
@@ -87,7 +82,7 @@ class PetrolLuProvider(FuelProvider):
         try:
             async with self._session.get(
                 SOURCE_URL,
-                headers={"User-Agent": _USER_AGENT},
+                headers={"User-Agent": USER_AGENT},
                 timeout=_REQUEST_TIMEOUT,
             ) as response:
                 if response.status != 200:
@@ -219,9 +214,9 @@ def _build_points(
             price_incl = incl.get(fuel)
             price_excl = excl.get(fuel)
             if price_incl is None and price_excl is not None:
-                price_incl = (price_excl * _VAT_DECIMAL).quantize(Decimal("0.0001"))
+                price_incl = (price_excl * VAT_DIVISOR).quantize(Decimal("0.0001"))
             if price_excl is None and price_incl is not None:
-                price_excl = (price_incl / _VAT_DECIMAL).quantize(Decimal("0.0001"))
+                price_excl = (price_incl / VAT_DIVISOR).quantize(Decimal("0.0001"))
             if price_incl is None or price_excl is None:
                 continue
             points.append(

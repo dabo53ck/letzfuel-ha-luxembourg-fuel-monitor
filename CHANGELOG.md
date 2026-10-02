@@ -4,6 +4,74 @@ All notable changes to this project are documented here. The format loosely
 follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). SemVer,
 pre-release identifiers included (`0.0.1-beta`, …).
 
+## [0.1.1] - 2026-10-02
+
+### Fixed
+
+- **Evening price announcement no longer missed when a source skips it.**
+  On 2026-09-24 a Diesel increase for the next day was announced around
+  17:40, but the only announcement source never published it, so the change
+  only showed up at midnight as "New price in effect". Tomorrow's price now
+  comes from a more reliable announcement feed, which is only trusted while it
+  agrees with petrol.lu on today's price. If it is unreachable, unreadable or
+  disagrees, a backup feed stands in. petrol.lu's own next-day row always
+  wins. Closes #17.
+- **Longer evening checks.** The evening check starts at **18:00** by
+  default (was 18:01) and, while nothing is announced yet, retries every
+  3-6 minutes (random) for up to an hour, then every 20-30 minutes
+  (randomised) until midnight. The checks stop as soon as tomorrow's price is
+  known, changed or not. A restart during the evening keeps the late polling
+  going instead of waiting for the next day. Installs still on an earlier default
+  move to 18:00; a custom time is kept.
+- A half-filled row in the announcement feed (prices still being entered)
+  is ignored until every fuel is filled in, so a partial update can't
+  trigger a premature or split announcement.
+- Announced dates are read as Luxembourg calendar days, whatever time zone
+  Home Assistant runs in.
+- **No repeated "Refuel today" notification** after a failed refresh: the
+  blueprint ignores the recommendation sensor going `unavailable` and coming
+  back. The notification text is now consistent across all types: a plain `-`
+  as the minus sign, a colon after the fuel name in the announcement
+  (`DIESEL: -3.8 ct/L → 1.865 €/L (30/09/2026)`), prices always with three
+  decimals, and no trailing period on the recommendation. Re-import the
+  blueprint.
+- **Tank size can be cleared again** in the Options; it used to come back from
+  the value entered during setup.
+- **The primary fuel must be one of the tracked fuels**, both in the setup and
+  in the Options. Before, a primary fuel that wasn't tracked left the
+  recommendation and vehicle sensors without a value.
+- **Imported price history follows the price display setting.** With prices
+  shown without VAT the imported history used the VAT-inclusive values, which
+  made the graph jump where it met the live values.
+- The "prices are out of date" repair issue no longer claims the source cannot
+  be refreshed.
+
+### Added
+
+- **Corrections.** Once a price has been announced for a day, it stays until
+  petrol.lu publishes the official price for that day. If the two differ, the
+  new `letzfuel_ha_price_change_corrected` event fires, the same evening or
+  after midnight. The notifications blueprint sends it as a correction that
+  replaces the earlier notification on the phone, e.g.
+  `DIESEL: 2.095 €/L (no change) instead of 2.055 €/L`.
+- **Plausibility check** for announced prices: values more than 15 % away
+  from today's price, or dated more than a week ahead, are ignored.
+- **Repair issue** when the announcement feed has been unusable for 3 days in
+  a row, so a silent loss of the evening announcement gets noticed.
+- **Load spread across installs.** Each install shifts its evening and
+  midnight refreshes by a fixed offset of up to one minute, so installs
+  don't all query the sources at the same second.
+- **Diagnostics** show, per announcement source, when it was last checked,
+  the newest date it listed and the outcome (`announced`, `nothing_future`,
+  `implausible`, `inconsistent`, `error`, or `standby` for the backup while
+  it isn't needed), plus since when the feed has been unusable.
+
+### Changed
+
+- The update interval is no longer an option: the regular refresh runs every
+  6 hours, next to the evening and midnight checks. A stored value is
+  dropped.
+
 ## [0.1.0] - 2026-09-24
 
 ### Added
@@ -11,12 +79,12 @@ pre-release identifiers included (`0.0.1-beta`, …).
 - **Portuguese and Italian support**, both for the integration's own UI
   (config flow, options) and for the notifications blueprint (notification
   titles/messages, comma decimal separator). Pick them like any other
-  language — Notification language on the blueprint side, Home Assistant's
+  language: Notification language on the blueprint side, Home Assistant's
   own language setting on the integration side.
 
 ### Changed
 
-- **Live countdown to midnight is no longer marked experimental** — confirmed
+- **Live countdown to midnight is no longer marked experimental**, confirmed
   working on both iOS (Live Activity) and Android (Live Update).
 
 ## [0.0.3-beta] - 2026-09-20
@@ -46,17 +114,17 @@ pre-release identifiers included (`0.0.1-beta`, …).
   the notifications blueprint points the announced/effective/recommendation/
   threshold notifications' `icon_url` at it, so those pushes show the
   LëtzFuel droplet instead of the generic Home Assistant icon. Nothing to
-  configure. Closes #7. Doesn't apply to the *Live countdown* — iOS Live
+  configure. Closes #7. Doesn't apply to the *Live countdown*, because iOS Live
   Activities only support a Material Design Icon, not a custom image.
 
 ### Changed
 
 - **Blueprint title no longer carries a version number.** The version marker
   now lives only in the blueprint's `description` (which is where you'd
-  check anyway); the title (`LëtzFuel HA – Notifications`) stays stable
+  check anyway); the title (`LëtzFuel HA - Notifications`) stays stable
   across versions.
 - README: the RTL.lu data-source row no longer calls the announced-price
-  lookup "optional" — the wording didn't match how central it is to the
+  lookup "optional"; the wording didn't match how central it is to the
   next-day awareness features.
 
 ### Fixed
@@ -70,7 +138,7 @@ pre-release identifiers included (`0.0.1-beta`, …).
   needed. Closes #9.
 - **No more false "price changed" notifications at the midnight rollover.**
   A tracked fuel's price record gets a fresh entry dated "today" every day
-  regardless of whether its price actually moved — the coordinator now only
+  regardless of whether its price actually moved; the coordinator now only
   fires `letzfuel_ha_price_changed` (and the "New price in effect" push)
   when the price itself differs from the previous value, not just because
   the effective date advanced. Confirmed via a real trace where Diesel sent
@@ -83,11 +151,11 @@ pre-release identifiers included (`0.0.1-beta`, …).
 
 - **Fuel level from another entity.** Step 2 / Options now has a *Fuel level
   source* choice: **Manual** (the `number.*_current_fuel_level` slider, as
-  before) or **From another entity** — pick a `sensor`, `number` or
-  `input_number` whose state is the tank fill level in percent (0–100) and
+  before) or **From another entity**: pick a `sensor`, `number` or
+  `input_number` whose state is the tank fill level in percent (0-100) and
   `sensor.*_refill_cost` tracks it live. In entity mode the slider entity is
   not created; an unusable value (missing, `unknown`/`unavailable`,
-  non-numeric, outside 0–100) leaves the refill sensor at *unknown*.
+  non-numeric, outside 0-100) leaves the refill sensor at *unknown*.
   `sensor.*_refill_cost` gains `level_source` (+ `level_entity_id`) attributes.
 - **Live countdown to midnight** (blueprint v7, experimental, off by
   default). New *Live countdown to midnight* section starts an iOS Live
@@ -99,14 +167,14 @@ pre-release identifiers included (`0.0.1-beta`, …).
   Activity / Live Update support (iOS 17.2+, Android 16+); fallback
   behaviour on older app versions hasn't been broadly verified yet.
 - **Notification blueprint** (`blueprint version 0.0.1-beta`,
-  `blueprints/automation/letzfuel_ha/notifications.yaml`) — one import covering
+  `blueprints/automation/letzfuel_ha/notifications.yaml`), one import covering
   next-day price alerts, "new price in effect", refuel recommendation and a
   price-threshold watch. Every type is opt-in with its own priority (normal /
   elevated / critical) and a presence gate. Delivery is a device picker
-  (paired Companion App devices) — no notify service to configure, and no
+  (paired Companion App devices), no notify service to configure, and no
   message text to write; every type's title/message is fixed, in one of four
   languages (English, German, French, Lëtzebuergesch) picked via a
-  **Language** input — Home Assistant has no mechanism to translate a
+  **Language** input, because Home Assistant has no mechanism to translate a
   blueprint's own input UI, so the text sets are hardcoded per language
   instead. Refuel recommendation always watches
   `sensor.letzfuel_ha_refuel_recommendation` (no entity to pick); Price
@@ -115,18 +183,18 @@ pre-release identifiers included (`0.0.1-beta`, …).
   group. See [`docs/notifications-blueprint.md`](docs/notifications-blueprint.md).
 - **Just-after-midnight refresh** (coordinator) so a next-day price becomes
   "in effect" (and the `letzfuel_ha_price_changed` event/notification fires)
-  promptly, instead of waiting for the next periodic poll — which isn't
+  promptly, instead of waiting for the next periodic poll, which isn't
   anchored to wall-clock time and can land hours into the new day depending
   on when the previous poll happened to run.
 - `scripts/validate_blueprints.py` and a CI job that structurally checks the
   shipped blueprints.
 - Option **"Fetch tomorrow's announced price"** (default on) to disable the
   RTL.lu lookup and rely on petrol.lu alone. A failure of the RTL.lu endpoint is
-  logged once and otherwise ignored — it never breaks the petrol.lu update.
+  logged once and otherwise ignored; it never breaks the petrol.lu update.
 
 ### Removed
 
-- **Quiet hours** (blueprint v4) — the whole section and every type's "Ignore
+- **Quiet hours** (blueprint v4): the whole section and every type's "Ignore
   quiet hours" toggle. Re-importing over an earlier version just drops
   whatever you had set there; use Home Assistant's own automation
   conditions if you need time-window suppression.
@@ -135,18 +203,18 @@ pre-release identifiers included (`0.0.1-beta`, …).
 
 - **Blueprint versioning now follows the integration's release number**
   instead of its own v1/v2/.../v7 counter, so both stay in sync going
-  forward. Purely a naming change — v0.0.1-beta is the same content as v7.
+  forward. Purely a naming change: v0.0.1-beta is the same content as v7.
 - **Evening check retries more often.** After the configured
   `evening_check_time` (default 18:01), the coordinator now rechecks every
   2 minutes for 14 minutes, then every 5 minutes up to 29 minutes after
-  that (10 retries total instead of 2 at +10/+20 min) — a real-world price
+  that (10 retries total instead of 2 at +10/+20 min); a real-world price
   change had appeared later than the old +20 min cutoff caught. Stops
   doing any real work as soon as the price is found; the extra checks are
   once-a-day and lightweight.
 - **Blueprint v5 → v6: Luxembourg date format.** The date shown in the
   "Evening: next-day price announced" message (e.g. `SP95 −2,8 ct/L →
   1,84 €/L (10/09/2026)`) is now `DD/MM/YYYY` instead of the raw
-  `YYYY-MM-DD` the integration emits internally. No inputs changed — a
+  `YYYY-MM-DD` the integration emits internally. No inputs changed; a
   re-import is enough, nothing to re-pick.
 - **Blueprint v4 → v5: refuel-recommendation notifications.** The *Notify
   when it becomes* multi-select no longer offers `no_change`; a separate
@@ -157,7 +225,7 @@ pre-release identifiers included (`0.0.1-beta`, …).
   value is dropped. `awaiting_price` remains a non-notifying state.
 - **Blueprint: the *Notification tag prefix* input is removed** (v5). The
   per-type notification tags are now hardcoded (`letzfuel_announced`,
-  `letzfuel_effective`, `letzfuel_recommendation`, `letzfuel_threshold`) —
+  `letzfuel_effective`, `letzfuel_recommendation`, `letzfuel_threshold`):
   same values as the old `letzfuel` default, so a re-import changes nothing
   unless you had customised the prefix.
 - Entity IDs are now pinned to a stable, language-independent form
@@ -171,7 +239,7 @@ pre-release identifiers included (`0.0.1-beta`, …).
 
 - **`sensor.*_refuel_recommendation`'s "no data yet" state is no longer stuck
   showing "Unknown".** It used the literal string `"unknown"` as one of its
-  enum options — but Home Assistant's frontend hard-codes that exact string
+  enum options, but Home Assistant's frontend hard-codes that exact string
   (and `"unavailable"`) to always render the generic core "Unknown"/"Unbekannt"
   label, short-circuiting before any entity-specific translation is even
   considered, no matter what the integration's own translation files say.

@@ -26,7 +26,8 @@
     "error": {
       "cannot_connect": "D'Source fir d'Pëtrolspräisser konnt net erreecht ginn. Iwwerpréift Är Verbindung a probéiert et nach eng Kéier.",
       "parse_error": "D'Source fir d'Pëtrolspräisser gouf erreecht, mä hiren Inhalt konnt net gelies ginn. Maacht wgl. en Issue op.",
-      "level_entity_required": "Wielt d'Entitéit fir den Tankfëllstand aus – oder stellt d'Source zréck op manuell."
+      "primary_not_tracked": "D'Haapt Pëtrol's Zort muss ee vun de verfollegte Pëtrol Zorte sinn.",
+      "level_entity_required": "Wielt d'Entitéit fir den Tankfëllstand aus oder stellt d'Source zréck op manuell."
     },
     "abort": {
       "single_instance_allowed": "LëtzFuel HA ass scho konfiguréiert."
@@ -37,8 +38,7 @@
       "init": {
         "title": "LëtzFuel HA Astellungen",
         "data": {
-          "update_interval_hours": "Aktualiséierungsintervall",
-          "evening_check_time": "Auerzäit vum Owescheck (fänkt d'Verëffentlechung géint 18:00 of; probéiert all 2 Min. fir 14 Min., duerno all 5 Min. bis 29 Min. no dëser Zäit)",
+          "evening_check_time": "Auerzäit vum Owescheck (fänkt d'Verëffentlechung géint 18:00 of; soulaang näischt ugekënnegt ass, probéiert all 3-6 Min. (zoufälleg) fir bis zu 60 Min., duerno all 20-30 Min. bis Mëtternuecht)",
           "announcements_enabled": "De muer ugekënnegte Präis ofruffen",
           "trend_window_days": "Trendfënster",
           "price_display": "Präisduerstellung",
@@ -56,7 +56,8 @@
       }
     },
     "error": {
-      "level_entity_required": "Wielt d'Entitéit fir den Tankfëllstand aus – oder stellt d'Source zréck op manuell."
+      "primary_not_tracked": "D'Haapt Pëtrol's Zort muss ee vun de verfollegte Pëtrol Zorte sinn.",
+      "level_entity_required": "Wielt d'Entitéit fir den Tankfëllstand aus oder stellt d'Source zréck op manuell."
     }
   },
   "selector": {
@@ -164,11 +165,15 @@
   "issues": {
     "stale_data": {
       "title": "D'Pëtrolspräisser sinn net méi aktuell",
-      "description": "De läschte verëffentlechte Präis ass {age_days} Deeg al an d'Source kann net aktualiséiert ginn. Iwwerpréift d'Präissäit an d'Logbicher vun der Integratioun."
+      "description": "De läschte verëffentlechte Präis ass {age_days} Deeg al. D'Source verëffentlecht vläicht näischt méi oder huet sech geännert. Iwwerpréift d'Präissäit an d'Logbicher vun der Integratioun."
     },
     "parse_error": {
       "title": "D'Source fir d'Pëtrolspräisser kann net gelies ginn",
-      "description": "D'Präissäit gouf erreecht, mä konnt net analyséiert ginn ({error}). D'Layout vun der Säit huet sech vläicht geännert – maacht wgl. en Issue op."
+      "description": "D'Präissäit gouf erreecht, mä konnt net analyséiert ginn ({error}). D'Layout vun der Säit huet sech vläicht geännert. Maacht wgl. en Issue op."
+    },
+    "announcements_unavailable": {
+      "title": "De Präis fir muer erschéngt eréischt méi spéit",
+      "description": "Zënter {days} Deeg ass d'Quell fir d'Ukënnegung vum Präis fir muer net notzbar, et gëtt en Ersatz benotzt. Fält deen och aus, erschéngt de Präis fir muer eréischt, wann déi offiziell Präistabell en oplëscht, meeschtens spéit owes. W.e.g. d'Diagnos kontrolléieren an en Issue opmaachen, wann dat esou bleift."
     }
   }
 }

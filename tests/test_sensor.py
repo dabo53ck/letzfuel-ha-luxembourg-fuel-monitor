@@ -1,4 +1,4 @@
-"""Tests for the sensor and binary_sensor platforms."""
+"""Tests for the sensor platform."""
 
 from __future__ import annotations
 

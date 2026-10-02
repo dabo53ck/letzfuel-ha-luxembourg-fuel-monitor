@@ -26,6 +26,7 @@
     "error": {
       "cannot_connect": "Não foi possível aceder à fonte dos preços de combustível. Verifique a sua ligação e tente novamente.",
       "parse_error": "A fonte dos preços foi acedida, mas o seu conteúdo não pôde ser lido. Por favor, abra uma issue.",
+      "primary_not_tracked": "O combustível principal tem de estar entre os combustíveis a monitorizar.",
       "level_entity_required": "Escolha a entidade da qual ler o nível de combustível, ou volte a definir a origem como manual."
     },
     "abort": {
@@ -37,8 +38,7 @@
       "init": {
         "title": "Definições do LëtzFuel HA",
         "data": {
-          "update_interval_hours": "Intervalo de atualização",
-          "evening_check_time": "Hora da verificação noturna (apanha a publicação por volta das 18h00; tenta novamente a cada 2 min durante 14 min, depois a cada 5 min até 29 min após esta hora)",
+          "evening_check_time": "Hora da verificação noturna (apanha a publicação por volta das 18h00; enquanto nada for anunciado, tenta novamente a cada 3-6 min (aleatório) até 60 min e, a seguir, a cada 20-30 min até à meia-noite)",
           "announcements_enabled": "Obter o preço anunciado para amanhã",
           "trend_window_days": "Janela de tendência",
           "price_display": "Apresentação do preço",
@@ -56,6 +56,7 @@
       }
     },
     "error": {
+      "primary_not_tracked": "O combustível principal tem de estar entre os combustíveis a monitorizar.",
       "level_entity_required": "Escolha a entidade da qual ler o nível de combustível, ou volte a definir a origem como manual."
     }
   },
@@ -164,11 +165,15 @@
   "issues": {
     "stale_data": {
       "title": "Os preços dos combustíveis estão desatualizados",
-      "description": "O preço mais recente publicado tem {age_days} dias e a fonte não pode ser atualizada. Verifique a página de preços e os registos da integração."
+      "description": "O preço mais recente publicado tem {age_days} dias. A fonte pode ter deixado de publicar ou ter mudado. Verifique a página de preços e os registos da integração."
     },
     "parse_error": {
       "title": "Não é possível ler a fonte dos preços de combustível",
-      "description": "A página de preços foi acedida, mas não pôde ser analisada ({error}). A estrutura da página pode ter mudado – por favor, abra uma issue."
+      "description": "A página de preços foi acedida, mas não pôde ser analisada ({error}). A estrutura da página pode ter mudado. Por favor, abra uma issue."
+    },
+    "announcements_unavailable": {
+      "title": "O preço de amanhã só aparece tarde",
+      "description": "Há {days} dias que a fonte de anúncio do preço de amanhã não pode ser usada; está a ser usada uma fonte de reserva. Se também esta falhar, o preço de amanhã só aparece quando a tabela oficial de preços o publicar, normalmente ao fim da noite. Verifique os diagnósticos e abra um pedido se isto persistir."
     }
   }
 }

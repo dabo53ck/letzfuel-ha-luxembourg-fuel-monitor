@@ -1,32 +1,32 @@
 # Roadmap / planned ideas
 
-Not implemented yet — design notes kept here so they aren't lost between
+Not implemented yet; design notes kept here so they aren't lost between
 sessions. No code exists for any of this.
 
 ## Navigate-to-nearest-station notification button
 
 **Idea:** while away from home, the *Refuel recommendation* notification
 (`refuel_today`) gets a tappable button that opens turn-by-turn navigation to
-the nearest fuel station — no typing an address, one tap from the push.
+the nearest fuel station: no typing an address, one tap from the push.
 
 ### Why this is feasible without a click-time server round trip
 
 The Home Assistant Companion app supports a `uri` field on a notification
 action: tapping the button opens that URL directly on the device (native
 maps app if installed, browser otherwise). So the navigation link only needs
-to be fully built at **send time**, in the automation — no webhook or
+to be fully built at **send time**, in the automation, no webhook or
 click-handling automation needed.
 
 ### Design
 
-1. **Station data — fetch once, compute locally.**
+1. **Station data: fetch once, compute locally.**
    Luxembourg has ~234 fuel stations total, so instead of querying a live
    API per notification (rate limits, network dependency, and it would leak
    the user's live GPS to a third party), fetch the *complete* national
    station list once from OpenStreetMap's Overpass API and cache it (e.g. in
    the integration's `Store`, refreshed roughly monthly or via a manual
    reload). "Nearest station" is then a local haversine-distance calculation
-   over the cached list — the user's coordinates never leave Home Assistant.
+   over the cached list; the user's coordinates never leave Home Assistant.
 
    Overpass query sketch:
 
@@ -55,7 +55,7 @@ click-handling automation needed.
    | `max_results` | no | Default 1 |
 
    Response: nearest station(s) with `name`, `brand`, `latitude`,
-   `longitude`, `distance_km`, and a ready-to-use `navigation_url` — a
+   `longitude`, `distance_km`, and a ready-to-use `navigation_url`, a
    cross-platform Google Maps deep link
    (`https://www.google.com/maps/dir/?api=1&destination=<lat>,<lon>&travelmode=driving`),
    which opens the installed Maps app on both iOS and Android, or falls back
@@ -84,7 +84,7 @@ click-handling automation needed.
 - Whether to expose a preferred-brand config option (Step 2 / Options) or
   leave brand filtering to the service call only.
 - Graceful behaviour when the station cache is empty (first run, Overpass
-  unreachable) or the `person` entity has no GPS fix — likely: service
+  unreachable) or the `person` entity has no GPS fix; likely: service
   raises/returns an error the blueprint can skip the button on.
 - Whether `google.com/maps/dir` is the best universal choice, or whether to
   branch by platform (`apple_maps` vs `google_maps` companion app data key)
@@ -100,5 +100,5 @@ Shipped for the stable release: `custom_components/letzfuel_ha/translations/pt.j
 and `it.json` (config flow + options, mirroring `de.json`/`fr.json`/`lb.json`),
 plus `pt`/`it` entries in the blueprint's `notify_language` selector and
 `strings` dict (title/message text, comma decimal separator). Drafted by
-Claude, not yet reviewed by a native speaker — flag any wording issue as a
+Claude, not yet reviewed by a native speaker; flag any wording issue as a
 bug if one turns up.

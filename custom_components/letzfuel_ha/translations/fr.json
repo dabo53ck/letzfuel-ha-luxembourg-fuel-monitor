@@ -26,6 +26,7 @@
     "error": {
       "cannot_connect": "Impossible de joindre la source des prix. Vérifiez votre connexion et réessayez.",
       "parse_error": "La source des prix a été jointe mais son contenu n'a pas pu être lu. Merci d'ouvrir un ticket.",
+      "primary_not_tracked": "Le carburant principal doit faire partie des carburants à suivre.",
       "level_entity_required": "Choisissez l'entité qui fournit le niveau de carburant, ou repassez la source en manuel."
     },
     "abort": {
@@ -37,8 +38,7 @@
       "init": {
         "title": "Paramètres de LëtzFuel HA",
         "data": {
-          "update_interval_hours": "Intervalle de mise à jour",
-          "evening_check_time": "Heure du contrôle du soir (capte la publication vers 18h00 ; réessais toutes les 2 min pendant 14 min, puis toutes les 5 min jusqu'à 29 min après cette heure)",
+          "evening_check_time": "Heure du contrôle du soir (capte la publication vers 18h00 ; tant que rien n'est annoncé, réessais toutes les 3 à 6 min (aléatoire) pendant 60 min au plus, puis toutes les 20 à 30 min jusqu'à minuit)",
           "announcements_enabled": "Récupérer le prix annoncé pour demain",
           "trend_window_days": "Fenêtre de tendance",
           "price_display": "Affichage du prix",
@@ -56,6 +56,7 @@
       }
     },
     "error": {
+      "primary_not_tracked": "Le carburant principal doit faire partie des carburants à suivre.",
       "level_entity_required": "Choisissez l'entité qui fournit le niveau de carburant, ou repassez la source en manuel."
     }
   },
@@ -164,11 +165,15 @@
   "issues": {
     "stale_data": {
       "title": "Les prix des carburants ne sont pas à jour",
-      "description": "Le prix publié le plus récent date de {age_days} jours et la source ne peut pas être actualisée. Consultez la page des prix et les journaux de l'intégration."
+      "description": "Le prix publié le plus récent date de {age_days} jours. La source ne publie peut-être plus ou a changé. Consultez la page des prix et les journaux de l'intégration."
     },
     "parse_error": {
       "title": "Impossible de lire la source des prix",
-      "description": "La page des prix a été jointe mais n'a pas pu être analysée ({error}). La mise en page a peut-être changé – merci d'ouvrir un ticket."
+      "description": "La page des prix a été jointe mais n'a pas pu être analysée ({error}). La mise en page a peut-être changé. Merci d'ouvrir un ticket."
+    },
+    "announcements_unavailable": {
+      "title": "Le prix de demain n'apparaît que tard",
+      "description": "Depuis {days} jours, la source d'annonce du prix de demain est inutilisable ; une source de secours est utilisée. Si elle échoue aussi, le prix de demain n'apparaît qu'une fois publié dans le tableau officiel des prix, généralement tard le soir. Vérifiez les diagnostics et ouvrez un ticket si cela persiste."
     }
   }
 }

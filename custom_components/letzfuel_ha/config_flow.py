@@ -40,23 +40,19 @@ from .const import (
     DEFAULT_PROVIDER,
     DEFAULT_TRACKED_FUELS,
     DEFAULT_TREND_WINDOW_DAYS,
-    DEFAULT_UPDATE_INTERVAL_HOURS,
     DOMAIN,
     LEVEL_ENTITY_DOMAINS,
     LEVEL_SOURCE_ENTITY,
     LEVEL_SOURCE_MANUAL,
     LEVEL_SOURCES,
     MAX_TREND_WINDOW_DAYS,
-    MAX_UPDATE_INTERVAL_HOURS,
     MIN_TREND_WINDOW_DAYS,
-    MIN_UPDATE_INTERVAL_HOURS,
     OPT_ANNOUNCEMENTS_ENABLED,
     OPT_EVENING_CHECK_TIME,
     OPT_HISTORY_IMPORT_ENABLED,
     OPT_HISTORY_IMPORT_MONTHS,
     OPT_PRICE_DISPLAY,
     OPT_TREND_WINDOW_DAYS,
-    OPT_UPDATE_INTERVAL_HOURS,
     PRICE_DISPLAY_EXCL,
     PRICE_DISPLAY_INCL,
 )
@@ -109,6 +105,9 @@ class LuxFuelConfigFlow(ConfigFlow, domain=DOMAIN):
     """Handle the initial configuration."""
 
     VERSION = 1
+    #: 3: earlier default evening check times move to the current default.
+    #: 4: the update interval is no longer a setting; its stored value is dropped.
+    MINOR_VERSION = 4
 
     def __init__(self) -> None:
         """Init transient state."""
@@ -124,15 +123,18 @@ class LuxFuelConfigFlow(ConfigFlow, domain=DOMAIN):
         """
         errors: dict[str, str] = {}
         if user_input is not None:
-            provider = get_provider(
-                DEFAULT_PROVIDER, async_get_clientsession(self.hass)
-            )
-            try:
-                await provider.async_get_history()
-            except ProviderParseError:
-                errors["base"] = "parse_error"
-            except ProviderConnectionError:
-                errors["base"] = "cannot_connect"
+            if not _primary_is_tracked(user_input):
+                errors["base"] = "primary_not_tracked"
+            else:
+                provider = get_provider(
+                    DEFAULT_PROVIDER, async_get_clientsession(self.hass)
+                )
+                try:
+                    await provider.async_get_history()
+                except ProviderParseError:
+                    errors["base"] = "parse_error"
+                except ProviderConnectionError:
+                    errors["base"] = "cannot_connect"
 
             if not errors:
                 self._data = {
@@ -226,7 +228,11 @@ class LuxFuelOptionsFlow(OptionsFlow):
         errors: dict[str, str] = {}
         if user_input is not None:
             source = user_input.get(CONF_LEVEL_SOURCE, LEVEL_SOURCE_MANUAL)
-            if source == LEVEL_SOURCE_ENTITY and not user_input.get(CONF_LEVEL_ENTITY):
+            if not _primary_is_tracked(user_input):
+                errors["base"] = "primary_not_tracked"
+            elif source == LEVEL_SOURCE_ENTITY and not user_input.get(
+                CONF_LEVEL_ENTITY
+            ):
                 errors["base"] = "level_entity_required"
             else:
                 return self.async_create_entry(data=_clean_options(user_input))
@@ -238,20 +244,6 @@ class LuxFuelOptionsFlow(OptionsFlow):
 
         schema = vol.Schema(
             {
-                vol.Required(
-                    OPT_UPDATE_INTERVAL_HOURS,
-                    default=_get(
-                        OPT_UPDATE_INTERVAL_HOURS, DEFAULT_UPDATE_INTERVAL_HOURS
-                    ),
-                ): NumberSelector(
-                    NumberSelectorConfig(
-                        min=MIN_UPDATE_INTERVAL_HOURS,
-                        max=MAX_UPDATE_INTERVAL_HOURS,
-                        step=1,
-                        unit_of_measurement="h",
-                        mode=NumberSelectorMode.BOX,
-                    )
-                ),
                 vol.Required(
                     OPT_EVENING_CHECK_TIME,
                     default=_get(OPT_EVENING_CHECK_TIME, DEFAULT_EVENING_CHECK_TIME),
@@ -339,20 +331,26 @@ class LuxFuelOptionsFlow(OptionsFlow):
         return self.async_show_form(step_id="init", data_schema=schema, errors=errors)
 
 
+def _primary_is_tracked(user_input: dict[str, Any]) -> bool:
+    """The primary fuel drives the vehicle and recommendation sensors."""
+    return user_input.get(CONF_PRIMARY_FUEL) in (
+        user_input.get(CONF_TRACKED_FUELS) or []
+    )
+
+
 def _clean_options(user_input: dict[str, Any]) -> dict[str, Any]:
     """Normalise numeric inputs and drop cleared optional fields."""
     options = dict(user_input)
     for int_key in (
-        OPT_UPDATE_INTERVAL_HOURS,
         OPT_TREND_WINDOW_DAYS,
         OPT_HISTORY_IMPORT_MONTHS,
     ):
         if int_key in options and options[int_key] is not None:
             options[int_key] = int(options[int_key])
     if not options.get(CONF_TANK_SIZE):
-        options.pop(CONF_TANK_SIZE, None)
-    if options.get(CONF_CURRENT_LEVEL) is None:
-        options.pop(CONF_CURRENT_LEVEL, None)
+        # Stored as None rather than dropped: a missing key would fall back to
+        # the size entered during the initial setup (see ``option_value``).
+        options[CONF_TANK_SIZE] = None
     if options.get(CONF_LEVEL_SOURCE) != LEVEL_SOURCE_ENTITY or not options.get(
         CONF_LEVEL_ENTITY
     ):

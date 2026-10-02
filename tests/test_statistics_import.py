@@ -34,6 +34,17 @@ def test_daily_statistics_forward_fills() -> None:
     assert all(r["start"].minute == 0 and r["start"].second == 0 for r in rows)
 
 
+def test_daily_statistics_follow_price_display() -> None:
+    start = date(2026, 8, 1)
+    points = [PricePoint(start, FuelType.DIESEL, Decimal("1.80"), Decimal("1.50"))]
+
+    incl = _daily_statistics(dict, points, start, start)
+    excl = _daily_statistics(dict, points, start, start, use_incl_vat=False)
+
+    assert incl[0]["mean"] == 1.8
+    assert excl[0]["mean"] == 1.5
+
+
 async def test_history_import_targets_real_sensors(
     hass: HomeAssistant, mock_petrol_lu, config_entry
 ) -> None:

@@ -19,6 +19,7 @@ from custom_components.letzfuel_ha.providers.rtl_lu import (
     RTL_CURRENT_URL,
     RtlLuAnnouncements,
     parse_announced,
+    parse_effective_date,
 )
 
 TODAY = date(2026, 9, 2)
@@ -76,7 +77,7 @@ async def test_fetch_http_error(
     src = RtlLuAnnouncements(async_get_clientsession(hass))
 
     with pytest.raises(ProviderConnectionError):
-        await src.async_get_announced_points(TODAY)
+        await src.async_fetch(TODAY)
 
 
 async def test_fetch_ok(
@@ -85,9 +86,36 @@ async def test_fetch_ok(
     aioclient_mock.get(RTL_CURRENT_URL, json=_payload("2026-09-03"))
     src = RtlLuAnnouncements(async_get_clientsession(hass))
 
-    points = await src.async_get_announced_points(TODAY)
+    points = (await src.async_fetch(TODAY)).points
     assert {p.fuel for p in points} == {
         FuelType.DIESEL,
         FuelType.SP95,
         FuelType.SP98,
     }
+
+
+@pytest.mark.parametrize(
+    "raw",
+    [
+        "2026-09-03T00:00:00+02:00",
+        # the same instant in UTC must still mean the 3rd in Luxembourg
+        "2026-09-02T22:00:00Z",
+        "2026-09-02T22:00:00+00:00",
+        "2026-09-03T00:00:00",
+    ],
+)
+def test_effective_date_is_luxembourg_day(raw: str) -> None:
+    assert parse_effective_date({"date": raw}) == date(2026, 9, 3)
+    assert [p.effective_date for p in parse_announced(_payload("x", date=raw), TODAY)]
+
+
+async def test_fetch_reports_latest_date(
+    hass: HomeAssistant, aioclient_mock: AiohttpClientMocker
+) -> None:
+    """A stale payload (today's date) is reported, but yields no points."""
+    aioclient_mock.get(RTL_CURRENT_URL, json=_payload("2026-09-02"))
+    src = RtlLuAnnouncements(async_get_clientsession(hass))
+
+    result = await src.async_fetch(TODAY)
+    assert result.latest_date == TODAY
+    assert result.points == []
