@@ -37,6 +37,13 @@
     "step": {
       "init": {
         "title": "LëtzFuel HA Astellungen",
+        "menu_options": {
+          "general": "Allgemeng",
+          "vehicle": "Gefier"
+        }
+      },
+      "general": {
+        "title": "Allgemeng",
         "data": {
           "evening_check_time": "Auerzäit vum Owescheck (fänkt d'Verëffentlechung géint 18:00 of; soulaang näischt ugekënnegt ass, probéiert all 3-6 Min. (zoufälleg) fir bis zu 60 Min., duerno all 20-30 Min. bis Mëtternuecht)",
           "announcements_enabled": "De muer ugekënnegte Präis ofruffen",
@@ -44,11 +51,16 @@
           "price_display": "Präisduerstellung",
           "tracked_fuels": "Pëtrol Zorten déi ze verfollegen sinn",
           "primary_fuel": "Haapt Pëtrol's Zort",
-          "tank_size": "Tankgréisst",
-          "level_source": "Source vum Tankfëllstand",
-          "level_entity_id": "Entitéit fir den Tankfëllstand",
           "history_import_enabled": "Präishistorie an d'Laangzäitstatistike importéieren",
           "history_import_months": "Importdéift vum Historique"
+        }
+      },
+      "vehicle": {
+        "title": "Gefier",
+        "data": {
+          "tank_size": "Tankgréisst",
+          "level_source": "Source vum Tankfëllstand",
+          "level_entity_id": "Entitéit fir den Tankfëllstand"
         },
         "data_description": {
           "level_entity_id": "Säi Status muss den Tankfëllstand a Prozent sinn (0-100). Gëtt nëmme benotzt, wann d'Source \"Vun enger anerer Entitéit\" ass."
@@ -79,12 +91,60 @@
         "manual": "Manuell (Reegler)",
         "entity": "Vun enger anerer Entitéit"
       }
+    },
+    "notify_fuel": {
+      "options": {
+        "primary": "Haaptpëtrol",
+        "diesel": "Diesel",
+        "sp95": "SP95 (E10)",
+        "sp98": "SP98"
+      }
+    },
+    "notify_direction": {
+      "options": {
+        "both": "Erop an erof",
+        "up": "Just Erhéijungen",
+        "down": "Just Senkungen"
+      }
+    },
+    "notify_priority": {
+      "options": {
+        "normal": "Normal",
+        "elevated": "Erhéicht",
+        "critical": "Kritesch (ëmgeet Net stéieren)"
+      }
+    },
+    "notify_recommendation": {
+      "options": {
+        "refuel_today": "Haut tanken",
+        "wait": "Waarden"
+      }
+    },
+    "notify_presence_mode": {
+      "options": {
+        "home": "Doheem",
+        "away": "Ënnerwee"
+      }
+    },
+    "notify_language": {
+      "options": {
+        "en": "English",
+        "de": "Deutsch",
+        "fr": "Français",
+        "lb": "Lëtzebuergesch",
+        "pt": "Português",
+        "it": "Italiano"
+      }
     }
   },
   "entity": {
     "sensor": {
-      "price": { "name": "{fuel} Präis" },
-      "change": { "name": "{fuel} Ännerung" },
+      "price": {
+        "name": "{fuel} Präis"
+      },
+      "change": {
+        "name": "{fuel} Ännerung"
+      },
       "trend": {
         "name": "{fuel} Trend",
         "state": {
@@ -93,7 +153,9 @@
           "stable": "Stabil"
         }
       },
-      "price_tomorrow": { "name": "{fuel} Präis muer" },
+      "price_tomorrow": {
+        "name": "{fuel} Präis muer"
+      },
       "refuel_recommendation": {
         "name": "Tankempfehlung",
         "state": {
@@ -103,17 +165,31 @@
           "awaiting_price": "Waarden op en neie Präis"
         }
       },
-      "last_price_update": { "name": "Läscht Präisaktualiséierung" },
-      "days_since_last_change": { "name": "Deeg zënter der leschter Ännerung" },
-      "full_tank_cost": { "name": "Käschte fir e vollen Tank" },
-      "refill_cost": { "name": "Käschte fir nozetanken" },
-      "full_tank_cost_change": { "name": "Ännerung vun de Käschte fir e vollen Tank" }
+      "last_price_update": {
+        "name": "Läscht Präisaktualiséierung"
+      },
+      "days_since_last_change": {
+        "name": "Deeg zënter der leschter Ännerung"
+      },
+      "full_tank_cost": {
+        "name": "Käschte fir e vollen Tank"
+      },
+      "refill_cost": {
+        "name": "Käschte fir nozetanken"
+      },
+      "full_tank_cost_change": {
+        "name": "Ännerung vun de Käschte fir e vollen Tank"
+      }
     },
     "binary_sensor": {
-      "price_change_pending": { "name": "Präisännerung steet un" }
+      "price_change_pending": {
+        "name": "Präisännerung steet un"
+      }
     },
     "number": {
-      "current_fuel_level": { "name": "Aktuellen Tankfëllstand" }
+      "current_fuel_level": {
+        "name": "Aktuellen Tankfëllstand"
+      }
     }
   },
   "services": {
@@ -174,6 +250,188 @@
     "announcements_unavailable": {
       "title": "De Präis fir muer erschéngt eréischt méi spéit",
       "description": "Zënter {days} Deeg ass d'Quell fir d'Ukënnegung vum Präis fir muer net notzbar, et gëtt en Ersatz benotzt. Fält deen och aus, erschéngt de Präis fir muer eréischt, wann déi offiziell Präistabell en oplëscht, meeschtens spéit owes. W.e.g. d'Diagnos kontrolléieren an en Issue opmaachen, wann dat esou bleift."
+    },
+    "duplicate_notifications": {
+      "title": "D'Notifikatiounen iwwer d'Pëtrolspräisser kommen duebel",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Blueprint-Automatisatioun ausschalten",
+            "description": "LëtzFuel HA schéckt d'Notifikatiounen elo selwer (Astellungen > Apparater a Servicer > LëtzFuel HA > Notifikatioun). D'Automatisatioun {automations} benotzt de Notifikatiouns-Blueprint a schéckt dës Notifikatiounen nach eng Kéier, dofir kënnt all Notifikatioun duebel.\n\nFir d'Standard-Notifikatioune gëtt dës Automatisatioun net méi gebraucht. Behaalt se just fir eegen Aktiounen oder Texter a schalt do d'Typpen aus, déi elo vun der Integratioun kommen. Soss schalt se hei aus oder läscht se ënner Astellungen > Automatisatiounen & Szenen.\n\nOfschécke schalt {automations} aus."
+          }
+        }
+      }
+    }
+  },
+  "config_subentries": {
+    "notification": {
+      "initiate_flow": {
+        "user": "Notifikatioun derbäisetzen"
+      },
+      "entry_type": "Notifikatioun",
+      "step": {
+        "user": {
+          "title": "Zil fir d'Notifikatiounen derbäisetzen",
+          "description": "Wien d'Notifikatiounen iwwer d'Pëtrolspräisser kritt, op wéi engen Apparater a fir wat. All Typ ka separat ageschalt ginn.",
+          "data": {
+            "name": "Numm",
+            "devices": "Apparater",
+            "language": "Sprooch vun de Notifikatiounen",
+            "tap_dashboard_path": "Dashboard, deen opgeet, wann een op eng Notifikatioun tippt (optional)"
+          },
+          "data_description": {
+            "devices": "Handyen an Tablette mat der Home Assistant Companion App.",
+            "tap_dashboard_path": "Eidel loossen, da ginn d'Detailer vum Präis oder vun der Tankempfeelung op. Oder eng Dashboard-Usiicht aginn, zum Beispill /lovelace/fuel."
+          },
+          "sections": {
+            "announced": {
+              "name": "Owes: Präis fir muer ugekënnegt",
+              "data": {
+                "enabled": "Aktivéieren",
+                "fuels": "Pëtrolszorten",
+                "direction": "Richtung",
+                "min_delta": "Klengsten Ännerung",
+                "priority": "Prioritéit"
+              },
+              "data_description": {
+                "min_delta": "Méi kleng Ännerungen ignoréieren. 0 = all Ännerung."
+              },
+              "description": "Wann den offizielle Präis duerno anescht ass, ersetzt eng Korrektur d'Notifikatioun."
+            },
+            "effective": {
+              "name": "Neie Präis gëllt",
+              "data": {
+                "enabled": "Aktivéieren",
+                "fuels": "Pëtrolszorten",
+                "direction": "Richtung",
+                "min_delta": "Klengsten Ännerung",
+                "priority": "Prioritéit"
+              },
+              "data_description": {
+                "min_delta": "Méi kleng Ännerungen ignoréieren. 0 = all Ännerung."
+              }
+            },
+            "recommendation": {
+              "name": "Tankempfeelung",
+              "data": {
+                "enabled": "Aktivéieren",
+                "states": "Bescheed ginn, wann se wiesselt op",
+                "no_change": "Och Bescheed ginn, wann näischt ännert",
+                "priority": "Prioritéit"
+              }
+            },
+            "countdown": {
+              "name": "Live-Countdown bis Mëtternuecht",
+              "description": "E Countdown um Lock Screen (iOS Live Activity, Android Live Update), soulaang d'Empfeelung Haut tanken ass. Kënnt zousätzlech zur Tankempfeelung.",
+              "data": {
+                "enabled": "Aktivéieren"
+              }
+            },
+            "threshold": {
+              "name": "Präisgrenz",
+              "data": {
+                "enabled": "Aktivéieren",
+                "fuels": "Pëtrolszorten",
+                "below": "Bescheed ginn, wann de Präis ënner",
+                "priority": "Prioritéit"
+              }
+            },
+            "presence": {
+              "name": "Just doheem / ënnerwee",
+              "data": {
+                "entity": "Persoun oder Grupp",
+                "mode": "Just schécken, wann",
+                "critical_overrides": "Kritesch Notifikatiounen ignoréieren dat"
+              },
+              "data_description": {
+                "entity": "Eidel loossen, fir ëmmer ze schécken."
+              }
+            }
+          }
+        },
+        "reconfigure": {
+          "title": "Zil fir d'Notifikatiounen änneren",
+          "description": "Wien d'Notifikatiounen iwwer d'Pëtrolspräisser kritt, op wéi engen Apparater a fir wat. All Typ ka separat ageschalt ginn.",
+          "data": {
+            "name": "Numm",
+            "devices": "Apparater",
+            "language": "Sprooch vun de Notifikatiounen",
+            "tap_dashboard_path": "Dashboard, deen opgeet, wann een op eng Notifikatioun tippt (optional)"
+          },
+          "data_description": {
+            "devices": "Handyen an Tablette mat der Home Assistant Companion App.",
+            "tap_dashboard_path": "Eidel loossen, da ginn d'Detailer vum Präis oder vun der Tankempfeelung op. Oder eng Dashboard-Usiicht aginn, zum Beispill /lovelace/fuel."
+          },
+          "sections": {
+            "announced": {
+              "name": "Owes: Präis fir muer ugekënnegt",
+              "data": {
+                "enabled": "Aktivéieren",
+                "fuels": "Pëtrolszorten",
+                "direction": "Richtung",
+                "min_delta": "Klengsten Ännerung",
+                "priority": "Prioritéit"
+              },
+              "data_description": {
+                "min_delta": "Méi kleng Ännerungen ignoréieren. 0 = all Ännerung."
+              },
+              "description": "Wann den offizielle Präis duerno anescht ass, ersetzt eng Korrektur d'Notifikatioun."
+            },
+            "effective": {
+              "name": "Neie Präis gëllt",
+              "data": {
+                "enabled": "Aktivéieren",
+                "fuels": "Pëtrolszorten",
+                "direction": "Richtung",
+                "min_delta": "Klengsten Ännerung",
+                "priority": "Prioritéit"
+              },
+              "data_description": {
+                "min_delta": "Méi kleng Ännerungen ignoréieren. 0 = all Ännerung."
+              }
+            },
+            "recommendation": {
+              "name": "Tankempfeelung",
+              "data": {
+                "enabled": "Aktivéieren",
+                "states": "Bescheed ginn, wann se wiesselt op",
+                "no_change": "Och Bescheed ginn, wann näischt ännert",
+                "priority": "Prioritéit"
+              }
+            },
+            "countdown": {
+              "name": "Live-Countdown bis Mëtternuecht",
+              "description": "E Countdown um Lock Screen (iOS Live Activity, Android Live Update), soulaang d'Empfeelung Haut tanken ass. Kënnt zousätzlech zur Tankempfeelung.",
+              "data": {
+                "enabled": "Aktivéieren"
+              }
+            },
+            "threshold": {
+              "name": "Präisgrenz",
+              "data": {
+                "enabled": "Aktivéieren",
+                "fuels": "Pëtrolszorten",
+                "below": "Bescheed ginn, wann de Präis ënner",
+                "priority": "Prioritéit"
+              }
+            },
+            "presence": {
+              "name": "Just doheem / ënnerwee",
+              "data": {
+                "entity": "Persoun oder Grupp",
+                "mode": "Just schécken, wann",
+                "critical_overrides": "Kritesch Notifikatiounen ignoréieren dat"
+              },
+              "data_description": {
+                "entity": "Eidel loossen, fir ëmmer ze schécken."
+              }
+            }
+          }
+        }
+      },
+      "error": {
+        "no_devices": "Wielt mindestens een Apparat aus."
+      }
     }
   }
 }
