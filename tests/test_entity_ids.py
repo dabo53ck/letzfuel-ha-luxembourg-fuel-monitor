@@ -3,7 +3,7 @@
 Home Assistant derives an ``entity_id`` from the *translated* entity name, so
 without an explicit suggestion a German instance ends up with
 ``sensor.letzfuel_ha_tankempfehlung`` instead of the documented
-``sensor.letzfuel_ha_refuel_recommendation`` — which would break the shared
+``sensor.letzfuel_ha_refuel_recommendation``, which would break the shared
 notification blueprint and every example in the docs.
 """
 

@@ -169,7 +169,7 @@
     },
     "parse_error": {
       "title": "Impossible de lire la source des prix",
-      "description": "La page des prix a été jointe mais n'a pas pu être analysée ({error}). La mise en page a peut-être changé – merci d'ouvrir un ticket."
+      "description": "La page des prix a été jointe mais n'a pas pu être analysée ({error}). La mise en page a peut-être changé. Merci d'ouvrir un ticket."
     },
     "announcements_unavailable": {
       "title": "Le prix de demain n'apparaît que tard",

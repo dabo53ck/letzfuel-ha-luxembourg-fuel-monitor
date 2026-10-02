@@ -27,7 +27,7 @@
       "cannot_connect": "Die Preisquelle konnte nicht erreicht werden. Prüfen Sie Ihre Verbindung und versuchen Sie es erneut.",
       "parse_error": "Die Preisquelle wurde erreicht, ihr Inhalt konnte aber nicht gelesen werden. Bitte einen Fehlerbericht öffnen.",
       "primary_not_tracked": "Der Hauptkraftstoff muss zu den zu verfolgenden Kraftstoffen gehören.",
-      "level_entity_required": "Wählen Sie die Entität für den Füllstand aus – oder stellen Sie die Quelle zurück auf manuell."
+      "level_entity_required": "Wählen Sie die Entität für den Füllstand aus oder stellen Sie die Quelle zurück auf manuell."
     },
     "abort": {
       "single_instance_allowed": "LëtzFuel HA ist bereits eingerichtet."
@@ -38,7 +38,7 @@
       "init": {
         "title": "Einstellungen für LëtzFuel HA",
         "data": {
-          "evening_check_time": "Uhrzeit der Abendprüfung (erfasst die Veröffentlichung gegen 18:00; solange nichts angekündigt ist, Wiederholungen alle 3–6 Min. (zufällig) für bis zu 60 Min., danach alle 20–30 Min. bis Mitternacht)",
+          "evening_check_time": "Uhrzeit der Abendprüfung (erfasst die Veröffentlichung gegen 18:00; solange nichts angekündigt ist, Wiederholungen alle 3-6 Min. (zufällig) für bis zu 60 Min., danach alle 20-30 Min. bis Mitternacht)",
           "announcements_enabled": "Den für morgen angekündigten Preis abrufen",
           "trend_window_days": "Trendfenster",
           "price_display": "Preisanzeige",
@@ -57,7 +57,7 @@
     },
     "error": {
       "primary_not_tracked": "Der Hauptkraftstoff muss zu den zu verfolgenden Kraftstoffen gehören.",
-      "level_entity_required": "Wählen Sie die Entität für den Füllstand aus – oder stellen Sie die Quelle zurück auf manuell."
+      "level_entity_required": "Wählen Sie die Entität für den Füllstand aus oder stellen Sie die Quelle zurück auf manuell."
     }
   },
   "selector": {
@@ -169,7 +169,7 @@
     },
     "parse_error": {
       "title": "Preisquelle kann nicht gelesen werden",
-      "description": "Die Preisseite wurde erreicht, konnte aber nicht ausgewertet werden ({error}). Möglicherweise hat sich das Seitenlayout geändert – bitte einen Fehlerbericht öffnen."
+      "description": "Die Preisseite wurde erreicht, konnte aber nicht ausgewertet werden ({error}). Möglicherweise hat sich das Seitenlayout geändert. Bitte einen Fehlerbericht öffnen."
     },
     "announcements_unavailable": {
       "title": "Preis für morgen erscheint erst spät",

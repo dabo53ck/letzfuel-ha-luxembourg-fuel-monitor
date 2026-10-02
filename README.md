@@ -2,7 +2,7 @@
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="custom_components/letzfuel_ha/brand/dark_logo.png">
-  <img src="custom_components/letzfuel_ha/brand/logo.png" alt="LëtzFuel HA – Luxembourg Fuel Monitor" width="640">
+  <img src="custom_components/letzfuel_ha/brand/logo.png" alt="LëtzFuel HA: Luxembourg Fuel Monitor" width="640">
 </picture>
 
 **Luxembourg's regulated maximum fuel prices, trends and refuelling insights for Home Assistant.**
@@ -19,7 +19,7 @@ answers:
 - What is the current diesel / SP95 / SP98 price?
 - Did the price change today, and by how much?
 - Is the price going up or down?
-- **A new price was published for tomorrow — should I refuel tonight or wait?**
+- **A new price was published for tomorrow: should I refuel tonight or wait?**
 - What would a full tank cost me right now? What about just topping up?
 - How much did the latest price change add to the cost of a full tank?
 
@@ -31,7 +31,7 @@ the full history and the statistics backfill.
 
 petrol.lu usually adds the next day's price only late in the evening. To tell
 you about a change in time, the integration also checks a public announcement
-feed for **tomorrow's price** — nothing else is taken from it. The feed is only
+feed for **tomorrow's price** (nothing else is taken from it). The feed is only
 trusted while it agrees with petrol.lu on today's price; if it is unusable, a
 backup feed stands in. Implausible values are ignored, and petrol.lu always has
 the final say: if its official price turns out different from what was
@@ -47,11 +47,11 @@ announced, a correction follows. You can turn this off in the options.
 | Area | What you get |
 | --- | --- |
 | **Current prices** | `sensor.*_price` for each tracked fuel (€/L, incl. or excl. VAT), with rich attributes |
-| **Daily change** | `sensor.*_change` — signed €/L move at the last price change, with percentage and dates |
-| **Trend** | `sensor.*_trend` — `rising` / `falling` / `stable` over a rolling window (see Options) |
+| **Daily change** | `sensor.*_change`: signed €/L move at the last price change, with percentage and dates |
+| **Trend** | `sensor.*_trend`: `rising` / `falling` / `stable` over a rolling window (see Options) |
 | **Next-day awareness** | `binary_sensor.price_change_pending`, `sensor.*_price_tomorrow`, `sensor.refuel_recommendation` |
 | **Events** | `letzfuel_ha_price_change_announced`, `letzfuel_ha_price_change_corrected` and `letzfuel_ha_price_changed` for automations |
-| **Notifications** | one import-and-go [notification blueprint](docs/notifications-blueprint.md) — per-type priority, 6 languages, presence gate |
+| **Notifications** | one import-and-go [notification blueprint](docs/notifications-blueprint.md): per-type priority, 6 languages, presence gate |
 | **Vehicle analytics** | full-tank / refill / cost-change sensors (when a tank size is set); fuel level from a live `number` slider or read from another entity |
 | **Services** | `calculate_fill_cost`, `calculate_trip_cost` (response services) |
 | **History** | On setup, past prices are imported into Home Assistant long-term statistics |
@@ -86,12 +86,12 @@ directory and restart.
 
 ## Notifications
 
-One import covers all of it — next-day price alerts, "new price in effect",
+One import covers all of it: next-day price alerts, "new price in effect",
 refuel recommendation and a price-threshold watch. Every type is opt-in, with
 per-type priority (including *critical* to bypass Do Not Disturb), a language
 picker (English/German/French/Lëtzebuergesch/Português/Italiano) and a
 presence gate. Just pick
-your phone(s) from a device picker — no notify service to configure.
+your phone(s) from a device picker, no notify service to configure.
 
 [![Open your Home Assistant instance and show the blueprint import dialog.](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2Fdabo53ck%2Fletzfuel-ha-luxembourg-fuel-monitor%2Fblob%2Fmain%2Fblueprints%2Fautomation%2Fletzfuel_ha%2Fnotifications.yaml)
 
@@ -135,33 +135,37 @@ automation:
 
 All configuration is through the UI.
 
-**Step 1 — Fuels**
+**Step 1: Fuels**
 : Choose which fuels to track (Diesel, SP95/E10, SP98) and which one is your *primary*
-  fuel (used by the recommendation and vehicle sensors).
+  fuel (used by the recommendation and vehicle sensors). The primary fuel must be
+  one of the tracked fuels.
 
-**Step 2 — Vehicle (optional)**
+**Step 2: Vehicle (optional)**
 : Set your tank size to unlock the cost sensors, then choose where the current
   fuel level comes from:
-  - **Manual** – a starting level here, then adjust it live from the
+  - **Manual**: a starting level here, then adjust it live from the
     `number.*_current_fuel_level` slider (put it on a dashboard). The level
     survives restarts, so you only nudge it after driving or refuelling.
-  - **From another entity** – pick an entity whose state is the tank fill level
-    as a percentage (0–100). The slider is not created in this mode.
+  - **From another entity**: pick an entity whose state is the tank fill level
+    as a percentage (0-100). The slider is not created in this mode.
     See [Reading the fuel level from another entity](#reading-the-fuel-level-from-another-entity).
+
+Prices refresh every 6 hours, plus the evening check and a refresh just after
+midnight.
 
 **Options** (⚙️ on the integration card) let you change everything below without
 re-adding the integration:
 
 | Setting | Default | Notes |
 | --- | --- | --- |
-| Evening check time | 18:00 | Extra refresh to catch the publication; while nothing has been announced yet it retries every **3–6 min** (random) for up to an hour, then every **20–30 min** (random) until midnight |
+| Evening check time | 18:00 | Extra refresh to catch the publication; while nothing has been announced yet it retries every **3-6 min** (random) for up to an hour, then every **20-30 min** (random) until midnight |
 | Fetch tomorrow's announced price | on | Also ask the announcement feed (or its backup) for the next-day price, so it shows up in the evening. Implausible values are ignored. Turn off to rely on petrol.lu alone. |
 | Trend window | 14 days | Sample window for the trend sensors |
-| Price display | Incl. VAT | Show prices with or without VAT |
-| Tracked fuels / primary fuel | all / Diesel | |
-| Tank size | — | Enables the vehicle sensors |
+| Price display | Incl. VAT | Show prices with or without VAT; also used for the imported price history |
+| Tracked fuels / primary fuel | all / Diesel | The primary fuel must be one of the tracked fuels |
+| Tank size | - | Enables the vehicle sensors |
 | Fuel level source | Manual | *Manual* = the `number.*_current_fuel_level` slider; *From another entity* = read it live from the entity below |
-| Fuel level entity | — | The entity whose state is the fill level in **percent (0–100)**. Only used when the source is *From another entity* |
+| Fuel level entity | - | The entity whose state is the fill level in **percent (0-100)**. Only used when the source is *From another entity* |
 | Import price history | on | Backfill long-term statistics |
 | History import depth | 12 months | How far back to import |
 
@@ -175,7 +179,7 @@ Sensors marked *disabled by default* can be enabled from the entity settings.
 fuel**; the other tracked fuels' copies start disabled.
 
 > **Language note:** entity names are translated, but entity IDs are always
-> English, whatever language Home Assistant runs in — e.g. the diesel price
+> English, whatever language Home Assistant runs in, e.g. the diesel price
 > sensor is `sensor.letzfuel_ha_diesel_price` everywhere. Entities that already
 > exist keep the ID they were created with.
 
@@ -194,14 +198,14 @@ fuel**; the other tracked fuels' copies start disabled.
 | --- | --- | --- |
 | `binary_sensor.*_price_change_pending` | `on` when a differing next-day price is published | `affected_fuels`, `deltas`, `effective_date` |
 | `sensor.*_refuel_recommendation` | `refuel_today` / `wait` / `no_change` / `awaiting_price` | `primary_fuel`, `today_price`, `tomorrow_price`, `delta`, `potential_saving_full_tank` |
-| `sensor.*_last_price_update` | timestamp the current price took effect | `last_fetch_success`, `fetched_at`, `source_url` |
-| `sensor.*_days_since_last_change` *(disabled by default)* | integer days | — |
+| `sensor.*_last_price_update` | timestamp the current price took effect | `last_fetch_success`, `fetched_at`, `source`, `source_url` |
+| `sensor.*_days_since_last_change` *(disabled by default)* | integer days | - |
 
 ### Vehicle (created when a tank size is configured)
 
 | Entity | State | Key attributes |
 | --- | --- | --- |
-| `number.*_current_fuel_level` | current fuel level, % — a slider you set from a dashboard *(only in **Manual** fuel-level mode)* | — |
+| `number.*_current_fuel_level` | current fuel level, %: a slider you set from a dashboard *(only in **Manual** fuel-level mode)* | - |
 | `sensor.*_full_tank_cost` | `tank_size × price`, € | `tank_size`, `fuel_type`, `price_per_liter` |
 | `sensor.*_refill_cost` | cost to fill from the current level, € | `current_level_pct`, `tank_size`, `liters_needed`, `price_per_liter`, `level_source`, `level_entity_id` |
 | `sensor.*_full_tank_cost_change` | change in full-tank cost from the last price move, € | `old_full_tank_cost`, `new_full_tank_cost`, `difference`, `per_litre_change`, `change_date` |
@@ -209,17 +213,16 @@ fuel**; the other tracked fuels' copies start disabled.
 ### Reading the fuel level from another entity
 
 Set **Fuel level source** to *From another entity* (in Step 2 or in Options) and
-pick an entity whose **state is the fill level in percent, 0–100**. The refill
+pick an entity whose **state is the fill level in percent, 0-100**. The refill
 sensor then tracks it live, and the `number.*_current_fuel_level` slider is not
-created. Anything unusable — the entity missing, `unknown`/`unavailable`, a
-non-number, or a value outside 0–100 — leaves `sensor.*_refill_cost` at
+created. Anything unusable (the entity missing, `unknown`/`unavailable`, a
+non-number, or a value outside 0-100) leaves `sensor.*_refill_cost` at
 *unknown* until a good value arrives.
 
 Typical sources (`sensor`, `number` and `input_number` entities are offered):
 
-- **A car integration's tank sensor** — e.g. MySkoda's *Füllstand Tank*
-  (`sensor.<car>_fullstand_tank`); most connected-car integrations (BMW, Kia,
-  Tesla, VW/Audi, …) expose an equivalent percentage.
+- **A connected-car integration's tank sensor**: most of them expose the
+  fill level as a percentage (e.g. `sensor.<car>_fuel_level`).
 - **An `input_number` helper** you keep up to date yourself or from an
   automation (Settings → Devices & Services → Helpers → *Number*).
 - **A template sensor** converting an absolute-litres reading to a percentage:
@@ -235,7 +238,7 @@ Typical sources (`sensor`, `number` and `input_number` entities are offered):
   (replace `55` with your tank size in litres).
 
 > If that entity is later renamed or removed, the stored reference is **not**
-> updated automatically — re-pick it in Options.
+> updated automatically; re-pick it in Options.
 
 ---
 
@@ -282,7 +285,7 @@ data:
 ```
 
 `letzfuel_ha_price_change_corrected` fires when petrol.lu's official price for a
-day turns out different from what was announced for it — the same evening or
+day turns out different from what was announced for it, the same evening or
 after midnight. `current_price` is the price before that day, so `delta` and
 `direction` (`up` / `down` / `none`) describe the *real* change:
 
@@ -319,10 +322,10 @@ data:
 
 The integration deliberately does **not** keep its own price database. Home Assistant's
 built-in helpers already do this well, and on setup the published price history is
-backfilled into each `sensor.*_price` entity's own long-term statistics — so its
+backfilled into each `sensor.*_price` entity's own long-term statistics, so its
 history graph and these helpers have data from before you installed it:
 
-**30-day average** — add a [Statistics helper](https://www.home-assistant.io/integrations/statistics/):
+**30-day average**: add a [Statistics helper](https://www.home-assistant.io/integrations/statistics/):
 
 ```yaml
 sensor:
@@ -334,10 +337,10 @@ sensor:
       days: 30
 ```
 
-**Month high / low** — same helper with `state_characteristic: value_max` / `value_min`
+**Month high / low**: same helper with `state_characteristic: value_max` / `value_min`
 and `max_age: { days: 31 }` (or use `sampling_size` to taste).
 
-**Smoothed trend** — the [Trend helper](https://www.home-assistant.io/integrations/trend/)
+**Smoothed trend**: the [Trend helper](https://www.home-assistant.io/integrations/trend/)
 or [Derivative helper](https://www.home-assistant.io/integrations/derivative/) on the
 `*_price` sensor.
 
@@ -347,8 +350,8 @@ or [Derivative helper](https://www.home-assistant.io/integrations/derivative/) o
 
 ### Dashboard
 
-Current price, refuel advice and trend at a glance, with a price-history graph
-— see the [dashboard card YAML](#dashboard-card-yaml) below to build this.
+Current price, refuel advice and trend at a glance, with a price-history graph.
+See the [dashboard card YAML](#dashboard-card-yaml) below to build this.
 
 ![Dashboard: Diesel price, refuel advice, trend, and a price history graph](docs/dashboard.png)
 

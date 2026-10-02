@@ -38,7 +38,7 @@
       "init": {
         "title": "LëtzFuel HA settings",
         "data": {
-          "evening_check_time": "Evening check time (catches the publication around 18:00; while nothing is announced yet, retries every 3–6 min (random) for up to 60 min, then every 20–30 min until midnight)",
+          "evening_check_time": "Evening check time (catches the publication around 18:00; while nothing is announced yet, retries every 3-6 min (random) for up to 60 min, then every 20-30 min until midnight)",
           "announcements_enabled": "Fetch tomorrow's announced price",
           "trend_window_days": "Trend window",
           "price_display": "Price display",
@@ -169,7 +169,7 @@
     },
     "parse_error": {
       "title": "Cannot read the fuel price source",
-      "description": "The price page was reached but could not be parsed ({error}). The page layout may have changed – please open an issue."
+      "description": "The price page was reached but could not be parsed ({error}). The page layout may have changed. Please open an issue."
     },
     "announcements_unavailable": {
       "title": "Tomorrow's price is only shown late",

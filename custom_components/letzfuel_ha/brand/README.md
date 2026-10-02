@@ -1,7 +1,7 @@
 # Brand assets
 
 The mark: a fuel droplet in the Luxembourg flag colours (red / white / light blue)
-holding a speedometer needle — "Luxembourg fuel, read live".
+holding a speedometer needle: "Luxembourg fuel, read live".
 
 | Light | Dark | |
 | --- | --- | --- |
@@ -9,7 +9,7 @@ holding a speedometer needle — "Luxembourg fuel, read live".
 | `logo.png` / `logo@2x.png` | `dark_logo.png` / `dark_logo@2x.png` | Wordmark ("LëtzFuel HA" + descriptor) |
 
 Each has a matching `*.svg` source. Home Assistant (2026.3+) loads these directly
-from this folder — no `home-assistant/brands` PR needed — and picks the `dark_*`
+from this folder (no `home-assistant/brands` PR needed) and picks the `dark_*`
 variant in dark mode.
 
 The PNGs are committed, rendered from the SVGs with
@@ -27,6 +27,6 @@ done
 ```
 
 The `logo` PNGs use whatever bold sans the renderer finds (the SVG asks for
-Bricolage Grotesque, then falls back) — fine for the README / HACS card. For a
+Bricolage Grotesque, then falls back), fine for the README / HACS card. For a
 `home-assistant/brands` PR (only needed for HA < 2026.3 or the public HACS store),
 convert the `<text>` to outlines first (Inkscape: *Path → Object to Path*).
