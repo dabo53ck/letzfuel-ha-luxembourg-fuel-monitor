@@ -5,8 +5,8 @@
         "title": "LëtzFuel HA",
         "description": "D'reglementéiert maximal Verkafspräisser fir Pëtrol zu Lëtzebuerg verfollegen. D'Präisser komme vun petrol.lu (Groupement Pétrolier Luxembourgeois).",
         "data": {
-          "tracked_fuels": "D'Pëtrol Zorten déi ze verfollege sinn",
-          "primary_fuel": "Haapt Pëtrol's Zort (fir d'Gefier- an d'Recommendatiounen)"
+          "tracked_fuels": "D'Pëtrolszorten, déi ze verfollege sinn",
+          "primary_fuel": "Haaptpëtrol (fir d'Gefier an d'Empfeelungen)"
         }
       },
       "vehicle": {
@@ -26,7 +26,7 @@
     "error": {
       "cannot_connect": "D'Source fir d'Pëtrolspräisser konnt net erreecht ginn. Iwwerpréift Är Verbindung a probéiert et nach eng Kéier.",
       "parse_error": "D'Source fir d'Pëtrolspräisser gouf erreecht, mä hiren Inhalt konnt net gelies ginn. Maacht wgl. en Issue op.",
-      "primary_not_tracked": "D'Haapt Pëtrol's Zort muss ee vun de verfollegte Pëtrol Zorte sinn.",
+      "primary_not_tracked": "Den Haaptpëtrol muss eng vun de verfollegte Pëtrolszorte sinn.",
       "level_entity_required": "Wielt d'Entitéit fir den Tankfëllstand aus oder stellt d'Source zréck op manuell."
     },
     "abort": {
@@ -49,8 +49,8 @@
           "announcements_enabled": "De muer ugekënnegte Präis ofruffen",
           "trend_window_days": "Trendfënster",
           "price_display": "Präisduerstellung",
-          "tracked_fuels": "Pëtrol Zorten déi ze verfollegen sinn",
-          "primary_fuel": "Haapt Pëtrol's Zort",
+          "tracked_fuels": "Pëtrolszorten, déi ze verfollege sinn",
+          "primary_fuel": "Haaptpëtrol",
           "history_import_enabled": "Präishistorie an d'Laangzäitstatistike importéieren",
           "history_import_months": "Importdéift vum Historique"
         }
@@ -68,7 +68,7 @@
       }
     },
     "error": {
-      "primary_not_tracked": "D'Haapt Pëtrol's Zort muss ee vun de verfollegte Pëtrol Zorte sinn.",
+      "primary_not_tracked": "Den Haaptpëtrol muss eng vun de verfollegte Pëtrolszorte sinn.",
       "level_entity_required": "Wielt d'Entitéit fir den Tankfëllstand aus oder stellt d'Source zréck op manuell."
     }
   },
@@ -167,7 +167,7 @@
         "name": "{fuel} Präis muer"
       },
       "refuel_recommendation": {
-        "name": "Tankempfehlung",
+        "name": "Tankempfeelung",
         "state": {
           "refuel_today": "Haut tanken",
           "wait": "Waarden",
@@ -212,8 +212,8 @@
           "description": "Wéivill Liter derbäigetankt ginn."
         },
         "fuel_type": {
-          "name": "Zort Pëtrol",
-          "description": "Pëtrol deen ze berechnen ass. Standard ass déi agestallten Haapt Pëtrol's Zort."
+          "name": "Pëtrolszort",
+          "description": "Pëtrol, deen ze berechnen ass. Standard ass den agestallten Haaptpëtrol."
         },
         "use_tomorrow_price": {
           "name": "Muerege Präis benotzen",
@@ -234,8 +234,8 @@
           "description": "Duerchschnëttleche Verbrauch a Liter pro 100 km."
         },
         "fuel_type": {
-          "name": "Zort Pëtrol",
-          "description": "Pëtrol deen ze berechnen ass. Standard ass déi agestallten Haapt Pëtrol's Zort."
+          "name": "Pëtrolszort",
+          "description": "Pëtrol, deen ze berechnen ass. Standard ass den agestallten Haaptpëtrol."
         }
       }
     },

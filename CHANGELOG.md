@@ -31,6 +31,8 @@ pre-release identifiers included (`0.0.1-beta`, …).
 
 - The options are split into two pages, **General** and **Vehicle**.
 - Requires Home Assistant **2026.7** or newer.
+- Luxembourgish: consistent terms for the primary fuel, the tracked fuels and
+  the refuel recommendation.
 - The notifications blueprint moved to its own repository,
   [letzfuel-ha-notifications-blueprint](https://github.com/dabo53ck/letzfuel-ha-notifications-blueprint),
   with its own versions. The copy in this repository is kept for now and

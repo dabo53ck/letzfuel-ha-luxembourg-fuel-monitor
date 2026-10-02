@@ -65,7 +65,7 @@ TEXTS: Final[dict[str, dict[str, object]]] = {
         "no_change": "onverännert",
         "instead_of": "amplaz",
         "effective_title": "Neie Präis ab elo",
-        "rec_title": "Tankempfehlung",
+        "rec_title": "Tankempfeelung",
         "rec_states": {
             "refuel_today": "Haut tanken",
             "wait": "Waarden",
