@@ -38,6 +38,7 @@ from .const import (
     PRIORITY_ELEVATED,
     RECOMMENDATION_NO_CHANGE,
     RECOMMENDATION_REFUEL_TODAY,
+    SEND_COUNTDOWN_END,
     SUBENTRY_NOTIFICATION,
 )
 from .models import FUEL_LABELS, FuelType, PriceSet
@@ -54,6 +55,10 @@ TAG_EFFECTIVE = "letzfuel_effective"
 TAG_RECOMMENDATION = "letzfuel_recommendation"
 TAG_THRESHOLD = "letzfuel_threshold"
 TAG_COUNTDOWN = "letzfuel_countdown"
+COUNTDOWN_END: Mapping[str, Any] = {
+    "message": "clear_notification",
+    "data": {"tag": TAG_COUNTDOWN},
+}
 
 
 def default_language(hass: HomeAssistant) -> str:
@@ -193,6 +198,27 @@ def payload(tag: str, priority: str, tap: Mapping[str, Any]) -> dict[str, Any]:
     return data
 
 
+def message(
+    title: str, lines: list[str], tag: str, priority: str, tap: Mapping[str, Any]
+) -> dict[str, Any]:
+    """`notify` service data for one notification."""
+    return {
+        "title": title,
+        "message": "\n".join(lines),
+        "data": payload(tag, priority, tap),
+    }
+
+
+def threshold_line(fuel: str, price: float, limit: float, t: Mapping[str, Any]) -> str:
+    return str(
+        t["threshold_message"].format(
+            name=FUEL_LABELS[FuelType(fuel)],
+            price=_price(price, t["decimal"]),
+            target=_price(limit, t["decimal"]),
+        )
+    )
+
+
 # -- the notifier ----------------------------------------------------------------
 
 
@@ -297,6 +323,118 @@ class Notifier:
         if changed:
             await self._store.async_save(self._state)
 
+    async def async_send_now(
+        self, kind: str, targets: list[ConfigSubentry], *, preview: bool
+    ) -> list[dict[str, Any]]:
+        """Send one notification type now, from the current prices.
+
+        Used by the send_notification action. The target's language, fuels,
+        priority and tap target apply; whether the type is switched on, its
+        direction and minimum change, and presence do not. The stored state
+        stays untouched, so the regular notifications are not affected.
+        """
+        results = []
+        for target in targets:
+            service_data = self._compose(target, kind)
+            services = self._services(target)
+            sent = service_data is not None and bool(services) and not preview
+            if sent and service_data is not None:
+                await self._deliver(target, service_data)
+            results.append(
+                {
+                    "target": target.title,
+                    "services": [f"notify.{service}" for service in services],
+                    "notification": service_data,
+                    "sent": sent,
+                }
+            )
+        return results
+
+    def _compose(self, target: ConfigSubentry, kind: str) -> dict[str, Any] | None:
+        """Service data of ``kind`` for ``target``, or None if there is nothing."""
+        if kind == SEND_COUNTDOWN_END:
+            return dict(COUNTDOWN_END)
+        if kind == NOTIFY_COUNTDOWN:
+            return self._countdown(target)
+        price_set = self.coordinator.data
+        if price_set is None:
+            return None
+        data = target.data
+        lang = data.get(NOTIFY_LANGUAGE, "en")
+        t = texts(lang)
+        primary = self.coordinator.primary_fuel
+        section = data.get(kind, {})
+        priority = section.get("priority", "normal")
+        fuels = {"fuels": section.get("fuels", [FUEL_CHOICE_PRIMARY])}
+
+        if kind == NOTIFY_RECOMMENDATION:
+            current = refuel_recommendation(price_set.prices.get(primary))
+            return message(
+                t["rec_title"],
+                [t["rec_states"].get(current, current)],
+                TAG_RECOMMENDATION,
+                priority,
+                self._entity_tap(target, self._rec_entity()),
+            )
+
+        if kind == NOTIFY_THRESHOLD:
+            limit = float(section.get("below", 0) or 0)
+            if limit <= 0:
+                return None
+            lines, first = [], None
+            for fuel in sorted(_wanted(fuels["fuels"], primary)):
+                fp = price_set.prices.get(FuelType(fuel))
+                price = self.coordinator.display_price(fp.current) if fp else None
+                if price is not None:
+                    lines.append(threshold_line(fuel, price, limit, t))
+                    first = first or fuel
+            if not lines:
+                return None
+            return message(
+                t["threshold_title"],
+                lines,
+                TAG_THRESHOLD,
+                priority,
+                self._fuel_tap(target, first),
+            )
+
+        if kind == NOTIFY_ANNOUNCED:
+            changes = [
+                {
+                    "fuel": fuel.value,
+                    "upcoming_price": float(fp.upcoming.price_incl_vat),
+                    "delta": float(
+                        fp.upcoming.price_incl_vat - fp.current.price_incl_vat
+                    ),
+                    "effective_date": fp.upcoming.effective_date.isoformat(),
+                }
+                for fuel, fp in price_set.prices.items()
+                if fp.upcoming is not None
+            ]
+            lines = announced_lines(changes, fuels, primary, lang)
+            title, tag = t["announced_title"], TAG_ANNOUNCED
+        else:  # NOTIFY_EFFECTIVE
+            changes = [
+                {
+                    "fuel": fuel.value,
+                    "old_price": float(fp.previous.price_incl_vat),
+                    "new_price": float(fp.current.price_incl_vat),
+                }
+                for fuel, fp in price_set.prices.items()
+                if fp.previous is not None
+            ]
+            lines = effective_lines(changes, fuels, primary, lang)
+            title, tag = t["effective_title"], TAG_EFFECTIVE
+        if not lines:
+            return None
+        return message(
+            title,
+            lines,
+            tag,
+            priority,
+            self._fuel_tap(target, lines_fuel(changes, fuels, primary)),
+        )
+
     # -- types -----------------------------------------------------------------
 
     async def _recommendation(
@@ -320,29 +458,28 @@ class Notifier:
         if not data.get(NOTIFY_COUNTDOWN, {}).get("enabled"):
             return
         if current == RECOMMENDATION_REFUEL_TODAY:
-            now = dt_util.now()
-            midnight = dt_util.start_of_local_day(now + timedelta(days=1))
-            await self._deliver(
-                target,
-                {
-                    "title": t["rec_title"],
-                    "message": t["rec_states"][RECOMMENDATION_REFUEL_TODAY],
-                    "data": {
-                        "tag": TAG_COUNTDOWN,
-                        "live_update": True,
-                        "chronometer": True,
-                        "when_relative": True,
-                        "when": int((midnight - now).total_seconds()),
-                        "notification_icon": "mdi:gas-station",
-                        **self._entity_tap(target, self._rec_entity()),
-                    },
-                },
-            )
+            await self._deliver(target, self._countdown(target))
         elif previous == RECOMMENDATION_REFUEL_TODAY:
-            await self._deliver(
-                target,
-                {"message": "clear_notification", "data": {"tag": TAG_COUNTDOWN}},
-            )
+            await self._deliver(target, COUNTDOWN_END)
+
+    def _countdown(self, target: ConfigSubentry) -> dict[str, Any]:
+        """Live notification counting down to midnight, when today's price ends."""
+        t = texts(target.data.get(NOTIFY_LANGUAGE, "en"))
+        now = dt_util.now()
+        midnight = dt_util.start_of_local_day(now + timedelta(days=1))
+        return {
+            "title": t["rec_title"],
+            "message": t["rec_states"][RECOMMENDATION_REFUEL_TODAY],
+            "data": {
+                "tag": TAG_COUNTDOWN,
+                "live_update": True,
+                "chronometer": True,
+                "when_relative": True,
+                "when": int((midnight - now).total_seconds()),
+                "notification_icon": "mdi:gas-station",
+                **self._entity_tap(target, self._rec_entity()),
+            },
+        }
 
     async def _threshold(
         self,
@@ -378,15 +515,10 @@ class Notifier:
                 below_state[fuel] = below
                 changed = True
             if below and was is False:
-                message = t["threshold_message"].format(
-                    name=FUEL_LABELS[FuelType(fuel)],
-                    price=_price(price, t["decimal"]),
-                    target=_price(limit, t["decimal"]),
-                )
                 await self._send(
                     target,
                     t["threshold_title"],
-                    [message],
+                    [threshold_line(fuel, price, limit, t)],
                     TAG_THRESHOLD,
                     section,
                     self._fuel_tap(target, fuel),
@@ -407,17 +539,10 @@ class Notifier:
         priority = section.get("priority", "normal")
         if not self._presence_ok(target, priority):
             return
-        await self._deliver(
-            target,
-            {
-                "title": title,
-                "message": "\n".join(lines),
-                "data": payload(tag, priority, tap),
-            },
-        )
+        await self._deliver(target, message(title, lines, tag, priority, tap))
 
     async def _deliver(
-        self, target: ConfigSubentry, service_data: dict[str, Any]
+        self, target: ConfigSubentry, service_data: Mapping[str, Any]
     ) -> None:
         for service in self._services(target):
             try:

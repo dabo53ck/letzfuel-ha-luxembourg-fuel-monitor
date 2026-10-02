@@ -23,6 +23,9 @@ pre-release identifiers included (`0.0.1-beta`, …).
 - **Repair issue for double notifications** when a notification target exists
   while an automation from a notifications blueprint is still on. Its fix
   button turns the automation off.
+- **Action `letzfuel_ha.send_notification`** sends one notification type now,
+  with the current prices, to all notification targets or one. With
+  `preview` it only returns what would be sent.
 
 ### Changed
 

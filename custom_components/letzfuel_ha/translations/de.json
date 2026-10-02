@@ -135,6 +135,16 @@
         "pt": "Português",
         "it": "Italiano"
       }
+    },
+    "send_type": {
+      "options": {
+        "announced": "Preis für morgen angekündigt",
+        "effective": "Neuer Preis in Kraft",
+        "recommendation": "Tankempfehlung",
+        "threshold": "Preisschwelle",
+        "countdown": "Live-Countdown bis Mitternacht",
+        "countdown_end": "Live-Countdown beenden"
+      }
     }
   },
   "entity": {
@@ -228,6 +238,24 @@
           "description": "Zu bepreisender Kraftstoff. Standard ist der konfigurierte Hauptkraftstoff."
         }
       }
+    },
+    "send_notification": {
+      "name": "Benachrichtigung senden",
+      "description": "Sendet jetzt eine Art von Preis-Benachrichtigung mit den aktuellen Preisen. Sprache, Kraftstoffe, Priorität und Tipp-Ziel des Benachrichtigungsziels gelten; ob die Art eingeschaltet ist und die Anwesenheit werden ignoriert.",
+      "fields": {
+        "type": {
+          "name": "Art",
+          "description": "Welche Benachrichtigung gesendet wird."
+        },
+        "target": {
+          "name": "Benachrichtigungsziel",
+          "description": "Name eines Benachrichtigungsziels. Leer lassen für alle."
+        },
+        "preview": {
+          "name": "Nur Vorschau",
+          "description": "Nichts senden, nur zurückgeben, was gesendet würde."
+        }
+      }
     }
   },
   "exceptions": {
@@ -236,6 +264,12 @@
     },
     "fuel_not_available": {
       "message": "Keine Preisdaten für {fuel} verfügbar."
+    },
+    "no_notification_targets": {
+      "message": "Es ist noch kein Benachrichtigungsziel eingerichtet. Füge eines unter Einstellungen > Geräte und Dienste > LëtzFuel HA hinzu."
+    },
+    "unknown_notification_target": {
+      "message": "Es gibt kein Benachrichtigungsziel namens {target}."
     }
   },
   "issues": {

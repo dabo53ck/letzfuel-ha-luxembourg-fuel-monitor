@@ -1,7 +1,8 @@
 """Services for LëtzFuel HA.
 
-Both services are response-only helpers for automations and scripts: they compute
-a cost from the currently published prices and return it.
+The two cost services are response-only helpers for automations and scripts:
+they compute a cost from the currently published prices and return it.
+send_notification sends one notification type to the notification targets now.
 """
 
 from __future__ import annotations
@@ -22,11 +23,16 @@ from .const import (
     ATTR_DISTANCE_KM,
     ATTR_FUEL_TYPE,
     ATTR_LITERS,
+    ATTR_PREVIEW,
+    ATTR_TARGET,
+    ATTR_TYPE,
     ATTR_USE_TOMORROW_PRICE,
     CURRENCY_EURO,
     DOMAIN,
+    SEND_TYPES,
     SERVICE_CALCULATE_FILL_COST,
     SERVICE_CALCULATE_TRIP_COST,
+    SERVICE_SEND_NOTIFICATION,
 )
 from .coordinator import LuxFuelCoordinator
 from .models import FuelType
@@ -50,6 +56,14 @@ _TRIP_COST_SCHEMA = vol.Schema(
             vol.Coerce(float), vol.Range(min=0.1, max=100)
         ),
         vol.Optional(ATTR_FUEL_TYPE): vol.In([f.value for f in FuelType]),
+    }
+)
+
+_SEND_NOTIFICATION_SCHEMA = vol.Schema(
+    {
+        vol.Required(ATTR_TYPE): vol.In(SEND_TYPES),
+        vol.Optional(ATTR_TARGET): cv.string,
+        vol.Optional(ATTR_PREVIEW, default=False): cv.boolean,
     }
 )
 
@@ -124,6 +138,27 @@ def async_setup_services(hass: HomeAssistant) -> None:
             "currency": CURRENCY_EURO,
         }
 
+    async def _send_notification(call: ServiceCall) -> ServiceResponse:
+        coordinator = _get_coordinator(hass)
+        targets = coordinator.notifier.targets
+        if not targets:
+            raise ServiceValidationError(
+                translation_domain=DOMAIN, translation_key="no_notification_targets"
+            )
+        name = (call.data.get(ATTR_TARGET) or "").strip()
+        if name:
+            targets = [t for t in targets if t.title.casefold() == name.casefold()]
+            if not targets:
+                raise ServiceValidationError(
+                    translation_domain=DOMAIN,
+                    translation_key="unknown_notification_target",
+                    translation_placeholders={"target": name},
+                )
+        results = await coordinator.notifier.async_send_now(
+            call.data[ATTR_TYPE], targets, preview=call.data[ATTR_PREVIEW]
+        )
+        return {"results": results}
+
     hass.services.async_register(
         DOMAIN,
         SERVICE_CALCULATE_FILL_COST,
@@ -137,4 +172,11 @@ def async_setup_services(hass: HomeAssistant) -> None:
         _calculate_trip_cost,
         schema=_TRIP_COST_SCHEMA,
         supports_response=SupportsResponse.ONLY,
+    )
+    hass.services.async_register(
+        DOMAIN,
+        SERVICE_SEND_NOTIFICATION,
+        _send_notification,
+        schema=_SEND_NOTIFICATION_SCHEMA,
+        supports_response=SupportsResponse.OPTIONAL,
     )

@@ -53,7 +53,7 @@ announced, a correction follows. You can turn this off in the options.
 | **Events** | `letzfuel_ha_price_change_announced`, `letzfuel_ha_price_change_corrected` and `letzfuel_ha_price_changed` for automations |
 | **Notifications** | built in: one notification target per person or device, per-type priority, 6 languages, presence gate; a separate [blueprint](https://github.com/dabo53ck/letzfuel-ha-notifications-blueprint) for your own actions and texts |
 | **Vehicle analytics** | full-tank / refill / cost-change sensors (when a tank size is set); fuel level from a live `number` slider or read from another entity |
-| **Services** | `calculate_fill_cost`, `calculate_trip_cost` (response services) |
+| **Services** | `calculate_fill_cost`, `calculate_trip_cost` (response services), `send_notification` |
 | **History** | On setup, past prices are imported into Home Assistant long-term statistics |
 | **Robustness** | Diagnostics, repair issues when the source is stale or unparseable |
 | **i18n** | English, French, German, Luxembourgish, Portuguese, Italian |
@@ -299,6 +299,24 @@ Returns `{ cost, liters, price_per_liter, fuel_type, effective_date, currency }`
 | `fuel_type` | no | default: primary fuel |
 
 Returns `{ liters_needed, cost, price_per_liter, fuel_type, currency }`.
+
+### `letzfuel_ha.send_notification`
+
+Sends one notification type now, with the current prices, for example to try
+out a notification target or from your own automation. Each target's
+language, fuels, priority and tap target apply; whether the type is switched
+on, its direction and minimum change, and presence are ignored. The regular
+notifications are not affected.
+
+| Field | Required | Description |
+| --- | --- | --- |
+| `type` | yes | `announced` / `effective` / `recommendation` / `threshold` / `countdown` / `countdown_end` |
+| `target` | no | Name of a notification target (default: all) |
+| `preview` | no | Send nothing, only return what would be sent |
+
+Returns `{ results: [{ target, services, notification, sent }] }`.
+`notification` is empty when there is nothing to send, for example no price
+announced for tomorrow or no price threshold set.
 
 ---
 

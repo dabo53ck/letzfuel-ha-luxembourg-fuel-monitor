@@ -173,12 +173,27 @@ NOTIFICATION_BLUEPRINT_SOURCES: Final = (
 # --- Services --------------------------------------------------------------
 SERVICE_CALCULATE_FILL_COST: Final = "calculate_fill_cost"
 SERVICE_CALCULATE_TRIP_COST: Final = "calculate_trip_cost"
+SERVICE_SEND_NOTIFICATION: Final = "send_notification"
 
 ATTR_LITERS: Final = "liters"
 ATTR_FUEL_TYPE: Final = "fuel_type"
 ATTR_USE_TOMORROW_PRICE: Final = "use_tomorrow_price"
 ATTR_DISTANCE_KM: Final = "distance_km"
 ATTR_CONSUMPTION: Final = "consumption_l_100km"
+ATTR_TYPE: Final = "type"
+ATTR_TARGET: Final = "target"
+ATTR_PREVIEW: Final = "preview"
+
+#: Notification types the send_notification action can send.
+SEND_COUNTDOWN_END: Final = "countdown_end"
+SEND_TYPES: Final = (
+    NOTIFY_ANNOUNCED,
+    NOTIFY_EFFECTIVE,
+    NOTIFY_RECOMMENDATION,
+    NOTIFY_THRESHOLD,
+    NOTIFY_COUNTDOWN,
+    SEND_COUNTDOWN_END,
+)
 
 # --- Misc ----------------------------------------------------------------------
 CURRENCY_EURO: Final = "EUR"

@@ -135,6 +135,16 @@
         "pt": "Português",
         "it": "Italiano"
       }
+    },
+    "send_type": {
+      "options": {
+        "announced": "Preço anunciado para amanhã",
+        "effective": "Novo preço em vigor",
+        "recommendation": "Recomendação de abastecimento",
+        "threshold": "Limite de preço",
+        "countdown": "Contagem decrescente até à meia-noite",
+        "countdown_end": "Terminar a contagem decrescente"
+      }
     }
   },
   "entity": {
@@ -228,6 +238,24 @@
           "description": "Combustível a considerar. Por predefinição, o combustível principal configurado."
         }
       }
+    },
+    "send_notification": {
+      "name": "Enviar notificação",
+      "description": "Envia agora um tipo de notificação de preço, com os preços atuais. Aplicam-se o idioma, os combustíveis, a prioridade e o destino ao tocar do destino de notificação; ignora-se se o tipo está ativado e a presença.",
+      "fields": {
+        "type": {
+          "name": "Tipo",
+          "description": "Que notificação enviar."
+        },
+        "target": {
+          "name": "Destino de notificação",
+          "description": "Nome de um destino de notificação. Deixar vazio para todos."
+        },
+        "preview": {
+          "name": "Só pré-visualizar",
+          "description": "Não enviar nada, apenas devolver o que seria enviado."
+        }
+      }
     }
   },
   "exceptions": {
@@ -236,6 +264,12 @@
     },
     "fuel_not_available": {
       "message": "Não há dados de preço disponíveis para {fuel}."
+    },
+    "no_notification_targets": {
+      "message": "Ainda não há nenhum destino de notificação configurado. Adicione um em Definições > Dispositivos e serviços > LëtzFuel HA."
+    },
+    "unknown_notification_target": {
+      "message": "Não existe nenhum destino de notificação chamado {target}."
     }
   },
   "issues": {

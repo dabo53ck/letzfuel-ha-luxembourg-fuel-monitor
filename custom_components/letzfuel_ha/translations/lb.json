@@ -135,6 +135,16 @@
         "pt": "Português",
         "it": "Italiano"
       }
+    },
+    "send_type": {
+      "options": {
+        "announced": "Präis fir muer ugekënnegt",
+        "effective": "Neie Präis gëllt",
+        "recommendation": "Tankempfeelung",
+        "threshold": "Präisgrenz",
+        "countdown": "Live-Countdown bis Mëtternuecht",
+        "countdown_end": "Live-Countdown ofschléissen"
+      }
     }
   },
   "entity": {
@@ -228,6 +238,24 @@
           "description": "Pëtrol deen ze berechnen ass. Standard ass déi agestallten Haapt Pëtrol's Zort."
         }
       }
+    },
+    "send_notification": {
+      "name": "Notifikatioun schécken",
+      "description": "Schéckt elo eng Zort vu Präis-Notifikatioun mat den aktuelle Präisser. Sprooch, Pëtrolszorten, Prioritéit an dat, wat beim Tippen opgeet, kommen aus dem Zil fir d'Notifikatiounen. Ob d'Zort ageschalt ass an ob een doheem ass, spillt keng Roll.",
+      "fields": {
+        "type": {
+          "name": "Zort",
+          "description": "Wéi eng Notifikatioun geschéckt gëtt."
+        },
+        "target": {
+          "name": "Zil fir d'Notifikatiounen",
+          "description": "Numm vun engem Zil fir d'Notifikatiounen. Eidel loosse fir all."
+        },
+        "preview": {
+          "name": "Just Virschau",
+          "description": "Näischt schécken, just zréckginn, wat geschéckt géif ginn."
+        }
+      }
     }
   },
   "exceptions": {
@@ -236,6 +264,12 @@
     },
     "fuel_not_available": {
       "message": "Keng Präisdaten fir {fuel} verfügbar."
+    },
+    "no_notification_targets": {
+      "message": "Et ass nach keen Zil fir d'Notifikatiounen ageriicht. Setz eent ënner Astellungen > Apparater a Servicer > LëtzFuel HA derbäi."
+    },
+    "unknown_notification_target": {
+      "message": "Et gëtt keen Zil fir d'Notifikatioune mam Numm {target}."
     }
   },
   "issues": {

@@ -135,6 +135,16 @@
         "pt": "Português",
         "it": "Italiano"
       }
+    },
+    "send_type": {
+      "options": {
+        "announced": "Prix annoncé pour demain",
+        "effective": "Nouveau prix en vigueur",
+        "recommendation": "Recommandation de plein",
+        "threshold": "Seuil de prix",
+        "countdown": "Compte à rebours jusqu'à minuit",
+        "countdown_end": "Arrêter le compte à rebours"
+      }
     }
   },
   "entity": {
@@ -228,6 +238,24 @@
           "description": "Carburant à tarifer. Par défaut, le carburant principal configuré."
         }
       }
+    },
+    "send_notification": {
+      "name": "Envoyer une notification",
+      "description": "Envoie maintenant un type de notification de prix, avec les prix actuels. La langue, les carburants, la priorité et la cible au toucher de la cible de notification s'appliquent ; l'activation du type et la présence sont ignorées.",
+      "fields": {
+        "type": {
+          "name": "Type",
+          "description": "Quelle notification envoyer."
+        },
+        "target": {
+          "name": "Cible de notification",
+          "description": "Nom d'une cible de notification. Laisser vide pour toutes."
+        },
+        "preview": {
+          "name": "Aperçu seulement",
+          "description": "Ne rien envoyer, seulement renvoyer ce qui serait envoyé."
+        }
+      }
     }
   },
   "exceptions": {
@@ -236,6 +264,12 @@
     },
     "fuel_not_available": {
       "message": "Aucune donnée de prix disponible pour {fuel}."
+    },
+    "no_notification_targets": {
+      "message": "Aucune cible de notification n'est encore configurée. Ajoutez-en une sous Paramètres > Appareils et services > LëtzFuel HA."
+    },
+    "unknown_notification_target": {
+      "message": "Il n'y a pas de cible de notification nommée {target}."
     }
   },
   "issues": {

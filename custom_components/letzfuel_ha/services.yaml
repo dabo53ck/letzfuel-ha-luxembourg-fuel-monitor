@@ -58,3 +58,29 @@ calculate_trip_cost:
             - diesel
             - sp95
             - sp98
+
+send_notification:
+  fields:
+    type:
+      required: true
+      example: announced
+      selector:
+        select:
+          translation_key: send_type
+          options:
+            - announced
+            - effective
+            - recommendation
+            - threshold
+            - countdown
+            - countdown_end
+    target:
+      required: false
+      example: Phone
+      selector:
+        text:
+    preview:
+      required: false
+      default: false
+      selector:
+        boolean:

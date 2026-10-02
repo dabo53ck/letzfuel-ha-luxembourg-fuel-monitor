@@ -135,6 +135,16 @@
         "pt": "Português",
         "it": "Italiano"
       }
+    },
+    "send_type": {
+      "options": {
+        "announced": "Price announced for tomorrow",
+        "effective": "New price in effect",
+        "recommendation": "Refuel recommendation",
+        "threshold": "Price threshold",
+        "countdown": "Live countdown to midnight",
+        "countdown_end": "End live countdown"
+      }
     }
   },
   "entity": {
@@ -228,6 +238,24 @@
           "description": "Fuel to price. Defaults to the configured primary fuel."
         }
       }
+    },
+    "send_notification": {
+      "name": "Send notification",
+      "description": "Sends one type of fuel price notification now, with the current prices. The target's language, fuels, priority and tap target apply; whether the type is switched on and presence are ignored.",
+      "fields": {
+        "type": {
+          "name": "Type",
+          "description": "Which notification to send."
+        },
+        "target": {
+          "name": "Notification target",
+          "description": "Name of a notification target. Leave empty for all."
+        },
+        "preview": {
+          "name": "Preview only",
+          "description": "Send nothing, only return what would be sent."
+        }
+      }
     }
   },
   "exceptions": {
@@ -236,6 +264,12 @@
     },
     "fuel_not_available": {
       "message": "No price data available for {fuel}."
+    },
+    "no_notification_targets": {
+      "message": "No notification target is set up yet. Add one under Settings > Devices and services > LëtzFuel HA."
+    },
+    "unknown_notification_target": {
+      "message": "There is no notification target named {target}."
     }
   },
   "issues": {

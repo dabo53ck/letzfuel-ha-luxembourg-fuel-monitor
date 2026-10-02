@@ -11,6 +11,7 @@ import pytest
 from homeassistant.config_entries import ConfigSubentryData
 from homeassistant.core import HomeAssistant, ServiceCall
 from homeassistant.data_entry_flow import FlowResultType
+from homeassistant.exceptions import ServiceValidationError
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers import issue_registry as ir
@@ -394,6 +395,79 @@ async def test_presence_gate(
     await hass.async_block_till_done()
 
     assert calls == []
+    await _unload(hass, entry)
+
+
+# -- the send_notification action ----------------------------------------------------
+
+
+async def _send(hass: HomeAssistant, **data: Any) -> dict[str, Any]:
+    response = await hass.services.async_call(
+        DOMAIN, "send_notification", data, blocking=True, return_response=True
+    )
+    await hass.async_block_till_done()
+    assert response is not None
+    return response
+
+
+async def test_send_notification_action(
+    hass: HomeAssistant, mock_petrol_lu, price_entries
+) -> None:
+    device_id, calls = _phone(hass)
+    hass.states.async_set(PERSON, "not_home")
+    target = _target(
+        device_id,
+        announced=_section(False),
+        presence={"entity": PERSON, "mode": "home", "critical_overrides": True},
+    )
+    entry = await _setup(hass, _entry(target))
+    mock_petrol_lu(price_entries, sheet_payload=_sheet("1.905"))
+    await entry.runtime_data.async_refresh()
+    await hass.async_block_till_done()
+    assert calls == []  # switched off and away
+
+    # preview: nothing is sent, the notification comes back
+    response = await _send(hass, type="announced", target="target 0", preview=True)
+    (result,) = response["results"]
+    assert result["target"] == "Target 0"
+    assert result["services"] == ["notify.mobile_app_phone"]
+    assert result["sent"] is False
+    assert result["notification"]["message"] == (
+        f"DIESEL: +4.0 ct/L → 1.905 €/L ({_tomorrow()})"
+    )
+    assert calls == []
+
+    # sent for real, although the type is off and nobody is home
+    response = await _send(hass, type="recommendation")
+    assert response["results"][0]["sent"] is True
+    assert [c.data["message"] for c in calls] == ["Refuel today"]
+
+    calls.clear()
+    await _send(hass, type="countdown_end")
+    assert [c.data["message"] for c in calls] == ["clear_notification"]
+
+    # no price target set: nothing to send
+    calls.clear()
+    response = await _send(hass, type="threshold")
+    assert response["results"][0] == {
+        "target": "Target 0",
+        "services": ["notify.mobile_app_phone"],
+        "notification": None,
+        "sent": False,
+    }
+    assert calls == []
+
+    with pytest.raises(ServiceValidationError):
+        await _send(hass, type="announced", target="Nobody")
+    await _unload(hass, entry)
+
+
+async def test_send_notification_without_targets(
+    hass: HomeAssistant, mock_petrol_lu
+) -> None:
+    entry = await _setup(hass, _entry())
+    with pytest.raises(ServiceValidationError):
+        await _send(hass, type="announced")
     await _unload(hass, entry)
 
 
