@@ -4,6 +4,15 @@ All notable changes to this project are documented here. The format loosely
 follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). SemVer,
 pre-release identifiers included (`0.0.1-beta`, …).
 
+## [0.1.2] - 2026-10-02
+
+### Fixed
+
+- **Correction notifications are sent again.** The notifications blueprint
+  also read a correction event as a normal price change, failed on its
+  different content and stopped, so no correction was sent. Re-import the
+  blueprint.
+
 ## [0.1.1] - 2026-10-02
 
 ### Fixed

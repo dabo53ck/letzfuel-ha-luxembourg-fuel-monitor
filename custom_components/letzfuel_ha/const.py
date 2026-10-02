@@ -17,7 +17,7 @@ DEFAULT_PROVIDER: Final = "petrol_lu"
 #: Single source of truth for the version number both scrapers put in their
 #: User-Agent string (manifest.json's "version" is HA's own source of truth
 #: for the integration as a whole; keep this in sync by hand at release time).
-USER_AGENT_VERSION: Final = "0.1.1"
+USER_AGENT_VERSION: Final = "0.1.2"
 #: Sent with every request to the price sources.
 USER_AGENT: Final = (
     f"HomeAssistant-LetzFuelHA/{USER_AGENT_VERSION} "
