@@ -22,7 +22,7 @@ TEXTS: Final[dict[str, dict[str, object]]] = {
             "awaiting_price": "Awaiting new price",
         },
         "threshold_title": "Price below your target",
-        "threshold_message": "{name} is at {price} €/L (target: below {target}).",
+        "threshold_message": "{name} is at {price} €/L (target: below {target})",
         "decimal": ".",
     },
     "de": {
@@ -39,7 +39,7 @@ TEXTS: Final[dict[str, dict[str, object]]] = {
             "awaiting_price": "Neuen Preis abwarten",
         },
         "threshold_title": "Preis unter Zielwert",
-        "threshold_message": "{name} liegt bei {price} €/L (Ziel: unter {target}).",
+        "threshold_message": "{name} liegt bei {price} €/L (Ziel: unter {target})",
         "decimal": ",",
     },
     "fr": {
@@ -56,7 +56,7 @@ TEXTS: Final[dict[str, dict[str, object]]] = {
             "awaiting_price": "En attente du nouveau prix",
         },
         "threshold_title": "Prix sous votre seuil",
-        "threshold_message": "{name} est à {price} €/L (seuil : en dessous de {target}).",
+        "threshold_message": "{name} est à {price} €/L (seuil : en dessous de {target})",
         "decimal": ",",
     },
     "lb": {
@@ -73,7 +73,7 @@ TEXTS: Final[dict[str, dict[str, object]]] = {
             "awaiting_price": "Waarden op en neie Präis",
         },
         "threshold_title": "Präis ënner Zilwert",
-        "threshold_message": "{name} läit bei {price} €/L (Zilwert: ënner {target}).",
+        "threshold_message": "{name} läit bei {price} €/L (Zilwert: ënner {target})",
         "decimal": ",",
     },
     "pt": {
@@ -90,7 +90,7 @@ TEXTS: Final[dict[str, dict[str, object]]] = {
             "awaiting_price": "A aguardar novo preço",
         },
         "threshold_title": "Preço abaixo do seu limite",
-        "threshold_message": "{name} está a {price} €/L (limite: abaixo de {target}).",
+        "threshold_message": "{name} está a {price} €/L (limite: abaixo de {target})",
         "decimal": ",",
     },
     "it": {
@@ -107,7 +107,7 @@ TEXTS: Final[dict[str, dict[str, object]]] = {
             "awaiting_price": "In attesa del nuovo prezzo",
         },
         "threshold_title": "Prezzo sotto la tua soglia",
-        "threshold_message": "{name} è a {price} €/L (soglia: sotto {target}).",
+        "threshold_message": "{name} è a {price} €/L (soglia: sotto {target})",
         "decimal": ",",
     },
 }

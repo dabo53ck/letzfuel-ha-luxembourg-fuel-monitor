@@ -386,7 +386,7 @@ async def test_threshold_fires_once_when_crossed(
 
     assert len(calls) == 1
     assert calls[0].data["title"] == "Price below your target"
-    assert calls[0].data["message"] == "Diesel is at 1.840 €/L (target: below 1.850)."
+    assert calls[0].data["message"] == "Diesel is at 1.840 €/L (target: below 1.850)"
     await _unload(hass, entry)
 
 
