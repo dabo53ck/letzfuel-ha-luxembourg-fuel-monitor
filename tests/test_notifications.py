@@ -306,6 +306,10 @@ async def test_recommendation_and_countdown(
     assert calls[0].data["data"]["push"]["interruption-level"] == "time-sensitive"
     assert calls[1].data["data"]["live_update"] is True
     assert calls[1].data["data"]["when"] > 0
+    # iOS Live Activities only follow `url` when tapped
+    assert calls[1].data["data"]["url"] == (
+        "/?more-info-entity-id=sensor.letzfuel_ha_refuel_recommendation"
+    )
 
     # once the recommendation moves on (normally just after midnight) the
     # countdown ends

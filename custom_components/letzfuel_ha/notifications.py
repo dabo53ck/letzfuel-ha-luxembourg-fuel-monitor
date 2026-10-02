@@ -491,6 +491,12 @@ class Notifier:
         t = texts(target.data.get(NOTIFY_LANGUAGE, "en"))
         now = dt_util.now()
         midnight = dt_util.start_of_local_day(now + timedelta(days=1))
+        entity_id = self._rec_entity()
+        tap = self._entity_tap(target, entity_id)
+        if "url" not in tap and entity_id is not None:
+            # An iOS Live Activity only follows `url` when tapped, not
+            # `entity_id`; this link opens the entity's more-info dialog.
+            tap["url"] = f"/?more-info-entity-id={entity_id}"
         return {
             "title": t["rec_title"],
             "message": t["rec_states"][RECOMMENDATION_REFUEL_TODAY],
@@ -501,7 +507,7 @@ class Notifier:
                 "when_relative": True,
                 "when": int((midnight - now).total_seconds()),
                 "notification_icon": "mdi:gas-station",
-                **self._entity_tap(target, self._rec_entity()),
+                **tap,
             },
         }
 
