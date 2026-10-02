@@ -414,7 +414,19 @@ See the [dashboard card YAML](#dashboard-card-yaml) below to build this.
 
 ### Options
 
-![Options dialog: evening check time, announcements, trend window, price display, tracked fuels, tank size, fuel level source, history import](docs/options.png)
+The options have two pages, **General** and **Vehicle**.
+
+<img src="docs/options-menu.png" alt="Options: choose General or Vehicle" width="460">
+
+<img src="docs/options-general.png" alt="General options: evening check time, announcements, trend window, price display, tracked fuels, primary fuel, history import" width="460">
+
+<img src="docs/options-vehicle.png" alt="Vehicle options: tank size, fuel level source, fuel level entity" width="460">
+
+### Add a recipient
+
+One recipient per person or device, with one collapsible section per notification type.
+
+<img src="docs/recipient.png" alt="Add recipient: name, devices, notification language, tap target and one section per notification type" width="460">
 
 ### Dashboard card YAML
 
