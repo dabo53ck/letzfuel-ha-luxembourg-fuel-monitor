@@ -439,6 +439,7 @@ async def test_send_notification_action(
     assert result["target"] == "Target 0"
     assert result["services"] == ["notify.mobile_app_phone"]
     assert result["sent"] is False
+    assert result["reason"] == "preview"
     assert result["notification"]["message"] == (
         f"DIESEL: +4.0 ct/L → 1.905 €/L ({_tomorrow()})"
     )
@@ -447,6 +448,7 @@ async def test_send_notification_action(
     # sent for real, although the type is off and nobody is home
     response = await _send(hass, type="recommendation")
     assert response["results"][0]["sent"] is True
+    assert response["results"][0]["reason"] is None
     assert [c.data["message"] for c in calls] == ["Refuel today"]
 
     calls.clear()
@@ -461,6 +463,7 @@ async def test_send_notification_action(
         "services": ["notify.mobile_app_phone"],
         "notification": None,
         "sent": False,
+        "reason": "no_threshold",
     }
     assert calls == []
 

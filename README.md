@@ -314,9 +314,12 @@ notifications are not affected.
 | `target` | no | Name of a recipient (default: all) |
 | `preview` | no | Send nothing, only return what would be sent |
 
-Returns `{ results: [{ target, services, notification, sent }] }`.
-`notification` is empty when there is nothing to send, for example no price
-announced for tomorrow or no price threshold set.
+Returns `{ results: [{ target, services, notification, sent, reason }] }`.
+When `sent` is false, `reason` says why: `preview`, `no_devices`,
+`no_prices`, `no_announcement` (no price announced for tomorrow),
+`no_price_change` (no previous price to compare with) or `no_threshold` (the
+recipient has no price threshold). `notification` is then empty unless it is a
+preview.
 
 ---
 

@@ -55,6 +55,14 @@ TAG_EFFECTIVE = "letzfuel_effective"
 TAG_RECOMMENDATION = "letzfuel_recommendation"
 TAG_THRESHOLD = "letzfuel_threshold"
 TAG_COUNTDOWN = "letzfuel_countdown"
+#: Why the send_notification action sent nothing to a recipient.
+REASON_PREVIEW = "preview"
+REASON_NO_DEVICES = "no_devices"
+REASON_NO_PRICES = "no_prices"
+REASON_NO_ANNOUNCEMENT = "no_announcement"
+REASON_NO_PRICE_CHANGE = "no_price_change"
+REASON_NO_THRESHOLD = "no_threshold"
+
 COUNTDOWN_END: Mapping[str, Any] = {
     "message": "clear_notification",
     "data": {"tag": TAG_COUNTDOWN},
@@ -328,37 +336,51 @@ class Notifier:
     ) -> list[dict[str, Any]]:
         """Send one notification type now, from the current prices.
 
-        Used by the send_notification action. The target's language, fuels,
+        Used by the send_notification action. The recipient's language, fuels,
         priority and tap target apply; whether the type is switched on, its
         direction and minimum change, and presence do not. The stored state
         stays untouched, so the regular notifications are not affected.
+
+        Each result says why nothing was sent, if so: ``preview``,
+        ``no_devices``, or one of the reasons of :meth:`_compose`.
         """
         results = []
         for target in targets:
-            service_data = self._compose(target, kind)
+            service_data, reason = self._compose(target, kind)
             services = self._services(target)
-            sent = service_data is not None and bool(services) and not preview
-            if sent and service_data is not None:
+            if reason is None and not services:
+                reason = REASON_NO_DEVICES
+            if reason is None and preview:
+                reason = REASON_PREVIEW
+            if reason is None and service_data is not None:
                 await self._deliver(target, service_data)
             results.append(
                 {
                     "target": target.title,
                     "services": [f"notify.{service}" for service in services],
                     "notification": service_data,
-                    "sent": sent,
+                    "sent": reason is None,
+                    "reason": reason,
                 }
             )
         return results
 
-    def _compose(self, target: ConfigSubentry, kind: str) -> dict[str, Any] | None:
-        """Service data of ``kind`` for ``target``, or None if there is nothing."""
+    def _compose(
+        self, target: ConfigSubentry, kind: str
+    ) -> tuple[dict[str, Any] | None, str | None]:
+        """Service data of ``kind`` for ``target``, or None and the reason why.
+
+        ``no_prices``: no price data yet; ``no_announcement``: no price
+        announced for tomorrow; ``no_price_change``: no previous price to
+        compare with; ``no_threshold``: the recipient has no price threshold.
+        """
         if kind == SEND_COUNTDOWN_END:
-            return dict(COUNTDOWN_END)
+            return dict(COUNTDOWN_END), None
         if kind == NOTIFY_COUNTDOWN:
-            return self._countdown(target)
+            return self._countdown(target), None
         price_set = self.coordinator.data
         if price_set is None:
-            return None
+            return None, REASON_NO_PRICES
         data = target.data
         lang = data.get(NOTIFY_LANGUAGE, "en")
         t = texts(lang)
@@ -375,12 +397,12 @@ class Notifier:
                 TAG_RECOMMENDATION,
                 priority,
                 self._entity_tap(target, self._rec_entity()),
-            )
+            ), None
 
         if kind == NOTIFY_THRESHOLD:
             limit = float(section.get("below", 0) or 0)
             if limit <= 0:
-                return None
+                return None, REASON_NO_THRESHOLD
             lines, first = [], None
             for fuel in sorted(_wanted(fuels["fuels"], primary)):
                 fp = price_set.prices.get(FuelType(fuel))
@@ -389,14 +411,14 @@ class Notifier:
                     lines.append(threshold_line(fuel, price, limit, t))
                     first = first or fuel
             if not lines:
-                return None
+                return None, REASON_NO_PRICES
             return message(
                 t["threshold_title"],
                 lines,
                 TAG_THRESHOLD,
                 priority,
                 self._fuel_tap(target, first),
-            )
+            ), None
 
         if kind == NOTIFY_ANNOUNCED:
             changes = [
@@ -413,6 +435,7 @@ class Notifier:
             ]
             lines = announced_lines(changes, fuels, primary, lang)
             title, tag = t["announced_title"], TAG_ANNOUNCED
+            empty = REASON_NO_ANNOUNCEMENT
         else:  # NOTIFY_EFFECTIVE
             changes = [
                 {
@@ -425,15 +448,16 @@ class Notifier:
             ]
             lines = effective_lines(changes, fuels, primary, lang)
             title, tag = t["effective_title"], TAG_EFFECTIVE
+            empty = REASON_NO_PRICE_CHANGE
         if not lines:
-            return None
+            return None, empty
         return message(
             title,
             lines,
             tag,
             priority,
             self._fuel_tap(target, lines_fuel(changes, fuels, primary)),
-        )
+        ), None
 
     # -- types -----------------------------------------------------------------
 
