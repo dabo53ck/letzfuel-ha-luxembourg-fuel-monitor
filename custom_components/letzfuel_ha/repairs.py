@@ -8,7 +8,7 @@ from homeassistant import data_entry_flow
 from homeassistant.components.repairs import RepairsFlow
 from homeassistant.core import HomeAssistant
 
-from .const import ISSUE_DUPLICATE_NOTIFICATIONS
+from .const import ISSUE_DUPLICATE_NOTIFICATIONS, NEW_BLUEPRINT_URL
 
 
 class TurnOffBlueprintAutomationsFlow(RepairsFlow):
@@ -38,7 +38,11 @@ class TurnOffBlueprintAutomationsFlow(RepairsFlow):
             for eid in self._automations
         )
         return self.async_show_form(
-            step_id="confirm", description_placeholders={"automations": names}
+            step_id="confirm",
+            description_placeholders={
+                "automations": names,
+                "blueprint_url": NEW_BLUEPRINT_URL,
+            },
         )
 
 

@@ -291,7 +291,7 @@
         "step": {
           "confirm": {
             "title": "Turn off the blueprint automation",
-            "description": "LëtzFuel HA now sends the notifications itself (Settings > Devices and services > LëtzFuel HA > Add recipient). The automation {automations} uses the old notifications blueprint and sends the same notifications again, so every notification arrives twice.\n\nThis automation is no longer needed. For refuel reminders or your own actions (Telegram, scripts, lights), use the new LëtzFuel HA Blueprint: https://github.com/dabo53ck/letzfuel-ha-blueprint. Turn this automation off here, or delete it under Settings > Automations and scenes.\n\nSubmit to turn off {automations}."
+            "description": "LëtzFuel HA now sends the notifications itself (Settings > Devices and services > LëtzFuel HA > Add recipient). The automation {automations} uses the old notifications blueprint and sends the same notifications again, so every notification arrives twice.\n\nThis automation is no longer needed. For refuel reminders or your own actions (Telegram, scripts, lights), use the new LëtzFuel HA Blueprint: {blueprint_url}. Turn this automation off here, or delete it under Settings > Automations and scenes.\n\nSubmit to turn off {automations}."
           }
         }
       }

@@ -16,6 +16,7 @@ from homeassistant.helpers import issue_registry as ir
 from .const import (
     DOMAIN,
     ISSUE_DUPLICATE_NOTIFICATIONS,
+    NEW_BLUEPRINT_URL,
     NOTIFICATION_BLUEPRINT_SOURCES,
     SUBENTRY_NOTIFICATION,
 )
@@ -76,6 +77,9 @@ async def async_check_duplicates(
         is_persistent=False,
         severity=ir.IssueSeverity.WARNING,
         translation_key=ISSUE_DUPLICATE_NOTIFICATIONS,
-        translation_placeholders={"automations": names},
+        translation_placeholders={
+            "automations": names,
+            "blueprint_url": NEW_BLUEPRINT_URL,
+        },
         data={"automations": automations},
     )

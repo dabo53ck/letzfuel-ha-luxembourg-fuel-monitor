@@ -164,6 +164,8 @@ PRIORITY_CRITICAL: Final = "critical"
 NOTIFY_GROUP: Final = "letzfuel_ha"
 #: Automations built from these blueprints send the same notifications; a
 #: blueprint counts when its source_url contains one of these.
+#: The blueprint for refuel reminders and own actions (not a duplicate source).
+NEW_BLUEPRINT_URL: Final = "https://github.com/dabo53ck/letzfuel-ha-blueprint"
 NOTIFICATION_BLUEPRINT_SOURCES: Final = (
     "dabo53ck/letzfuel-ha-notifications-blueprint",
     "dabo53ck/letzfuel-ha-luxembourg-fuel-monitor/blob/main/blueprints/automation/letzfuel_ha/notifications.yaml",

@@ -323,7 +323,7 @@ class Notifier:
                 state["recommendation"] = recommendation  # first sight: no alert
                 changed = True
             elif previous != recommendation:
-                await self._recommendation(target, previous, recommendation)
+                await self._recommendation(target, previous, recommendation, price_set)
                 state["recommendation"] = recommendation
                 changed = True
             changed |= await self._threshold(target, state, price_set, primary)
@@ -462,7 +462,11 @@ class Notifier:
     # -- types -----------------------------------------------------------------
 
     async def _recommendation(
-        self, target: ConfigSubentry, previous: str, current: str
+        self,
+        target: ConfigSubentry,
+        previous: str,
+        current: str,
+        price_set: PriceSet | None = None,
     ) -> None:
         data = target.data
         t = texts(data.get(NOTIFY_LANGUAGE, "en"))
@@ -474,7 +478,7 @@ class Notifier:
             await self._send(
                 target,
                 t["rec_title"],
-                self._rec_lines(t, current),
+                self._rec_lines(t, current, price_set),
                 TAG_RECOMMENDATION,
                 rec,
                 self._entity_tap(target, self._rec_entity()),
@@ -555,10 +559,12 @@ class Notifier:
                 )
         return changed
 
-    def _rec_lines(self, t: Mapping[str, Any], current: str) -> list[str]:
+    def _rec_lines(
+        self, t: Mapping[str, Any], current: str, price_set: PriceSet | None = None
+    ) -> list[str]:
         """The recommendation, plus what a full tank saves when refuelling today."""
         lines = [t["rec_states"].get(current, current)]
-        saving = self.coordinator.potential_saving_full_tank()
+        saving = self.coordinator.potential_saving_full_tank(price_set)
         if current == RECOMMENDATION_REFUEL_TODAY and saving:
             amount = f"{saving:.2f}".replace(".", t["decimal"])
             lines.append(t["rec_saving"].format(saving=amount))

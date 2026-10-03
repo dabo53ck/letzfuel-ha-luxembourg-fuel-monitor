@@ -777,9 +777,15 @@ class LuxFuelCoordinator(DataUpdateCoordinator[PriceSet]):
         value = point.price_incl_vat if self.use_incl_vat else point.price_excl_vat
         return float(value)
 
-    def potential_saving_full_tank(self) -> float | None:
-        """What a full tank of the primary fuel saves (or costs) vs. tomorrow."""
-        fp = self.fuel_prices(self.primary_fuel)
+    def potential_saving_full_tank(
+        self, price_set: PriceSet | None = None
+    ) -> float | None:
+        """What a full tank of the primary fuel saves (or costs) vs. tomorrow.
+
+        ``price_set`` is the one being processed, before it becomes ``data``.
+        """
+        prices = price_set or self.data
+        fp = prices.prices.get(self.primary_fuel) if prices else None
         if fp is None or fp.upcoming is None or not self.tank_size:
             return None
         today = self.display_price(fp.current)
