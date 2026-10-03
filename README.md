@@ -86,7 +86,8 @@ directory and restart.
 
 ## Notifications
 
-> **Changed in 0.2.0: notifications are built in.** If you used the
+> [!WARNING]
+> **Breaking change in 0.2.0: notifications are built in.** If you used the
 > notifications blueprint before, read
 > [Coming from the blueprint](#coming-from-the-blueprint) below, otherwise you
 > get every notification twice.

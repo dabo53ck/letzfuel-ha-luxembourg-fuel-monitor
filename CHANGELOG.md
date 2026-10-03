@@ -6,6 +6,7 @@ pre-release identifiers included (`0.0.1-beta`, …).
 
 ## [0.2.0] - unreleased
 
+> [!WARNING]
 > **Breaking change for notifications.** Notifications are now built into the
 > integration. If you used the notifications blueprint, either add a
 > recipient and turn the blueprint automation off, or move to the
