@@ -241,7 +241,7 @@
     },
     "send_notification": {
       "name": "Benachrichtigung senden",
-      "description": "Sendet jetzt eine Art von Preis-Benachrichtigung mit den aktuellen Preisen. Sprache, Kraftstoffe, Priorität und Tipp-Ziel des Empfängers gelten; ob die Art eingeschaltet ist und die Anwesenheit werden ignoriert.",
+      "description": "Sendet jetzt eine Art von Preis-Benachrichtigung mit den aktuellen Preisen. Sprache, Kraftstoffe, Priorität und Tipp-Ziel des Empfängers gelten; ob die Art eingeschaltet ist, Richtung, Mindeständerung und Anwesenheit werden ignoriert.",
       "fields": {
         "type": {
           "name": "Art",

@@ -241,7 +241,7 @@
     },
     "send_notification": {
       "name": "Notifikatioun schécken",
-      "description": "Schéckt elo eng Zort vu Präis-Notifikatioun mat den aktuelle Präisser. Sprooch, Pëtrolszorten, Prioritéit an dat, wat beim Tippen opgeet, kommen aus den Astellunge vum Empfänger. Ob d'Zort ageschalt ass an ob een doheem ass, spillt keng Roll.",
+      "description": "Schéckt elo eng Zort vu Präis-Notifikatioun mat den aktuelle Präisser. Sprooch, Pëtrolszorten, Prioritéit an dat, wat beim Tippen opgeet, kommen aus den Astellunge vum Empfänger. Ob d'Zort ageschalt ass, d'Richtung, déi klengsten Ännerung an ob een doheem ass, spillt keng Roll.",
       "fields": {
         "type": {
           "name": "Zort",

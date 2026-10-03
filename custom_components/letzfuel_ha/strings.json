@@ -241,7 +241,7 @@
     },
     "send_notification": {
       "name": "Send notification",
-      "description": "Sends one type of fuel price notification now, with the current prices. The recipient's language, fuels, priority and tap target apply; whether the type is switched on and presence are ignored.",
+      "description": "Sends one type of fuel price notification now, with the current prices. The recipient's language, fuels, priority and tap target apply; whether the type is switched on, its direction and minimum change, and presence are ignored.",
       "fields": {
         "type": {
           "name": "Type",

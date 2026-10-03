@@ -241,7 +241,7 @@
     },
     "send_notification": {
       "name": "Envoyer une notification",
-      "description": "Envoie maintenant un type de notification de prix, avec les prix actuels. La langue, les carburants, la priorité et la cible au toucher du destinataire s'appliquent ; l'activation du type et la présence sont ignorées.",
+      "description": "Envoie maintenant un type de notification de prix, avec les prix actuels. La langue, les carburants, la priorité et la cible au toucher du destinataire s'appliquent ; l'activation du type, le sens, la variation minimale et la présence sont ignorés.",
       "fields": {
         "type": {
           "name": "Type",
