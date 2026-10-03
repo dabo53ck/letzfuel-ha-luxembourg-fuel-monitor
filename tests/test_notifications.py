@@ -621,7 +621,10 @@ async def test_duplicate_notifications_repair(
     issue = ir.async_get(hass).async_get_issue(DOMAIN, ISSUE_DUPLICATE_NOTIFICATIONS)
     assert issue is not None
     assert issue.is_fixable
-    assert issue.translation_placeholders == {"automations": "Fuel notifications"}
+    assert issue.translation_placeholders == {
+        "automations": "Fuel notifications",
+        "blueprint_url": "https://github.com/dabo53ck/letzfuel-ha-blueprint",
+    }
 
     flow = await async_create_fix_flow(hass, ISSUE_DUPLICATE_NOTIFICATIONS, issue.data)
     flow.hass = hass
