@@ -1,6 +1,6 @@
-"""Backup announcement source: RTL.lu's published national maximum price set.
+"""Backup announcement source: a published national maximum price set.
 
-``https://api-gate.rtl.lu/fuel-prices/current`` returns the most recently
+``BACKUP_FEED_URL`` returns the most recently
 *published* Luxembourg maximum prices (incl. VAT) together with the date they
 take effect. When the Ministry announces a change for the next day -- around
 18:00 the evening before -- this endpoint carries it several hours before
@@ -30,10 +30,10 @@ from ..models import FuelType, PricePoint
 from .announcements import AnnouncementResult
 from .base import ProviderConnectionError, ProviderParseError
 
-RTL_CURRENT_URL = "https://api-gate.rtl.lu/fuel-prices/current"
+BACKUP_FEED_URL = "https://api-gate.rtl.lu/fuel-prices/current"
 _REQUEST_TIMEOUT = 20
 
-#: RTL JSON key -> fuel. RTL only publishes prices incl. VAT.
+#: Feed JSON key -> fuel. The feed only publishes prices incl. VAT.
 _FUEL_KEYS: dict[str, FuelType] = {
     "diesel": FuelType.DIESEL,
     "95oct": FuelType.SP95,
@@ -41,10 +41,10 @@ _FUEL_KEYS: dict[str, FuelType] = {
 }
 
 
-class RtlLuAnnouncements:
-    """Reads the announced next-day price set from RTL.lu."""
+class BackupFeedAnnouncements:
+    """Reads the announced next-day price set from the backup feed."""
 
-    key = "rtl_lu"
+    key = "backup_feed"
 
     def __init__(self, session: ClientSession) -> None:
         """Store the shared aiohttp session."""
@@ -65,34 +65,36 @@ class RtlLuAnnouncements:
         """GET the current price JSON."""
         try:
             async with self._session.get(
-                RTL_CURRENT_URL,
+                BACKUP_FEED_URL,
                 headers={"User-Agent": USER_AGENT},
                 timeout=_REQUEST_TIMEOUT,
             ) as response:
                 if response.status != 200:
                     raise ProviderConnectionError(
-                        f"RTL.lu returned HTTP {response.status}"
+                        f"Backup feed returned HTTP {response.status}"
                     )
                 body = await response.text()
         except (ClientError, TimeoutError) as err:
-            raise ProviderConnectionError(f"Could not reach RTL.lu: {err}") from err
+            raise ProviderConnectionError(
+                f"Could not reach the backup feed: {err}"
+            ) from err
 
         try:
             data = json.loads(body)
         except ValueError as err:
             raise ProviderParseError(
-                f"RTL.lu response was not valid JSON: {err}"
+                f"Backup feed response was not valid JSON: {err}"
             ) from err
         if not isinstance(data, dict):
-            raise ProviderParseError("RTL.lu response was not a JSON object")
+            raise ProviderParseError("Backup feed response was not a JSON object")
         return data
 
 
 def parse_announced(data: dict, today: date) -> list[PricePoint]:
-    """Turn the RTL ``/current`` payload into future-dated price points.
+    """Turn the backup feed payload into future-dated price points.
 
     Pure function -- unit tested directly. Returns ``[]`` when the payload's
-    effective date is today or earlier (RTL is then merely mirroring the price
+    effective date is today or earlier (the feed is then merely mirroring the price
     that is already in effect).
     """
     effective = parse_effective_date(data)
@@ -107,7 +109,9 @@ def parse_announced(data: dict, today: date) -> list[PricePoint]:
         try:
             incl = Decimal(str(value))
         except (ArithmeticError, ValueError) as err:
-            raise ProviderParseError(f"RTL.lu: bad price for {key}: {value!r}") from err
+            raise ProviderParseError(
+                f"Backup feed: bad price for {key}: {value!r}"
+            ) from err
         if incl <= 0:
             continue
         excl = (incl / VAT_DIVISOR).quantize(Decimal("0.0001"))
@@ -132,7 +136,9 @@ def parse_effective_date(data: dict) -> date:
     raw_date = data.get("date")
     parsed = dt_util.parse_datetime(str(raw_date)) if raw_date else None
     if parsed is None:
-        raise ProviderParseError(f"RTL.lu: unparseable effective date {raw_date!r}")
+        raise ProviderParseError(
+            f"Backup feed: unparseable effective date {raw_date!r}"
+        )
     if parsed.tzinfo is not None:
         parsed = parsed.astimezone(dt_util.get_time_zone(LU_TIME_ZONE))
     return parsed.date()

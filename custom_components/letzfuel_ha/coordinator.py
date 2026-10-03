@@ -62,6 +62,7 @@ from .const import (
 )
 from .helpers import option_value
 from .models import FuelPrices, FuelType, PricePoint, PriceSet
+from .notifications import Notifier
 from .providers import (
     ProviderConnectionError,
     ProviderParseError,
@@ -76,8 +77,8 @@ from .providers.announcements import (
     merge_announced,
     split_plausible,
 )
+from .providers.backup_feed import BackupFeedAnnouncements
 from .providers.live_sheet import LiveSheetAnnouncements
-from .providers.rtl_lu import RtlLuAnnouncements
 
 _LOGGER = logging.getLogger(__name__)
 _STORE_VERSION = 1
@@ -99,7 +100,7 @@ class LuxFuelCoordinator(DataUpdateCoordinator[PriceSet]):
         #: Supplies the announced next-day price earlier than the provider does.
         self._primary_source: AnnouncementSource = LiveSheetAnnouncements(session)
         #: Only asked while the primary feed is unusable (error / inconsistent).
-        self._fallback_source: AnnouncementSource = RtlLuAnnouncements(session)
+        self._fallback_source: AnnouncementSource = BackupFeedAnnouncements(session)
         #: When the primary feed became unusable (None while it is healthy).
         self.primary_broken_since: datetime | None = None
         #: The provider's own prices by (fuel, effective date): the official
@@ -132,12 +133,17 @@ class LuxFuelCoordinator(DataUpdateCoordinator[PriceSet]):
         self._level_entity_unsub: CALLBACK_TYPE | None = None
         #: Live fuel level (%) set via the number entity; overrides the option.
         self.manual_fuel_level: float | None = None
+        #: Sends the built-in notifications of every recipient.
+        self.notifier = Notifier(hass, self)
+        #: (data, options) at setup; set in __init__.py, decides about reloads.
+        self.settings_snapshot: tuple[dict[str, Any], dict[str, Any]] = ({}, {})
 
     # -- lifecycle ---------------------------------------------------------
 
     async def _async_setup(self) -> None:
         """Load persisted change-detection state before the first refresh."""
         self._last_seen = await self._store.async_load() or {}
+        await self.notifier.async_load()
 
     async def async_shutdown(self) -> None:
         """Cancel scheduled callbacks on unload."""
@@ -164,6 +170,7 @@ class LuxFuelCoordinator(DataUpdateCoordinator[PriceSet]):
         price_set = build_price_set(history, self.tracked_fuels, self.provider)
         self._async_check_stale(price_set)
         await self._async_detect_changes(price_set)
+        await self.notifier.async_handle_update(price_set)
         return price_set
 
     async def _async_merge_announcements(
@@ -281,7 +288,7 @@ class LuxFuelCoordinator(DataUpdateCoordinator[PriceSet]):
             try:
                 day, fuel = date.fromisoformat(raw_date), FuelType(key)
                 incl = Decimal(str(raw_price))
-            except (ValueError, ArithmeticError):
+            except ValueError, ArithmeticError:
                 continue
             if day > today:
                 points.append(
@@ -465,6 +472,9 @@ class LuxFuelCoordinator(DataUpdateCoordinator[PriceSet]):
         if snapshot != self._last_seen:
             self._last_seen = snapshot
             await self._store.async_save(snapshot)
+
+        if announced or changed or corrected:
+            await self.notifier.async_handle_events(announced, changed, corrected)
 
     def _async_check_stale(self, price_set: PriceSet) -> None:
         """Raise/clear a repair issue when the newest price is very old."""
@@ -726,7 +736,7 @@ class LuxFuelCoordinator(DataUpdateCoordinator[PriceSet]):
             return None
         try:
             value = float(state.state)
-        except (TypeError, ValueError):
+        except TypeError, ValueError:
             return None
         return value if 0 <= value <= 100 else None
 
@@ -767,6 +777,23 @@ class LuxFuelCoordinator(DataUpdateCoordinator[PriceSet]):
         value = point.price_incl_vat if self.use_incl_vat else point.price_excl_vat
         return float(value)
 
+    def potential_saving_full_tank(
+        self, price_set: PriceSet | None = None
+    ) -> float | None:
+        """What a full tank of the primary fuel saves (or costs) vs. tomorrow.
+
+        ``price_set`` is the one being processed, before it becomes ``data``.
+        """
+        prices = price_set or self.data
+        fp = prices.prices.get(self.primary_fuel) if prices else None
+        if fp is None or fp.upcoming is None or not self.tank_size:
+            return None
+        today = self.display_price(fp.current)
+        tomorrow = self.display_price(fp.upcoming)
+        if today is None or tomorrow is None:
+            return None
+        return round(abs(round(tomorrow - today, 4)) * self.tank_size, 2)
+
 
 def _install_jitter_seconds(entry_id: str) -> int:
     """Stable 0..SCHEDULE_JITTER_MAX_SECONDS offset for this config entry."""
@@ -787,5 +814,5 @@ def _next_midnight(now: datetime) -> datetime:
 def _as_float(value: Any) -> float | None:
     try:
         return float(value)
-    except (TypeError, ValueError):
+    except TypeError, ValueError:
         return None

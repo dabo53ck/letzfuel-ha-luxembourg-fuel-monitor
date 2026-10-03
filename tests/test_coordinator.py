@@ -120,7 +120,9 @@ async def test_fallback_announces_while_primary_is_down(
 ) -> None:
     """With the primary feed unreachable, the fallback supplies tomorrow."""
     tomorrow = dt_util.now().date() + timedelta(days=1)
-    mock_petrol_lu(price_entries, rtl_payload=_rtl(tomorrow, 2.024), sheet_status=500)
+    mock_petrol_lu(
+        price_entries, backup_payload=_backup(tomorrow, 2.024), sheet_status=500
+    )
 
     entry = _entry()
     entry.add_to_hass(hass)
@@ -134,17 +136,17 @@ async def test_fallback_announces_while_primary_is_down(
     assert fp.upcoming.price_incl_vat == Decimal("2.024")
     assert fp.has_pending_change
     assert coordinator.announcement_status["live_sheet"]["outcome"] == "error"
-    assert coordinator.announcement_status["rtl_lu"]["outcome"] == "announced"
+    assert coordinator.announcement_status["backup_feed"]["outcome"] == "announced"
 
     await hass.config_entries.async_unload(entry.entry_id)
     await hass.async_block_till_done()
 
 
-async def test_rtl_failure_is_non_fatal(
+async def test_backup_feed_failure_is_non_fatal(
     hass: HomeAssistant, mock_petrol_lu, price_entries
 ) -> None:
-    """A dead RTL endpoint must not break the petrol.lu update."""
-    mock_petrol_lu(price_entries, rtl_status=502)
+    """A dead backup feed must not break the petrol.lu update."""
+    mock_petrol_lu(price_entries, backup_status=502)
 
     entry = _entry()
     entry.add_to_hass(hass)
@@ -161,14 +163,14 @@ async def test_rtl_failure_is_non_fatal(
     await hass.async_block_till_done()
 
 
-async def test_announcements_option_disables_rtl(
+async def test_announcements_option_disables_the_backup_feed(
     hass: HomeAssistant, mock_petrol_lu, price_entries
 ) -> None:
-    """With the option off, an announced RTL price is ignored."""
+    """With the option off, an announced backup feed price is ignored."""
     tomorrow = dt_util.now().date() + timedelta(days=1)
     mock_petrol_lu(
         price_entries,
-        rtl_payload={
+        backup_payload={
             "id": 2132,
             "date": f"{tomorrow.isoformat()}T00:00:00+02:00",
             "98oct": 1.983,
@@ -427,7 +429,7 @@ def _sheet(day, diesel: str, sp95: str = "1.792", sp98: str = "1.983") -> dict:
     )
 
 
-def _rtl(day, diesel: float) -> dict:
+def _backup(day, diesel: float) -> dict:
     return {
         "id": 1,
         "date": f"{day.isoformat()}T00:00:00+02:00",
@@ -458,7 +460,7 @@ async def test_primary_announces_and_fallback_stays_on_standby(
     mock_petrol_lu(
         price_entries,
         sheet_payload=_sheet(tomorrow, "1.905"),
-        rtl_payload=_rtl(tomorrow, 1.800),
+        backup_payload=_backup(tomorrow, 1.800),
     )
 
     entry = await _setup(hass)
@@ -470,7 +472,7 @@ async def test_primary_announces_and_fallback_stays_on_standby(
     status = coordinator.announcement_status
     assert status["live_sheet"]["outcome"] == "announced"
     assert status["live_sheet"]["latest_date"] == tomorrow.isoformat()
-    assert status["rtl_lu"] == {"outcome": "standby"}
+    assert status["backup_feed"] == {"outcome": "standby"}
 
     await _unload(hass, entry)
 
@@ -502,13 +504,13 @@ async def test_primary_disagreeing_with_provider_falls_back(
         ]
     )
     mock_petrol_lu(
-        price_entries, sheet_payload=stale, rtl_payload=_rtl(tomorrow, 1.905)
+        price_entries, sheet_payload=stale, backup_payload=_backup(tomorrow, 1.905)
     )
 
     entry = await _setup(hass)
     coordinator = entry.runtime_data
     assert coordinator.announcement_status["live_sheet"]["outcome"] == "inconsistent"
-    assert coordinator.announcement_status["rtl_lu"]["outcome"] == "announced"
+    assert coordinator.announcement_status["backup_feed"]["outcome"] == "announced"
     assert coordinator.fuel_prices(FuelType.DIESEL).upcoming.price_incl_vat == Decimal(
         "1.905"
     )
@@ -687,18 +689,18 @@ async def test_implausible_announcement_is_ignored(
 async def test_all_announcement_sources_failing_is_non_fatal(
     hass: HomeAssistant, mock_petrol_lu, price_entries, caplog
 ) -> None:
-    mock_petrol_lu(price_entries, rtl_status=502, sheet_status=500)
+    mock_petrol_lu(price_entries, backup_status=502, sheet_status=500)
 
     entry = await _setup(hass)
     coordinator = entry.runtime_data
     assert coordinator.last_update_success
     assert coordinator.fuel_prices(FuelType.DIESEL).upcoming is None
-    for key in ("rtl_lu", "live_sheet"):
+    for key in ("backup_feed", "live_sheet"):
         assert coordinator.announcement_status[key]["outcome"] == "error"
 
     # warned once per source, then quiet until it recovers
     await coordinator.async_refresh()
-    assert caplog.text.count("Announcement source rtl_lu unavailable") == 1
+    assert caplog.text.count("Announcement source backup_feed unavailable") == 1
     assert caplog.text.count("Announcement source live_sheet unavailable") == 1
 
     mock_petrol_lu(price_entries)
@@ -707,7 +709,7 @@ async def test_all_announcement_sources_failing_is_non_fatal(
     assert coordinator.announcement_status["live_sheet"]["outcome"] == (
         "nothing_future"
     )
-    assert coordinator.announcement_status["rtl_lu"] == {"outcome": "standby"}
+    assert coordinator.announcement_status["backup_feed"] == {"outcome": "standby"}
 
     await _unload(hass, entry)
 
@@ -741,7 +743,7 @@ async def test_announcements_option_disables_every_source(
     tomorrow = dt_util.now().date() + timedelta(days=1)
     mock_petrol_lu(
         price_entries,
-        rtl_payload=_rtl(tomorrow, 1.905),
+        backup_payload=_backup(tomorrow, 1.905),
         sheet_payload=_sheet(tomorrow, "1.905"),
     )
 
@@ -872,13 +874,13 @@ async def test_unexpected_source_error_is_non_fatal(
     mock_petrol_lu(
         price_entries,
         sheet_status=500,
-        rtl_payload={"id": 1, "date": "2026-13-45T00:00:00+02:00", "diesel": 2.0},
+        backup_payload={"id": 1, "date": "2026-13-45T00:00:00+02:00", "diesel": 2.0},
     )
 
     entry = await _setup(hass)
     coordinator = entry.runtime_data
     assert coordinator.last_update_success
-    assert coordinator.announcement_status["rtl_lu"]["outcome"] == "error"
+    assert coordinator.announcement_status["backup_feed"]["outcome"] == "error"
 
     await _unload(hass, entry)
 

@@ -10,7 +10,7 @@ from homeassistant.core import HomeAssistant
 from .coordinator import LuxFuelConfigEntry
 from .models import FuelPrices, PricePoint
 
-_REDACT: set[str] = {"current_level_pct"}
+_REDACT: set[str] = {"current_level_pct", "level_entity_id", "devices", "entity"}
 
 
 def _point(point: PricePoint | None) -> dict[str, Any] | None:
@@ -70,6 +70,13 @@ async def async_get_config_entry_diagnostics(
             ),
         },
         "announcement_sources": dict(coordinator.announcement_status),
+        "notification_targets": [
+            {
+                "title": sub.title,
+                "data": async_redact_data(dict(sub.data), _REDACT),
+            }
+            for sub in coordinator.notifier.targets
+        ],
         "data": {
             "fetched_at": data.fetched_at.isoformat() if data else None,
             "provider_name": data.provider_name if data else None,
