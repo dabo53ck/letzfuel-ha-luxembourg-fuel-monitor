@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from datetime import timedelta
 from decimal import Decimal as D
 from pathlib import Path
@@ -9,7 +10,8 @@ from typing import Any
 
 import pytest
 from homeassistant.config_entries import ConfigSubentryData
-from homeassistant.core import HomeAssistant, ServiceCall
+from homeassistant.const import EVENT_HOMEASSISTANT_STARTED
+from homeassistant.core import CoreState, HomeAssistant, ServiceCall
 from homeassistant.data_entry_flow import FlowResultType
 from homeassistant.exceptions import ServiceValidationError
 from homeassistant.helpers import device_registry as dr
@@ -653,4 +655,21 @@ async def test_no_repair_without_a_target(
         ir.async_get(hass).async_get_issue(DOMAIN, ISSUE_DUPLICATE_NOTIFICATIONS)
         is None
     )
+    await _unload(hass, entry)
+
+
+async def test_reload_after_start_logs_no_error(
+    hass: HomeAssistant, mock_petrol_lu, caplog: pytest.LogCaptureFixture
+) -> None:
+    """The started listener is cancelled cleanly even after it has fired."""
+    hass.set_state(CoreState.starting)
+    entry = await _setup(hass, _entry())
+    hass.set_state(CoreState.running)
+    hass.bus.async_fire(EVENT_HOMEASSISTANT_STARTED)
+    await hass.async_block_till_done()
+
+    await hass.config_entries.async_reload(entry.entry_id)
+    await hass.async_block_till_done()
+
+    assert not [r for r in caplog.records if r.levelno >= logging.ERROR]
     await _unload(hass, entry)

@@ -7,18 +7,14 @@ from pathlib import Path
 from typing import Any
 
 from homeassistant.components.http import StaticPathConfig
-from homeassistant.const import (
-    EVENT_HOMEASSISTANT_STARTED,
-    EVENT_STATE_CHANGED,
-    Platform,
-)
+from homeassistant.const import EVENT_STATE_CHANGED, Platform
 from homeassistant.core import (
-    CoreState,
     Event,
     EventStateChangedData,
     HomeAssistant,
     callback,
 )
+from homeassistant.helpers.start import async_at_started
 from homeassistant.helpers.typing import ConfigType
 
 from .const import (
@@ -124,7 +120,7 @@ def _async_watch_duplicates(hass: HomeAssistant, entry: LuxFuelConfigEntry) -> N
     """Re-check for duplicate notifications whenever automations change."""
 
     @callback
-    def _schedule(_event: Event | None = None) -> None:
+    def _schedule(_event: Event | HomeAssistant | None = None) -> None:
         entry.async_create_background_task(
             hass, async_check_duplicates(hass, entry), "letzfuel_ha_duplicates"
         )
@@ -139,9 +135,6 @@ def _async_watch_duplicates(hass: HomeAssistant, entry: LuxFuelConfigEntry) -> N
             EVENT_STATE_CHANGED, _schedule, event_filter=_is_automation
         )
     )
-    if hass.state is CoreState.running:
-        _schedule()
-    else:
-        entry.async_on_unload(
-            hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STARTED, _schedule)
-        )
+    # Runs now if Home Assistant is already up; safe to cancel on unload either
+    # way (a cancelled `async_listen_once` that already fired logs an error).
+    entry.async_on_unload(async_at_started(hass, _schedule))
