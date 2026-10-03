@@ -8,9 +8,10 @@ pre-release identifiers included (`0.0.1-beta`, …).
 
 > [!WARNING]
 > **Breaking change for notifications.** Notifications are now built into the
-> integration. If you used the notifications blueprint, either add a
-> recipient and turn the blueprint automation off, or move to the
-> blueprint's new repository. Otherwise every notification arrives twice. See
+> integration. If you used the notifications blueprint, add a recipient and
+> turn the blueprint automation off, otherwise every notification arrives
+> twice. For refuel reminders or your own actions there is the new
+> [LëtzFuel HA Blueprint](https://github.com/dabo53ck/letzfuel-ha-blueprint). See
 > [Coming from the blueprint](README.md#coming-from-the-blueprint).
 
 ### Added
@@ -27,6 +28,9 @@ pre-release identifiers included (`0.0.1-beta`, …).
 - **Action `letzfuel_ha.send_notification`** sends one notification type now,
   with the current prices, to all recipients or one. With
   `preview` it only returns what would be sent.
+- The "Refuel today" notification also says what a full tank saves, when a
+  tank size is set (the same value as the recommendation's
+  `potential_saving_full_tank`).
 
 ### Changed
 
@@ -34,10 +38,10 @@ pre-release identifiers included (`0.0.1-beta`, …).
 - Requires Home Assistant **2026.7** or newer.
 - Luxembourgish: consistent terms for the primary fuel, the tracked fuels and
   the refuel recommendation.
-- The notifications blueprint moved to its own repository,
-  [letzfuel-ha-notifications-blueprint](https://github.com/dabo53ck/letzfuel-ha-notifications-blueprint),
-  with its own versions. The copy in this repository is kept for now and
-  removed in a later release.
+- The notifications blueprint is replaced: the standard notifications are
+  built in, and the new [LëtzFuel HA Blueprint](https://github.com/dabo53ck/letzfuel-ha-blueprint) adds refuel reminders
+  and your own actions on the integration's events. The old blueprint in this
+  repository is kept for now with a note and removed in a later release.
 
 ### Removed
 

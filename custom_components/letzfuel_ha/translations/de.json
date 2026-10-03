@@ -291,7 +291,7 @@
         "step": {
           "confirm": {
             "title": "Blueprint-Automation ausschalten",
-            "description": "LëtzFuel HA verschickt die Benachrichtigungen jetzt selbst (Einstellungen > Geräte und Dienste > LëtzFuel HA > Empfänger hinzufügen). Die Automation {automations} nutzt das Benachrichtigungs-Blueprint und verschickt dieselben Benachrichtigungen noch einmal, daher kommt jede doppelt.\n\nFür die Standard-Benachrichtigungen wird diese Automation nicht mehr gebraucht. Behalten Sie sie nur für eigene Aktionen oder Texte und schalten Sie dort die Typen aus, die jetzt von der Integration kommen. Sonst schalten Sie sie hier aus oder löschen Sie sie unter Einstellungen > Automationen und Szenen.\n\nAbsenden schaltet {automations} aus."
+            "description": "LëtzFuel HA verschickt die Benachrichtigungen jetzt selbst (Einstellungen > Geräte und Dienste > LëtzFuel HA > Empfänger hinzufügen). Die Automation {automations} nutzt das alte Benachrichtigungs-Blueprint und verschickt dieselben Benachrichtigungen noch einmal, daher kommt jede doppelt.\n\nDiese Automation wird nicht mehr gebraucht. Für Tank-Erinnerungen oder eigene Aktionen (Telegram, Skripte, Licht) gibt es den neuen LëtzFuel HA Blueprint: https://github.com/dabo53ck/letzfuel-ha-blueprint. Schalten Sie die Automation hier aus oder löschen Sie sie unter Einstellungen > Automationen und Szenen.\n\nAbsenden schaltet {automations} aus."
           }
         }
       }

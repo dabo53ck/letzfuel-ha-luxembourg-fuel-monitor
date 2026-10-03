@@ -4,11 +4,11 @@ blueprint:
     ![version](https://img.shields.io/badge/version-0.2.0-blue)
 
 
-    **This blueprint has moved and will be removed in a later release.**
+    **This blueprint is replaced and will be removed in a later release.**
     LëtzFuel HA 0.2.0 sends the notifications itself (Settings > Devices and
-    services > LëtzFuel HA > Add recipient). For your own actions and
-    texts, use the blueprint's new home:
-    https://github.com/dabo53ck/letzfuel-ha-notifications-blueprint
+    services > LëtzFuel HA > Add recipient). For refuel reminders or your own
+    actions, use the new LëtzFuel HA Blueprint:
+    https://github.com/dabo53ck/letzfuel-ha-blueprint
 
 
     One automation that turns the LëtzFuel HA integration's events and sensors

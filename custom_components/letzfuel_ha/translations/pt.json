@@ -291,7 +291,7 @@
         "step": {
           "confirm": {
             "title": "Desativar a automação do blueprint",
-            "description": "O LëtzFuel HA envia agora as notificações ele próprio (Definições > Dispositivos e serviços > LëtzFuel HA > Adicionar destinatário). A automação {automations} usa o blueprint de notificações e envia as mesmas notificações outra vez, por isso cada notificação chega em duplicado.\n\nPara as notificações normais, esta automação já não é necessária. Mantenha-a só para ações ou textos seus e desative nela os tipos que agora vêm da integração. Caso contrário, desative-a aqui ou apague-a em Definições > Automações e cenas.\n\nSubmeter desativa {automations}."
+            "description": "O LëtzFuel HA envia agora as notificações ele próprio (Definições > Dispositivos e serviços > LëtzFuel HA > Adicionar destinatário). A automação {automations} usa o antigo blueprint de notificações e envia as mesmas notificações outra vez, por isso cada notificação chega em duplicado.\n\nEsta automação já não é necessária. Para lembretes de abastecimento ou ações suas (Telegram, scripts, luzes), use o novo LëtzFuel HA Blueprint: https://github.com/dabo53ck/letzfuel-ha-blueprint. Desative-a aqui ou apague-a em Definições > Automações e cenas.\n\nSubmeter desativa {automations}."
           }
         }
       }

@@ -393,7 +393,7 @@ class Notifier:
             current = refuel_recommendation(price_set.prices.get(primary))
             return message(
                 t["rec_title"],
-                [t["rec_states"].get(current, current)],
+                self._rec_lines(t, current),
                 TAG_RECOMMENDATION,
                 priority,
                 self._entity_tap(target, self._rec_entity()),
@@ -474,7 +474,7 @@ class Notifier:
             await self._send(
                 target,
                 t["rec_title"],
-                [t["rec_states"].get(current, current)],
+                self._rec_lines(t, current),
                 TAG_RECOMMENDATION,
                 rec,
                 self._entity_tap(target, self._rec_entity()),
@@ -554,6 +554,15 @@ class Notifier:
                     self._fuel_tap(target, fuel),
                 )
         return changed
+
+    def _rec_lines(self, t: Mapping[str, Any], current: str) -> list[str]:
+        """The recommendation, plus what a full tank saves when refuelling today."""
+        lines = [t["rec_states"].get(current, current)]
+        saving = self.coordinator.potential_saving_full_tank()
+        if current == RECOMMENDATION_REFUEL_TODAY and saving:
+            amount = f"{saving:.2f}".replace(".", t["decimal"])
+            lines.append(t["rec_saving"].format(saving=amount))
+        return lines
 
     # -- delivery --------------------------------------------------------------
 

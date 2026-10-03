@@ -15,6 +15,7 @@ TEXTS: Final[dict[str, dict[str, object]]] = {
         "instead_of": "instead of",
         "effective_title": "New fuel price in effect",
         "rec_title": "Refuel recommendation",
+        "rec_saving": "A full tank saves about {saving} €",
         "rec_states": {
             "refuel_today": "Refuel today",
             "wait": "Wait",
@@ -32,6 +33,7 @@ TEXTS: Final[dict[str, dict[str, object]]] = {
         "instead_of": "statt",
         "effective_title": "Neuer Preis in Kraft",
         "rec_title": "Tankempfehlung",
+        "rec_saving": "Volltanken spart etwa {saving} €",
         "rec_states": {
             "refuel_today": "Heute tanken",
             "wait": "Warten",
@@ -49,6 +51,7 @@ TEXTS: Final[dict[str, dict[str, object]]] = {
         "instead_of": "au lieu de",
         "effective_title": "Nouveau prix en vigueur",
         "rec_title": "Recommandation de plein",
+        "rec_saving": "Un plein complet fait économiser environ {saving} €",
         "rec_states": {
             "refuel_today": "Faire le plein aujourd'hui",
             "wait": "Attendre",
@@ -66,6 +69,7 @@ TEXTS: Final[dict[str, dict[str, object]]] = {
         "instead_of": "amplaz",
         "effective_title": "Neie Präis ab elo",
         "rec_title": "Tankempfeelung",
+        "rec_saving": "Voll tanke spuert ongeféier {saving} €",
         "rec_states": {
             "refuel_today": "Haut tanken",
             "wait": "Waarden",
@@ -83,6 +87,7 @@ TEXTS: Final[dict[str, dict[str, object]]] = {
         "instead_of": "em vez de",
         "effective_title": "Novo preço em vigor",
         "rec_title": "Recomendação de abastecimento",
+        "rec_saving": "Encher o depósito poupa cerca de {saving} €",
         "rec_states": {
             "refuel_today": "Abastecer hoje",
             "wait": "Aguardar",
@@ -100,6 +105,7 @@ TEXTS: Final[dict[str, dict[str, object]]] = {
         "instead_of": "invece di",
         "effective_title": "Nuovo prezzo in vigore",
         "rec_title": "Raccomandazione di rifornimento",
+        "rec_saving": "Un pieno fa risparmiare circa {saving} €",
         "rec_states": {
             "refuel_today": "Fai rifornimento oggi",
             "wait": "Attendi",

@@ -35,7 +35,7 @@ body:
     id: blueprint_version
     attributes:
       label: Blueprint version
-      description: Only for the old blueprint in this repository, shown in its description. The notifications blueprint now has its own repository with its own issues, https://github.com/dabo53ck/letzfuel-ha-notifications-blueprint.
+      description: Only for the old blueprint in this repository, shown in its description. The new LëtzFuel HA Blueprint has its own repository with its own issues, https://github.com/dabo53ck/letzfuel-ha-blueprint.
   - type: textarea
     id: logs
     attributes:

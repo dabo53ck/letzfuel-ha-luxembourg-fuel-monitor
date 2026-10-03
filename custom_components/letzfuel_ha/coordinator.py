@@ -777,6 +777,17 @@ class LuxFuelCoordinator(DataUpdateCoordinator[PriceSet]):
         value = point.price_incl_vat if self.use_incl_vat else point.price_excl_vat
         return float(value)
 
+    def potential_saving_full_tank(self) -> float | None:
+        """What a full tank of the primary fuel saves (or costs) vs. tomorrow."""
+        fp = self.fuel_prices(self.primary_fuel)
+        if fp is None or fp.upcoming is None or not self.tank_size:
+            return None
+        today = self.display_price(fp.current)
+        tomorrow = self.display_price(fp.upcoming)
+        if today is None or tomorrow is None:
+            return None
+        return round(abs(round(tomorrow - today, 4)) * self.tank_size, 2)
+
 
 def _install_jitter_seconds(entry_id: str) -> int:
     """Stable 0..SCHEDULE_JITTER_MAX_SECONDS offset for this config entry."""

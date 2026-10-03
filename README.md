@@ -51,7 +51,7 @@ announced, a correction follows. You can turn this off in the options.
 | **Trend** | `sensor.*_trend`: `rising` / `falling` / `stable` over a rolling window (see Options) |
 | **Next-day awareness** | `binary_sensor.price_change_pending`, `sensor.*_price_tomorrow`, `sensor.refuel_recommendation` |
 | **Events** | `letzfuel_ha_price_change_announced`, `letzfuel_ha_price_change_corrected` and `letzfuel_ha_price_changed` for automations |
-| **Notifications** | built in: one recipient per person or device, per-type priority, 6 languages, presence gate; a separate [blueprint](https://github.com/dabo53ck/letzfuel-ha-notifications-blueprint) for your own actions and texts |
+| **Notifications** | built in: one recipient per person or device, per-type priority, 6 languages, presence gate; a separate [LëtzFuel HA Blueprint](https://github.com/dabo53ck/letzfuel-ha-blueprint) for refuel reminders and your own actions and texts |
 | **Vehicle analytics** | full-tank / refill / cost-change sensors (when a tank size is set); fuel level from a live `number` slider or read from another entity |
 | **Services** | `calculate_fill_cost`, `calculate_trip_cost` (response services), `send_notification` |
 | **History** | On setup, past prices are imported into Home Assistant long-term statistics |
@@ -117,21 +117,16 @@ deleted on its own.
 
 ### Coming from the blueprint
 
-Up to 0.1.2 the notifications came from a blueprint. You now have two choices:
+Up to 0.1.2 the notifications came from a blueprint. Now:
 
-1. **Use the built-in notifications (recommended).** Add a recipient
-   as above, then turn off or delete your blueprint automation. As long as both
-   run, a repair issue reminds you and can turn the automation off for you.
-2. **Keep using the blueprint**, for example for your own actions (Telegram,
-   TTS, lights) or texts. It moved to its own repository,
-   [letzfuel-ha-notifications-blueprint](https://github.com/dabo53ck/letzfuel-ha-notifications-blueprint):
-   1. Import it from there.
-   2. Open your automation, ⋮ → **Edit in YAML**, and change only the path:
-      `use_blueprint: path: dabo53ck/letzfuel_ha_notifications.yaml`. All
-      your settings stay.
-   3. Delete the old blueprint under **Blueprints**.
-
-   You don't need to delete or recreate the automation.
+1. **Add a recipient** as above, then turn off or delete your blueprint
+   automation. As long as an automation from the old blueprint is on, a repair
+   issue reminds you and can turn it off for you.
+2. **Want refuel reminders or your own actions** (Telegram, scripts, lights)?
+   Import the new [LëtzFuel HA Blueprint](https://github.com/dabo53ck/letzfuel-ha-blueprint) and create a new automation
+   from it. Its inputs differ from the old blueprint, so it is set up fresh. It
+   doesn't send the standard notifications, so nothing arrives twice.
+3. Once no automation uses the old blueprint, delete it under **Blueprints**.
 
 The old blueprint in this repository still works for now, but gets no new
 features and will be removed in a later release.

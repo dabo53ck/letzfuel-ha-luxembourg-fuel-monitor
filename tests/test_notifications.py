@@ -25,6 +25,7 @@ from pytest_homeassistant_custom_component.common import (
 from custom_components.letzfuel_ha.const import (
     CONF_PRIMARY_FUEL,
     CONF_PROVIDER,
+    CONF_TANK_SIZE,
     CONF_TRACKED_FUELS,
     DEFAULT_PROVIDER,
     DOMAIN,
@@ -319,6 +320,39 @@ async def test_recommendation_and_countdown(
     await notifier._recommendation(subentry, "refuel_today", "awaiting_price")
     await hass.async_block_till_done()
     assert [c.data["message"] for c in calls] == ["clear_notification"]
+    await _unload(hass, entry)
+
+
+async def test_refuel_today_mentions_the_saving(
+    hass: HomeAssistant, mock_petrol_lu, price_entries
+) -> None:
+    device_id, calls = _phone(hass)
+    target = _target(
+        device_id,
+        announced=_section(False),
+        recommendation={
+            "enabled": True,
+            "states": ["refuel_today"],
+            "no_change": False,
+            "priority": "normal",
+        },
+    )
+    entry = _entry(target)
+    entry.add_to_hass(hass)
+    hass.config_entries.async_update_entry(
+        entry, options={**entry.options, CONF_TANK_SIZE: 50}
+    )
+    assert await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+
+    mock_petrol_lu(price_entries, sheet_payload=_sheet("1.905"))
+    await entry.runtime_data.async_refresh()
+    await hass.async_block_till_done()
+
+    # Diesel 1.865 -> 1.905: 4 ct/L on 50 L
+    assert [c.data["message"] for c in calls] == [
+        "Refuel today\nA full tank saves about 2.00 €"
+    ]
     await _unload(hass, entry)
 
 
