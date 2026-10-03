@@ -288,7 +288,7 @@ class LuxFuelCoordinator(DataUpdateCoordinator[PriceSet]):
             try:
                 day, fuel = date.fromisoformat(raw_date), FuelType(key)
                 incl = Decimal(str(raw_price))
-            except (ValueError, ArithmeticError):
+            except ValueError, ArithmeticError:
                 continue
             if day > today:
                 points.append(
@@ -736,7 +736,7 @@ class LuxFuelCoordinator(DataUpdateCoordinator[PriceSet]):
             return None
         try:
             value = float(state.state)
-        except (TypeError, ValueError):
+        except TypeError, ValueError:
             return None
         return value if 0 <= value <= 100 else None
 
@@ -814,5 +814,5 @@ def _next_midnight(now: datetime) -> datetime:
 def _as_float(value: Any) -> float | None:
     try:
         return float(value)
-    except (TypeError, ValueError):
+    except TypeError, ValueError:
         return None

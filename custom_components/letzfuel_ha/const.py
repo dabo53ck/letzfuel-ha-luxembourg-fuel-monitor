@@ -8,13 +8,13 @@ from typing import Final
 from .models import FuelType
 
 DOMAIN: Final = "letzfuel_ha"
-#: Static path the brand icon is served at (see __init__.py's async_setup) --
-#: the notifications blueprint references this exact path as its icon_url.
+#: Static path the brand icon is served at (see __init__.py's async_setup);
+#: the built-in notifications use it as their icon_url.
 BRAND_ICON_URL: Final = "/letzfuel_ha/icon.png"
 
 # --- Providers -------------------------------------------------------------
 DEFAULT_PROVIDER: Final = "petrol_lu"
-#: Single source of truth for the version number both scrapers put in their
+#: Single source of truth for the version number every price request puts in its
 #: User-Agent string (manifest.json's "version" is HA's own source of truth
 #: for the integration as a whole; keep this in sync by hand at release time).
 USER_AGENT_VERSION: Final = "0.2.0"
@@ -162,10 +162,10 @@ PRIORITY_ELEVATED: Final = "elevated"
 PRIORITY_CRITICAL: Final = "critical"
 #: Served by the integration itself (see __init__.py).
 NOTIFY_GROUP: Final = "letzfuel_ha"
-#: Automations built from these blueprints send the same notifications; a
-#: blueprint counts when its source_url contains one of these.
 #: The blueprint for refuel reminders and own actions (not a duplicate source).
 NEW_BLUEPRINT_URL: Final = "https://github.com/dabo53ck/letzfuel-ha-blueprint"
+#: Automations built from these blueprints send the same notifications; a
+#: blueprint counts when its source_url contains one of these.
 NOTIFICATION_BLUEPRINT_SOURCES: Final = (
     "dabo53ck/letzfuel-ha-notifications-blueprint",
     "dabo53ck/letzfuel-ha-luxembourg-fuel-monitor/blob/main/blueprints/automation/letzfuel_ha/notifications.yaml",

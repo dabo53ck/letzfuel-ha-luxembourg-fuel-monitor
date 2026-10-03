@@ -55,7 +55,7 @@ announced, a correction follows. You can turn this off in the options.
 | **Vehicle analytics** | full-tank / refill / cost-change sensors (when a tank size is set); fuel level from a live `number` slider or read from another entity |
 | **Services** | `calculate_fill_cost`, `calculate_trip_cost` (response services), `send_notification` |
 | **History** | On setup, past prices are imported into Home Assistant long-term statistics |
-| **Robustness** | Diagnostics, repair issues when the source is stale or unparseable |
+| **Robustness** | Diagnostics; repair issues when the source is stale or unparseable, the announcement feed is unusable, or notifications would arrive twice |
 | **i18n** | English, French, German, Luxembourgish, Portuguese, Italian |
 
 ---
@@ -317,8 +317,8 @@ Returns `{ results: [{ target, services, notification, sent, reason }] }`.
 When `sent` is false, `reason` says why: `preview`, `no_devices`,
 `no_prices`, `no_announcement` (no price announced for tomorrow),
 `no_price_change` (no previous price to compare with) or `no_threshold` (the
-recipient has no price threshold). `notification` is then empty unless it is a
-preview.
+recipient has no price threshold). `notification` is then empty, except for
+`preview` and `no_devices`, where it shows what would have been sent.
 
 ---
 

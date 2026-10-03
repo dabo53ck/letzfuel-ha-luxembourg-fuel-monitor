@@ -3,7 +3,7 @@
 Each target is a config subentry (see config_flow.py). The coordinator hands
 over the price events it fires and every successful update; this module turns
 them into Companion app notifications, with the same texts, tags and payload
-the notifications blueprint uses.
+the old notifications blueprint used.
 """
 
 from __future__ import annotations
@@ -188,7 +188,7 @@ def corrected_lines(
 
 
 def payload(tag: str, priority: str, tap: Mapping[str, Any]) -> dict[str, Any]:
-    """Companion app `data` for a notification, like the blueprint's."""
+    """Companion app `data` for a notification, like the old blueprint's."""
     data: dict[str, Any] = {
         "tag": tag,
         "group": NOTIFY_GROUP,
