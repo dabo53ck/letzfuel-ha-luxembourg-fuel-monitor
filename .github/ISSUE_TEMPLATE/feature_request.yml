@@ -8,7 +8,8 @@ body:
       label: Which part is this about?
       options:
         - Integration (sensors, config flow, data updates)
-        - Notifications blueprint
+        - Notifications (recipients, send_notification)
+        - Old notifications blueprint (replaced)
         - Documentation
         - Not sure / both
     validations:
