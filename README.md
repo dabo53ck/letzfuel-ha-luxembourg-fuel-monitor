@@ -26,7 +26,8 @@ answers:
 ### Data sources
 
 Prices come from the official maximum-price table published by
-[petrol.lu](https://www.petrol.lu/en/official-prices/) (GPL): today's price,
+[petrol.lu](https://www.petrol.lu/en/official-prices/) (Groupement Pétrolier
+Luxembourgeois, GPL): today's price,
 the full history and the statistics backfill.
 
 petrol.lu usually adds the next day's price only late in the evening. To tell
@@ -49,20 +50,20 @@ announced, a correction follows. You can turn this off in the options.
 | **Current prices** | `sensor.*_price` for each tracked fuel (€/L, incl. or excl. VAT), with rich attributes |
 | **Daily change** | `sensor.*_change`: signed €/L move at the last price change, with percentage and dates |
 | **Trend** | `sensor.*_trend`: `rising` / `falling` / `stable` over a rolling window (see Options) |
-| **Next-day awareness** | `binary_sensor.price_change_pending`, `sensor.*_price_tomorrow`, `sensor.refuel_recommendation` |
+| **Next-day awareness** | `binary_sensor.*_price_change_pending`, `sensor.*_price_tomorrow`, `sensor.*_refuel_recommendation` |
 | **Events** | `letzfuel_ha_price_change_announced`, `letzfuel_ha_price_change_corrected` and `letzfuel_ha_price_changed` for automations |
-| **Notifications** | one import-and-go [notification blueprint](docs/notifications-blueprint.md): per-type priority, 6 languages, presence gate |
+| **Notifications** | built in: one recipient per person or device, per-type priority, 6 languages, presence gate; a separate [LëtzFuel HA Blueprint](https://github.com/dabo53ck/letzfuel-ha-blueprint) for refuel reminders and your own actions and texts |
 | **Vehicle analytics** | full-tank / refill / cost-change sensors (when a tank size is set); fuel level from a live `number` slider or read from another entity |
-| **Services** | `calculate_fill_cost`, `calculate_trip_cost` (response services) |
+| **Services** | `calculate_fill_cost`, `calculate_trip_cost` (response services), `send_notification` |
 | **History** | On setup, past prices are imported into Home Assistant long-term statistics |
-| **Robustness** | Diagnostics, repair issues when the source is stale or unparseable |
+| **Robustness** | Diagnostics; repair issues when the source is stale or unparseable, the announcement feed is unusable, or notifications would arrive twice |
 | **i18n** | English, French, German, Luxembourgish, Portuguese, Italian |
 
 ---
 
 ## Requirements
 
-Home Assistant **2025.12** or newer.
+Home Assistant **2026.7** or newer.
 
 ## Installation
 
@@ -86,16 +87,65 @@ directory and restart.
 
 ## Notifications
 
-One import covers all of it: next-day price alerts, "new price in effect",
-refuel recommendation and a price-threshold watch. Every type is opt-in, with
-per-type priority (including *critical* to bypass Do Not Disturb), a language
-picker (English/German/French/Lëtzebuergesch/Português/Italiano) and a
-presence gate. Just pick
-your phone(s) from a device picker, no notify service to configure.
+> [!WARNING]
+> **Breaking change in 0.2.0: notifications are built in.** If you used the
+> notifications blueprint before, read
+> [Coming from the blueprint](#coming-from-the-blueprint) below, otherwise you
+> get every notification twice.
 
-[![Open your Home Assistant instance and show the blueprint import dialog.](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2Fdabo53ck%2Fletzfuel-ha-luxembourg-fuel-monitor%2Fblob%2Fmain%2Fblueprints%2Fautomation%2Fletzfuel_ha%2Fnotifications.yaml)
+LëtzFuel HA sends the notifications itself: next-day price announcements (with
+corrections), "new price in effect", the refuel recommendation, a live
+countdown to midnight and a price threshold. Every type has its own priority
+(including *critical* to bypass Do Not Disturb); all but the evening
+announcement start switched off. Six languages, and an optional presence gate.
 
-Full walkthrough: [docs/notifications-blueprint.md](docs/notifications-blueprint.md).
+**Set it up:** Settings → Devices and services → LëtzFuel HA → **Add
+recipient**. Give the recipient a name and pick a Home Assistant person: the
+notifications then go to that person's phones and tablets with the Home
+Assistant Companion app. Add other devices, for example a shared tablet, or pick
+devices only, without a person; a person or at least one device is required.
+Check the language (Home Assistant's own is preselected) and open the sections
+of the types you want. Add one recipient per person or device if they want
+different notifications; each can be edited or deleted on its own. See the
+[screenshot](#add-a-recipient).
+
+| Type | When |
+| --- | --- |
+| Evening: price announced for tomorrow | a new price is published (around 18:00); a correction replaces it if the official price turns out different |
+| New price in effect | the day a new price applies, just after midnight |
+| Refuel recommendation | the recommendation changes to a state you picked |
+| Live countdown to midnight | a Lock Screen countdown while the recommendation is "Refuel today" |
+| Price threshold | a price drops below your target (once, until it goes above again) |
+
+- **Saving:** with a tank size set, "Refuel today" adds what a full tank saves
+  (*A full tank saves about 3.15 €*), and "Wait" what it saves tomorrow.
+- **Tapping** a notification opens the fuel's price (tomorrow's price for an
+  announcement) or the refuel recommendation, or the dashboard you entered.
+- **Only when home / away:** switch it on to send only while a person (or
+  group) is home, or away. Without an entity of its own it uses the recipient's
+  person. Critical notifications ignore it unless you turn that off.
+- **Cleaning up:** once the new price applies, the announcement, the refuel
+  recommendation and the live countdown about the old price are removed;
+  "New price in effect" stays.
+
+<img src="docs/live-activity.jpg" alt="iOS Lock Screen: a Live Activity counting down to midnight above the critical refuel recommendation with the full-tank saving and the price announced for tomorrow" width="320">
+
+### Coming from the blueprint
+
+Up to 0.1.2 the notifications came from a blueprint. Now:
+
+1. **Add a recipient** as above, then turn off or delete your blueprint
+   automation. As long as an automation from the old blueprint is on, a repair
+   issue reminds you and can turn it off for you.
+2. **Want refuel reminders or your own actions** (Telegram, scripts, lights)?
+   Import the new
+   [LëtzFuel HA Blueprint](https://github.com/dabo53ck/letzfuel-ha-blueprint)
+   and create a new automation from it. Its inputs differ from the old blueprint, so it is set up fresh. It
+   doesn't send the standard notifications, so nothing arrives twice.
+3. Once no automation uses the old blueprint, delete it under **Blueprints**.
+
+The old blueprint in this repository still works for now, but gets no new
+features and will be removed in a later release.
 
 <details>
 <summary>Roll your own instead</summary>
@@ -154,7 +204,8 @@ Prices refresh every 6 hours, plus the evening check and a refresh just after
 midnight.
 
 **Options** (⚙️ on the integration card) let you change everything below without
-re-adding the integration:
+re-adding the integration. Tank size and fuel level are on the **Vehicle**
+page, everything else on **General**:
 
 | Setting | Default | Notes |
 | --- | --- | --- |
@@ -185,6 +236,8 @@ fuel**; the other tracked fuels' copies start disabled.
 
 ### Per fuel (`diesel`, `sp95_e10`, `sp98`)
 
+These are the entity ID slugs; the services take `diesel` / `sp95` / `sp98`.
+
 | Entity | State | Key attributes |
 | --- | --- | --- |
 | `sensor.*_<fuel>_price` | current max price, €/L | `currency`, `fuel_type`, `effective_date`, `price_incl_vat`, `price_excl_vat`, `vat_rate`, `previous_price`, `previous_effective_date`, `price_since`, `next_price`, `next_effective_date`, `source`, `source_url` |
@@ -200,6 +253,10 @@ fuel**; the other tracked fuels' copies start disabled.
 | `sensor.*_refuel_recommendation` | `refuel_today` / `wait` / `no_change` / `awaiting_price` | `primary_fuel`, `today_price`, `tomorrow_price`, `delta`, `potential_saving_full_tank` |
 | `sensor.*_last_price_update` | timestamp the current price took effect | `last_fetch_success`, `fetched_at`, `source`, `source_url` |
 | `sensor.*_days_since_last_change` *(disabled by default)* | integer days | - |
+
+`potential_saving_full_tank` is what a full tank saves or costs today versus
+tomorrow's announced price (tank size times the difference); empty without a
+tank size or an announcement.
 
 ### Vehicle (created when a tank size is configured)
 
@@ -264,6 +321,30 @@ Returns `{ cost, liters, price_per_liter, fuel_type, effective_date, currency }`
 
 Returns `{ liters_needed, cost, price_per_liter, fuel_type, currency }`.
 
+### `letzfuel_ha.send_notification`
+
+Sends one notification type now, with the current prices, for example to try
+out a recipient or from your own automation. Each recipient's
+language, fuels, priority and tap target apply; whether the type is switched
+on, its direction and minimum change, and presence are ignored. The regular
+notifications are not affected.
+
+| Field | Required | Description |
+| --- | --- | --- |
+| `type` | yes | `announced` / `effective` / `recommendation` / `threshold` / `countdown` / `countdown_end` |
+| `target` | no | Name of a recipient (default: all) |
+| `preview` | no | Send nothing, only return what would be sent |
+
+`countdown_end` only removes the live countdown. `announced` lists only the
+fuels whose price changes tomorrow.
+
+Returns `{ results: [{ target, services, notification, sent, reason }] }`.
+When `sent` is false, `reason` says why: `preview`, `no_devices`,
+`no_prices`, `no_announcement` (no price announced for tomorrow),
+`no_price_change` (no previous price to compare with) or `no_threshold` (the
+recipient has no price threshold). `notification` is then empty, except for
+`preview` and `no_devices`, where it shows what would have been sent.
+
 ---
 
 ## Events
@@ -321,9 +402,10 @@ data:
 ## 30-day average, month high / low, and derivative trend
 
 The integration deliberately does **not** keep its own price database. Home Assistant's
-built-in helpers already do this well, and on setup the published price history is
+built-in helpers already do this well. On setup the published price history is
 backfilled into each `sensor.*_price` entity's own long-term statistics, so its
-history graph and these helpers have data from before you installed it:
+history graph has data from before you installed it; the helpers below read the
+recorded states and fill up from then on:
 
 **30-day average**: add a [Statistics helper](https://www.home-assistant.io/integrations/statistics/):
 
@@ -338,7 +420,7 @@ sensor:
 ```
 
 **Month high / low**: same helper with `state_characteristic: value_max` / `value_min`
-and `max_age: { days: 31 }` (or use `sampling_size` to taste).
+and `max_age: { days: 31 }` (or limit by `sampling_size`).
 
 **Smoothed trend**: the [Trend helper](https://www.home-assistant.io/integrations/trend/)
 or [Derivative helper](https://www.home-assistant.io/integrations/derivative/) on the
@@ -357,7 +439,19 @@ See the [dashboard card YAML](#dashboard-card-yaml) below to build this.
 
 ### Options
 
-![Options dialog: evening check time, announcements, trend window, price display, tracked fuels, tank size, fuel level source, history import](docs/options.png)
+The options have two pages, **General** and **Vehicle**.
+
+<img src="docs/options-menu.png" alt="Options: choose General or Vehicle" width="460">
+
+<img src="docs/options-general.png" alt="General options: evening check time, announcements, trend window, price display, tracked fuels, primary fuel, history import" width="460">
+
+<img src="docs/options-vehicle.png" alt="Vehicle options: tank size, fuel level source, fuel level entity" width="460">
+
+### Add a recipient
+
+One recipient per person or device, with one collapsible section per notification type.
+
+<img src="docs/recipient.png" alt="Add recipient: name, person, devices, notification language, tap target and one section per notification type" width="460">
 
 ### Dashboard card YAML
 
