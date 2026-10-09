@@ -37,6 +37,13 @@
     "step": {
       "init": {
         "title": "LëtzFuel HA settings",
+        "menu_options": {
+          "general": "General",
+          "vehicle": "Vehicle"
+        }
+      },
+      "general": {
+        "title": "General",
         "data": {
           "evening_check_time": "Evening check time (catches the publication around 18:00; while nothing is announced yet, retries every 3-6 min (random) for up to 60 min, then every 20-30 min until midnight)",
           "announcements_enabled": "Fetch tomorrow's announced price",
@@ -44,11 +51,16 @@
           "price_display": "Price display",
           "tracked_fuels": "Fuels to track",
           "primary_fuel": "Primary fuel",
-          "tank_size": "Tank size",
-          "level_source": "Fuel level source",
-          "level_entity_id": "Fuel level entity",
           "history_import_enabled": "Import price history into long-term statistics",
           "history_import_months": "History import depth"
+        }
+      },
+      "vehicle": {
+        "title": "Vehicle",
+        "data": {
+          "tank_size": "Tank size",
+          "level_source": "Fuel level source",
+          "level_entity_id": "Fuel level entity"
         },
         "data_description": {
           "level_entity_id": "Its state must be the tank fill level as a percentage (0-100). Only used when the source is \"From another entity\"."
@@ -79,12 +91,70 @@
         "manual": "Manual (adjustable slider)",
         "entity": "From another entity"
       }
+    },
+    "notify_fuel": {
+      "options": {
+        "primary": "Primary fuel",
+        "diesel": "Diesel",
+        "sp95": "SP95 (E10)",
+        "sp98": "SP98"
+      }
+    },
+    "notify_direction": {
+      "options": {
+        "both": "Up and down",
+        "up": "Increases only",
+        "down": "Decreases only"
+      }
+    },
+    "notify_priority": {
+      "options": {
+        "normal": "Normal",
+        "elevated": "Elevated",
+        "critical": "Critical (bypasses Do Not Disturb)"
+      }
+    },
+    "notify_recommendation": {
+      "options": {
+        "refuel_today": "Refuel today",
+        "wait": "Wait"
+      }
+    },
+    "notify_presence_mode": {
+      "options": {
+        "home": "Home",
+        "away": "Away"
+      }
+    },
+    "notify_language": {
+      "options": {
+        "en": "English",
+        "de": "Deutsch",
+        "fr": "Français",
+        "lb": "Lëtzebuergesch",
+        "pt": "Português",
+        "it": "Italiano"
+      }
+    },
+    "send_type": {
+      "options": {
+        "announced": "Price announced for tomorrow",
+        "effective": "New price in effect",
+        "recommendation": "Refuel recommendation",
+        "threshold": "Price threshold",
+        "countdown": "Live countdown to midnight",
+        "countdown_end": "End live countdown"
+      }
     }
   },
   "entity": {
     "sensor": {
-      "price": { "name": "{fuel} price" },
-      "change": { "name": "{fuel} change" },
+      "price": {
+        "name": "{fuel} price"
+      },
+      "change": {
+        "name": "{fuel} change"
+      },
       "trend": {
         "name": "{fuel} trend",
         "state": {
@@ -93,7 +163,9 @@
           "stable": "Stable"
         }
       },
-      "price_tomorrow": { "name": "{fuel} price tomorrow" },
+      "price_tomorrow": {
+        "name": "{fuel} price tomorrow"
+      },
       "refuel_recommendation": {
         "name": "Refuel recommendation",
         "state": {
@@ -103,17 +175,31 @@
           "awaiting_price": "Awaiting new price"
         }
       },
-      "last_price_update": { "name": "Last price update" },
-      "days_since_last_change": { "name": "Days since last change" },
-      "full_tank_cost": { "name": "Full tank cost" },
-      "refill_cost": { "name": "Refill cost" },
-      "full_tank_cost_change": { "name": "Full tank cost change" }
+      "last_price_update": {
+        "name": "Last price update"
+      },
+      "days_since_last_change": {
+        "name": "Days since last change"
+      },
+      "full_tank_cost": {
+        "name": "Full tank cost"
+      },
+      "refill_cost": {
+        "name": "Refill cost"
+      },
+      "full_tank_cost_change": {
+        "name": "Full tank cost change"
+      }
     },
     "binary_sensor": {
-      "price_change_pending": { "name": "Price change pending" }
+      "price_change_pending": {
+        "name": "Price change pending"
+      }
     },
     "number": {
-      "current_fuel_level": { "name": "Current fuel level" }
+      "current_fuel_level": {
+        "name": "Current fuel level"
+      }
     }
   },
   "services": {
@@ -152,6 +238,24 @@
           "description": "Fuel to price. Defaults to the configured primary fuel."
         }
       }
+    },
+    "send_notification": {
+      "name": "Send notification",
+      "description": "Sends one type of fuel price notification now, with the current prices. The recipient's language, fuels, priority and tap target apply; whether the type is switched on, its direction and minimum change, and presence are ignored.",
+      "fields": {
+        "type": {
+          "name": "Type",
+          "description": "Which notification to send."
+        },
+        "target": {
+          "name": "Recipient",
+          "description": "Name of a recipient. Leave empty for all."
+        },
+        "preview": {
+          "name": "Preview only",
+          "description": "Send nothing, only return what would be sent."
+        }
+      }
     }
   },
   "exceptions": {
@@ -160,6 +264,12 @@
     },
     "fuel_not_available": {
       "message": "No price data available for {fuel}."
+    },
+    "no_notification_targets": {
+      "message": "No recipient is set up yet. Add one under Settings > Devices and services > LëtzFuel HA."
+    },
+    "unknown_notification_target": {
+      "message": "There is no recipient named {target}."
     }
   },
   "issues": {
@@ -174,6 +284,197 @@
     "announcements_unavailable": {
       "title": "Tomorrow's price is only shown late",
       "description": "For {days} days the announcement feed for tomorrow's price could not be used, so a backup is used instead. If that fails too, tomorrow's price only appears once the official price table lists it, usually late in the evening. Check the diagnostics and please open an issue if this persists."
+    },
+    "duplicate_notifications": {
+      "title": "Fuel notifications are sent twice",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Turn off the blueprint automation",
+            "description": "LëtzFuel HA now sends the notifications itself (Settings > Devices and services > LëtzFuel HA > Add recipient). The automation {automations} uses the old notifications blueprint and sends the same notifications again, so every notification arrives twice.\n\nThis automation is no longer needed. For refuel reminders or your own actions (Telegram, scripts, lights), use the new LëtzFuel HA Blueprint: {blueprint_url}. Turn this automation off here, or delete it under Settings > Automations and scenes.\n\nSubmit to turn off {automations}."
+          }
+        }
+      }
+    }
+  },
+  "config_subentries": {
+    "notification": {
+      "initiate_flow": {
+        "user": "Add recipient"
+      },
+      "entry_type": "Recipient",
+      "step": {
+        "user": {
+          "title": "Add recipient",
+          "description": "Who gets fuel price notifications, on which devices and for what. Every type can be switched on separately.",
+          "data": {
+            "name": "Name",
+            "person": "Person (optional)",
+            "devices": "Devices",
+            "language": "Notification language",
+            "tap_dashboard_path": "Dashboard opened when you tap a notification (optional)"
+          },
+          "data_description": {
+            "person": "Notifications go to this person's devices with the Companion app.",
+            "devices": "Phones and tablets with the Home Assistant Companion app, in addition to the person's devices, for example a shared tablet.",
+            "tap_dashboard_path": "Leave empty to open the details of the fuel's price or of the refuel recommendation. Or enter a dashboard view, for example /lovelace/fuel."
+          },
+          "sections": {
+            "announced": {
+              "name": "Evening: price announced for tomorrow",
+              "data": {
+                "enabled": "Enable",
+                "fuels": "Fuels",
+                "direction": "Direction",
+                "min_delta": "Minimum change",
+                "priority": "Priority"
+              },
+              "data_description": {
+                "min_delta": "Ignore smaller moves. 0 = any change."
+              },
+              "description": "If the official price later turns out different, a correction replaces the notification."
+            },
+            "effective": {
+              "name": "New price in effect",
+              "data": {
+                "enabled": "Enable",
+                "fuels": "Fuels",
+                "direction": "Direction",
+                "min_delta": "Minimum change",
+                "priority": "Priority"
+              },
+              "data_description": {
+                "min_delta": "Ignore smaller moves. 0 = any change."
+              }
+            },
+            "recommendation": {
+              "name": "Refuel recommendation",
+              "data": {
+                "enabled": "Enable",
+                "states": "Notify when it becomes",
+                "no_change": "Also notify when there is no change",
+                "priority": "Priority"
+              }
+            },
+            "countdown": {
+              "name": "Live countdown to midnight",
+              "description": "A Lock Screen countdown (iOS Live Activity, Android Live Update) while the recommendation is Refuel today. Comes in addition to the refuel recommendation.",
+              "data": {
+                "enabled": "Enable"
+              }
+            },
+            "threshold": {
+              "name": "Price threshold",
+              "data": {
+                "enabled": "Enable",
+                "fuels": "Fuels",
+                "below": "Notify when the price is below",
+                "priority": "Priority"
+              }
+            },
+            "presence": {
+              "name": "Only when home / away",
+              "data": {
+                "enabled": "Enable",
+                "entity": "Person or group",
+                "mode": "Send only when",
+                "critical_overrides": "Critical notifications ignore this"
+              },
+              "data_description": {
+                "entity": "Leave empty to use the recipient's person."
+              }
+            }
+          }
+        },
+        "reconfigure": {
+          "title": "Edit recipient",
+          "description": "Who gets fuel price notifications, on which devices and for what. Every type can be switched on separately.",
+          "data": {
+            "name": "Name",
+            "person": "Person (optional)",
+            "devices": "Devices",
+            "language": "Notification language",
+            "tap_dashboard_path": "Dashboard opened when you tap a notification (optional)"
+          },
+          "data_description": {
+            "person": "Notifications go to this person's devices with the Companion app.",
+            "devices": "Phones and tablets with the Home Assistant Companion app, in addition to the person's devices, for example a shared tablet.",
+            "tap_dashboard_path": "Leave empty to open the details of the fuel's price or of the refuel recommendation. Or enter a dashboard view, for example /lovelace/fuel."
+          },
+          "sections": {
+            "announced": {
+              "name": "Evening: price announced for tomorrow",
+              "data": {
+                "enabled": "Enable",
+                "fuels": "Fuels",
+                "direction": "Direction",
+                "min_delta": "Minimum change",
+                "priority": "Priority"
+              },
+              "data_description": {
+                "min_delta": "Ignore smaller moves. 0 = any change."
+              },
+              "description": "If the official price later turns out different, a correction replaces the notification."
+            },
+            "effective": {
+              "name": "New price in effect",
+              "data": {
+                "enabled": "Enable",
+                "fuels": "Fuels",
+                "direction": "Direction",
+                "min_delta": "Minimum change",
+                "priority": "Priority"
+              },
+              "data_description": {
+                "min_delta": "Ignore smaller moves. 0 = any change."
+              }
+            },
+            "recommendation": {
+              "name": "Refuel recommendation",
+              "data": {
+                "enabled": "Enable",
+                "states": "Notify when it becomes",
+                "no_change": "Also notify when there is no change",
+                "priority": "Priority"
+              }
+            },
+            "countdown": {
+              "name": "Live countdown to midnight",
+              "description": "A Lock Screen countdown (iOS Live Activity, Android Live Update) while the recommendation is Refuel today. Comes in addition to the refuel recommendation.",
+              "data": {
+                "enabled": "Enable"
+              }
+            },
+            "threshold": {
+              "name": "Price threshold",
+              "data": {
+                "enabled": "Enable",
+                "fuels": "Fuels",
+                "below": "Notify when the price is below",
+                "priority": "Priority"
+              }
+            },
+            "presence": {
+              "name": "Only when home / away",
+              "data": {
+                "enabled": "Enable",
+                "entity": "Person or group",
+                "mode": "Send only when",
+                "critical_overrides": "Critical notifications ignore this"
+              },
+              "data_description": {
+                "entity": "Leave empty to use the recipient's person."
+              }
+            }
+          }
+        }
+      },
+      "error": {
+        "no_devices": "Pick a person or at least one device."
+      },
+      "abort": {
+        "reconfigure_successful": "Recipient saved"
+      }
     }
   }
 }

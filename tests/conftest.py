@@ -23,9 +23,9 @@ from custom_components.letzfuel_ha.const import (
     OPT_HISTORY_IMPORT_ENABLED,
 )
 from custom_components.letzfuel_ha.models import FuelType
+from custom_components.letzfuel_ha.providers.backup_feed import BACKUP_FEED_URL
 from custom_components.letzfuel_ha.providers.live_sheet import LIVE_SHEET_URL
 from custom_components.letzfuel_ha.providers.petrol_lu import SOURCE_URL
-from custom_components.letzfuel_ha.providers.rtl_lu import RTL_CURRENT_URL
 
 from .helpers import build_petrol_lu_html, sheet_json
 
@@ -109,19 +109,19 @@ def mock_petrol_lu(
 
     def _set(
         entries: list,
-        rtl_payload: dict | None = None,
-        rtl_status: int = 200,
+        backup_payload: dict | None = None,
+        backup_status: int = 200,
         sheet_payload: dict | None = None,
         sheet_status: int = 200,
     ) -> None:
         aioclient_mock.clear_requests()
         aioclient_mock.get(SOURCE_URL, text=build_petrol_lu_html(entries))
-        # RTL announcement source: default to "no change announced" (date = today)
+        # Backup announcement feed: default to "no change announced" (date = today)
         # so tests that don't care about it are unaffected.
         aioclient_mock.get(
-            RTL_CURRENT_URL,
-            status=rtl_status,
-            json=rtl_payload
+            BACKUP_FEED_URL,
+            status=backup_status,
+            json=backup_payload
             or {
                 "id": 0,
                 "date": f"{dt_util.now().date().isoformat()}T00:00:00+02:00",
