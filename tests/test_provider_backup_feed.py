@@ -1,4 +1,4 @@
-"""Tests for the RTL.lu announcement source."""
+"""Tests for the backup announcement feed."""
 
 from __future__ import annotations
 
@@ -11,15 +11,15 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from pytest_homeassistant_custom_component.test_util.aiohttp import AiohttpClientMocker
 
 from custom_components.letzfuel_ha.models import FuelType
+from custom_components.letzfuel_ha.providers.backup_feed import (
+    BACKUP_FEED_URL,
+    BackupFeedAnnouncements,
+    parse_announced,
+    parse_effective_date,
+)
 from custom_components.letzfuel_ha.providers.base import (
     ProviderConnectionError,
     ProviderParseError,
-)
-from custom_components.letzfuel_ha.providers.rtl_lu import (
-    RTL_CURRENT_URL,
-    RtlLuAnnouncements,
-    parse_announced,
-    parse_effective_date,
 )
 
 TODAY = date(2026, 9, 2)
@@ -73,8 +73,8 @@ def test_parse_skips_missing_and_nonpositive_fuels() -> None:
 async def test_fetch_http_error(
     hass: HomeAssistant, aioclient_mock: AiohttpClientMocker
 ) -> None:
-    aioclient_mock.get(RTL_CURRENT_URL, status=503)
-    src = RtlLuAnnouncements(async_get_clientsession(hass))
+    aioclient_mock.get(BACKUP_FEED_URL, status=503)
+    src = BackupFeedAnnouncements(async_get_clientsession(hass))
 
     with pytest.raises(ProviderConnectionError):
         await src.async_fetch(TODAY)
@@ -83,8 +83,8 @@ async def test_fetch_http_error(
 async def test_fetch_ok(
     hass: HomeAssistant, aioclient_mock: AiohttpClientMocker
 ) -> None:
-    aioclient_mock.get(RTL_CURRENT_URL, json=_payload("2026-09-03"))
-    src = RtlLuAnnouncements(async_get_clientsession(hass))
+    aioclient_mock.get(BACKUP_FEED_URL, json=_payload("2026-09-03"))
+    src = BackupFeedAnnouncements(async_get_clientsession(hass))
 
     points = (await src.async_fetch(TODAY)).points
     assert {p.fuel for p in points} == {
@@ -113,8 +113,8 @@ async def test_fetch_reports_latest_date(
     hass: HomeAssistant, aioclient_mock: AiohttpClientMocker
 ) -> None:
     """A stale payload (today's date) is reported, but yields no points."""
-    aioclient_mock.get(RTL_CURRENT_URL, json=_payload("2026-09-02"))
-    src = RtlLuAnnouncements(async_get_clientsession(hass))
+    aioclient_mock.get(BACKUP_FEED_URL, json=_payload("2026-09-02"))
+    src = BackupFeedAnnouncements(async_get_clientsession(hass))
 
     result = await src.async_fetch(TODAY)
     assert result.latest_date == TODAY
