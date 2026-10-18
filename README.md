@@ -9,6 +9,8 @@
 
 [![Release][release-badge]][release-url] &nbsp; [![HACS][hacs-badge]][hacs-url] &nbsp; [![Validate][validate-badge]][validate-url] &nbsp; [![Tests][tests-badge]][tests-url]
 
+[Features](#features) · [Installation](#installation) · [Notifications](#notifications) · [Configuration](#configuration) · [Entities](#entity-reference) · [Services](#services) · [Events](#events) · [Statistics](#30-day-average-month-high--low-and-derivative-trend) · [Screenshots](#screenshots)
+
 </div>
 
 Luxembourg sets a **single national maximum price** for each road fuel by ministerial
@@ -148,8 +150,9 @@ Up to 0.1.2 the notifications came from a blueprint. Now:
    doesn't send the standard notifications, so nothing arrives twice.
 3. Once no automation uses the old blueprint, delete it under **Blueprints**.
 
-The old blueprint in this repository still works for now, but gets no new
-features and will be removed in a later release.
+> [!IMPORTANT]
+> The old blueprint in this repository still works for now, but gets no new
+> features and will be removed in a later release.
 
 <details>
 <summary>Roll your own instead</summary>
@@ -204,8 +207,9 @@ All configuration is through the UI.
     as a percentage (0-100). The slider is not created in this mode.
     See [Reading the fuel level from another entity](#reading-the-fuel-level-from-another-entity).
 
-Prices refresh every 6 hours, plus the evening check and a refresh just after
-midnight.
+> [!NOTE]
+> Prices refresh every 6 hours, plus the evening check and a refresh just after
+> midnight.
 
 **Options** (⚙️ on the integration card) let you change everything below without
 re-adding the integration. Tank size and fuel level are on the **Vehicle**
@@ -233,8 +237,8 @@ Sensors marked *disabled by default* can be enabled from the entity settings.
 `*_trend` and `*_price_tomorrow` are enabled by default **only for the primary
 fuel**; the other tracked fuels' copies start disabled.
 
-> **Language note:** entity names are translated, but entity IDs are always
-> English, whatever language Home Assistant runs in, e.g. the diesel price
+> [!NOTE]
+> Entity names are translated, but entity IDs are always English, whatever language Home Assistant runs in, e.g. the diesel price
 > sensor is `sensor.letzfuel_ha_diesel_price` everywhere. Entities that already
 > exist keep the ID they were created with.
 
