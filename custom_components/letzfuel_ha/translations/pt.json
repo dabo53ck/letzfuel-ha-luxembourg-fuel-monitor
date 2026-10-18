@@ -36,7 +36,14 @@
   "options": {
     "step": {
       "init": {
-        "title": "Definições do LëtzFuel HA",
+        "title": "Definições LëtzFuel HA",
+        "menu_options": {
+          "general": "Geral",
+          "vehicle": "Veículo"
+        }
+      },
+      "general": {
+        "title": "Geral",
         "data": {
           "evening_check_time": "Hora da verificação noturna (apanha a publicação por volta das 18h00; enquanto nada for anunciado, tenta novamente a cada 3-6 min (aleatório) até 60 min e, a seguir, a cada 20-30 min até à meia-noite)",
           "announcements_enabled": "Obter o preço anunciado para amanhã",
@@ -44,11 +51,16 @@
           "price_display": "Apresentação do preço",
           "tracked_fuels": "Combustíveis a monitorizar",
           "primary_fuel": "Combustível principal",
-          "tank_size": "Capacidade do depósito",
-          "level_source": "Origem do nível de combustível",
-          "level_entity_id": "Entidade do nível de combustível",
           "history_import_enabled": "Importar o histórico de preços para as estatísticas de longo prazo",
           "history_import_months": "Profundidade da importação do histórico"
+        }
+      },
+      "vehicle": {
+        "title": "Veículo",
+        "data": {
+          "tank_size": "Capacidade do depósito",
+          "level_source": "Origem do nível de combustível",
+          "level_entity_id": "Entidade do nível de combustível"
         },
         "data_description": {
           "level_entity_id": "O seu estado deve ser o nível de enchimento do depósito em percentagem (0-100). Utilizado apenas quando a origem é «De outra entidade»."
@@ -79,12 +91,70 @@
         "manual": "Manual (cursor ajustável)",
         "entity": "De outra entidade"
       }
+    },
+    "notify_fuel": {
+      "options": {
+        "primary": "Combustível principal",
+        "diesel": "Diesel",
+        "sp95": "SP95 (E10)",
+        "sp98": "SP98"
+      }
+    },
+    "notify_direction": {
+      "options": {
+        "both": "Subida e descida",
+        "up": "Só subidas",
+        "down": "Só descidas"
+      }
+    },
+    "notify_priority": {
+      "options": {
+        "normal": "Normal",
+        "elevated": "Elevada",
+        "critical": "Crítica (ignora Não incomodar)"
+      }
+    },
+    "notify_recommendation": {
+      "options": {
+        "refuel_today": "Abastecer hoje",
+        "wait": "Aguardar"
+      }
+    },
+    "notify_presence_mode": {
+      "options": {
+        "home": "Em casa",
+        "away": "Fora"
+      }
+    },
+    "notify_language": {
+      "options": {
+        "en": "English",
+        "de": "Deutsch",
+        "fr": "Français",
+        "lb": "Lëtzebuergesch",
+        "pt": "Português",
+        "it": "Italiano"
+      }
+    },
+    "send_type": {
+      "options": {
+        "announced": "Preço anunciado para amanhã",
+        "effective": "Novo preço em vigor",
+        "recommendation": "Recomendação de abastecimento",
+        "threshold": "Limite de preço",
+        "countdown": "Contagem decrescente até à meia-noite",
+        "countdown_end": "Terminar a contagem decrescente"
+      }
     }
   },
   "entity": {
     "sensor": {
-      "price": { "name": "Preço {fuel}" },
-      "change": { "name": "Variação {fuel}" },
+      "price": {
+        "name": "Preço {fuel}"
+      },
+      "change": {
+        "name": "Variação {fuel}"
+      },
       "trend": {
         "name": "Tendência {fuel}",
         "state": {
@@ -93,7 +163,9 @@
           "stable": "Estável"
         }
       },
-      "price_tomorrow": { "name": "Preço {fuel} amanhã" },
+      "price_tomorrow": {
+        "name": "Preço {fuel} amanhã"
+      },
       "refuel_recommendation": {
         "name": "Recomendação de abastecimento",
         "state": {
@@ -103,17 +175,31 @@
           "awaiting_price": "A aguardar novo preço"
         }
       },
-      "last_price_update": { "name": "Última atualização de preço" },
-      "days_since_last_change": { "name": "Dias desde a última alteração" },
-      "full_tank_cost": { "name": "Custo do depósito cheio" },
-      "refill_cost": { "name": "Custo do reabastecimento" },
-      "full_tank_cost_change": { "name": "Variação do custo do depósito cheio" }
+      "last_price_update": {
+        "name": "Última atualização de preço"
+      },
+      "days_since_last_change": {
+        "name": "Dias desde a última alteração"
+      },
+      "full_tank_cost": {
+        "name": "Custo do depósito cheio"
+      },
+      "refill_cost": {
+        "name": "Custo do reabastecimento"
+      },
+      "full_tank_cost_change": {
+        "name": "Variação do custo do depósito cheio"
+      }
     },
     "binary_sensor": {
-      "price_change_pending": { "name": "Alteração de preço pendente" }
+      "price_change_pending": {
+        "name": "Alteração de preço pendente"
+      }
     },
     "number": {
-      "current_fuel_level": { "name": "Nível de combustível atual" }
+      "current_fuel_level": {
+        "name": "Nível de combustível atual"
+      }
     }
   },
   "services": {
@@ -152,6 +238,24 @@
           "description": "Combustível a considerar. Por predefinição, o combustível principal configurado."
         }
       }
+    },
+    "send_notification": {
+      "name": "Enviar notificação",
+      "description": "Envia agora um tipo de notificação de preço, com os preços atuais. Aplicam-se o idioma, os combustíveis, a prioridade e o destino ao tocar do destinatário; ignoram-se a ativação do tipo, o sentido, a variação mínima e a presença.",
+      "fields": {
+        "type": {
+          "name": "Tipo",
+          "description": "Que notificação enviar."
+        },
+        "target": {
+          "name": "Destinatário",
+          "description": "Nome de um destinatário. Deixar vazio para todos."
+        },
+        "preview": {
+          "name": "Só pré-visualizar",
+          "description": "Não enviar nada, apenas devolver o que seria enviado."
+        }
+      }
     }
   },
   "exceptions": {
@@ -160,6 +264,12 @@
     },
     "fuel_not_available": {
       "message": "Não há dados de preço disponíveis para {fuel}."
+    },
+    "no_notification_targets": {
+      "message": "Ainda não há nenhum destinatário configurado. Adicione um em Definições > Dispositivos e serviços > LëtzFuel HA."
+    },
+    "unknown_notification_target": {
+      "message": "Não existe nenhum destinatário chamado {target}."
     }
   },
   "issues": {
@@ -174,6 +284,197 @@
     "announcements_unavailable": {
       "title": "O preço de amanhã só aparece tarde",
       "description": "Há {days} dias que a fonte de anúncio do preço de amanhã não pode ser usada; está a ser usada uma fonte de reserva. Se também esta falhar, o preço de amanhã só aparece quando a tabela oficial de preços o publicar, normalmente ao fim da noite. Verifique os diagnósticos e abra um pedido se isto persistir."
+    },
+    "duplicate_notifications": {
+      "title": "As notificações de combustível chegam em duplicado",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Desativar a automação do blueprint",
+            "description": "O LëtzFuel HA envia agora as notificações ele próprio (Definições > Dispositivos e serviços > LëtzFuel HA > Adicionar destinatário). A automação {automations} usa o antigo blueprint de notificações e envia as mesmas notificações outra vez, por isso cada notificação chega em duplicado.\n\nEsta automação já não é necessária. Para lembretes de abastecimento ou ações suas (Telegram, scripts, luzes), use o novo LëtzFuel HA Blueprint: {blueprint_url}. Desative-a aqui ou apague-a em Definições > Automações e cenas.\n\nSubmeter desativa {automations}."
+          }
+        }
+      }
+    }
+  },
+  "config_subentries": {
+    "notification": {
+      "initiate_flow": {
+        "user": "Adicionar destinatário"
+      },
+      "entry_type": "Destinatário",
+      "step": {
+        "user": {
+          "title": "Adicionar destinatário",
+          "description": "Quem recebe as notificações sobre os preços dos combustíveis, em que dispositivos e para quê. Cada tipo pode ser ativado separadamente.",
+          "data": {
+            "name": "Nome",
+            "person": "Pessoa (opcional)",
+            "devices": "Dispositivos",
+            "language": "Idioma das notificações",
+            "tap_dashboard_path": "Painel aberto ao tocar numa notificação (opcional)"
+          },
+          "data_description": {
+            "person": "As notificações vão para os dispositivos desta pessoa com a aplicação Companion.",
+            "devices": "Telemóveis e tablets com a aplicação Home Assistant Companion, além dos dispositivos da pessoa, por exemplo um tablet partilhado.",
+            "tap_dashboard_path": "Deixe vazio para abrir os detalhes do preço do combustível ou da recomendação. Ou indique uma vista do painel, por exemplo /lovelace/fuel."
+          },
+          "sections": {
+            "announced": {
+              "name": "À noite: preço anunciado para amanhã",
+              "data": {
+                "enabled": "Ativar",
+                "fuels": "Combustíveis",
+                "direction": "Sentido",
+                "min_delta": "Variação mínima",
+                "priority": "Prioridade"
+              },
+              "data_description": {
+                "min_delta": "Ignorar variações menores. 0 = qualquer variação."
+              },
+              "description": "Se o preço oficial for depois diferente, uma correção substitui a notificação."
+            },
+            "effective": {
+              "name": "Novo preço em vigor",
+              "data": {
+                "enabled": "Ativar",
+                "fuels": "Combustíveis",
+                "direction": "Sentido",
+                "min_delta": "Variação mínima",
+                "priority": "Prioridade"
+              },
+              "data_description": {
+                "min_delta": "Ignorar variações menores. 0 = qualquer variação."
+              }
+            },
+            "recommendation": {
+              "name": "Recomendação de abastecimento",
+              "data": {
+                "enabled": "Ativar",
+                "states": "Notificar quando passar a",
+                "no_change": "Notificar também quando não há alteração",
+                "priority": "Prioridade"
+              }
+            },
+            "countdown": {
+              "name": "Contagem decrescente até à meia-noite",
+              "description": "Uma contagem decrescente no ecrã de bloqueio (iOS Live Activity, Android Live Update) enquanto a recomendação for Abastecer hoje. Junta-se à recomendação.",
+              "data": {
+                "enabled": "Ativar"
+              }
+            },
+            "threshold": {
+              "name": "Limite de preço",
+              "data": {
+                "enabled": "Ativar",
+                "fuels": "Combustíveis",
+                "below": "Notificar quando o preço estiver abaixo de",
+                "priority": "Prioridade"
+              }
+            },
+            "presence": {
+              "name": "Só em casa / fora",
+              "data": {
+                "enabled": "Ativar",
+                "entity": "Pessoa ou grupo",
+                "mode": "Enviar só quando",
+                "critical_overrides": "As notificações críticas ignoram isto"
+              },
+              "data_description": {
+                "entity": "Deixe vazio para usar a pessoa do destinatário."
+              }
+            }
+          }
+        },
+        "reconfigure": {
+          "title": "Editar destinatário",
+          "description": "Quem recebe as notificações sobre os preços dos combustíveis, em que dispositivos e para quê. Cada tipo pode ser ativado separadamente.",
+          "data": {
+            "name": "Nome",
+            "person": "Pessoa (opcional)",
+            "devices": "Dispositivos",
+            "language": "Idioma das notificações",
+            "tap_dashboard_path": "Painel aberto ao tocar numa notificação (opcional)"
+          },
+          "data_description": {
+            "person": "As notificações vão para os dispositivos desta pessoa com a aplicação Companion.",
+            "devices": "Telemóveis e tablets com a aplicação Home Assistant Companion, além dos dispositivos da pessoa, por exemplo um tablet partilhado.",
+            "tap_dashboard_path": "Deixe vazio para abrir os detalhes do preço do combustível ou da recomendação. Ou indique uma vista do painel, por exemplo /lovelace/fuel."
+          },
+          "sections": {
+            "announced": {
+              "name": "À noite: preço anunciado para amanhã",
+              "data": {
+                "enabled": "Ativar",
+                "fuels": "Combustíveis",
+                "direction": "Sentido",
+                "min_delta": "Variação mínima",
+                "priority": "Prioridade"
+              },
+              "data_description": {
+                "min_delta": "Ignorar variações menores. 0 = qualquer variação."
+              },
+              "description": "Se o preço oficial for depois diferente, uma correção substitui a notificação."
+            },
+            "effective": {
+              "name": "Novo preço em vigor",
+              "data": {
+                "enabled": "Ativar",
+                "fuels": "Combustíveis",
+                "direction": "Sentido",
+                "min_delta": "Variação mínima",
+                "priority": "Prioridade"
+              },
+              "data_description": {
+                "min_delta": "Ignorar variações menores. 0 = qualquer variação."
+              }
+            },
+            "recommendation": {
+              "name": "Recomendação de abastecimento",
+              "data": {
+                "enabled": "Ativar",
+                "states": "Notificar quando passar a",
+                "no_change": "Notificar também quando não há alteração",
+                "priority": "Prioridade"
+              }
+            },
+            "countdown": {
+              "name": "Contagem decrescente até à meia-noite",
+              "description": "Uma contagem decrescente no ecrã de bloqueio (iOS Live Activity, Android Live Update) enquanto a recomendação for Abastecer hoje. Junta-se à recomendação.",
+              "data": {
+                "enabled": "Ativar"
+              }
+            },
+            "threshold": {
+              "name": "Limite de preço",
+              "data": {
+                "enabled": "Ativar",
+                "fuels": "Combustíveis",
+                "below": "Notificar quando o preço estiver abaixo de",
+                "priority": "Prioridade"
+              }
+            },
+            "presence": {
+              "name": "Só em casa / fora",
+              "data": {
+                "enabled": "Ativar",
+                "entity": "Pessoa ou grupo",
+                "mode": "Enviar só quando",
+                "critical_overrides": "As notificações críticas ignoram isto"
+              },
+              "data_description": {
+                "entity": "Deixe vazio para usar a pessoa do destinatário."
+              }
+            }
+          }
+        }
+      },
+      "error": {
+        "no_devices": "Escolha uma pessoa ou pelo menos um dispositivo."
+      },
+      "abort": {
+        "reconfigure_successful": "Destinatário guardado"
+      }
     }
   }
 }

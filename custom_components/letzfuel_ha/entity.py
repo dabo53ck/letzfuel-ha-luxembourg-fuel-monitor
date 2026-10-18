@@ -19,8 +19,8 @@ def stable_entity_id(
     *translated* entity name, so the same sensor lands at
     ``sensor.letzfuel_ha_tankempfehlung`` on a German instance and
     ``sensor.letzfuel_ha_refuel_recommendation`` on an English one. That makes
-    the entities impossible to reference from the shared notification blueprint
-    or from the documentation. Pinning ``entity_id`` here fixes the slug to the
+    the entities impossible to reference from blueprints or from the
+    documentation. Pinning ``entity_id`` here fixes the slug to the
     English form on every install, in every language.
 
     Entities that already exist keep whatever ``entity_id`` the registry stored

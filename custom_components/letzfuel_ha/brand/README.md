@@ -8,7 +8,7 @@ holding a speedometer needle: "Luxembourg fuel, read live".
 | `icon.png` (256) / `icon@2x.png` (512) | `dark_icon.png` / `dark_icon@2x.png` | Square app icon |
 | `logo.png` / `logo@2x.png` | `dark_logo.png` / `dark_logo@2x.png` | Wordmark ("LëtzFuel HA" + descriptor) |
 
-Each has a matching `*.svg` source. Home Assistant (2026.3+) loads these directly
+Each has a matching `*.svg` source. Home Assistant loads these directly
 from this folder (no `home-assistant/brands` PR needed) and picks the `dark_*`
 variant in dark mode.
 
@@ -28,5 +28,5 @@ done
 
 The `logo` PNGs use whatever bold sans the renderer finds (the SVG asks for
 Bricolage Grotesque, then falls back), fine for the README / HACS card. For a
-`home-assistant/brands` PR (only needed for HA < 2026.3 or the public HACS store),
+`home-assistant/brands` PR (only needed for the public HACS store),
 convert the `<text>` to outlines first (Inkscape: *Path → Object to Path*).

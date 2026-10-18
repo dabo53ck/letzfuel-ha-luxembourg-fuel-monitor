@@ -212,17 +212,12 @@ def _recommendation_attrs(
         if tomorrow is not None and today is not None
         else None
     )
-    saving = (
-        round(abs(delta) * coordinator.tank_size, 2)
-        if delta is not None and coordinator.tank_size
-        else None
-    )
     return {
         "primary_fuel": coordinator.primary_fuel.value,
         "today_price": today,
         "tomorrow_price": tomorrow,
         "delta": delta,
-        "potential_saving_full_tank": saving,
+        "potential_saving_full_tank": coordinator.potential_saving_full_tank(),
     }
 
 

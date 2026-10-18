@@ -1,7 +1,14 @@
 blueprint:
-  name: LëtzFuel HA - Notifications
+  name: LëtzFuel HA - Notifications (deprecated)
   description: >-
-    ![version](https://img.shields.io/badge/version-0.1.2-blue)
+    ![version](https://img.shields.io/badge/version-0.2.0-blue)
+
+
+    **This blueprint is replaced and will be removed in a later release.**
+    LëtzFuel HA 0.2.0 sends the notifications itself (Settings > Devices and
+    services > LëtzFuel HA > Add recipient). For refuel reminders or your own
+    actions, use the new LëtzFuel HA Blueprint:
+    https://github.com/dabo53ck/letzfuel-ha-blueprint
 
 
     One automation that turns the LëtzFuel HA integration's events and sensors
@@ -52,7 +59,7 @@ blueprint:
   author: dabo53ck
   source_url: https://github.com/dabo53ck/letzfuel-ha-luxembourg-fuel-monitor/blob/main/blueprints/automation/letzfuel_ha/notifications.yaml
   homeassistant:
-    min_version: "2025.12.0"
+    min_version: "2026.7.0"
 
   input:
     language:
