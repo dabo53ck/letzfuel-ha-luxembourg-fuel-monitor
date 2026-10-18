@@ -38,8 +38,12 @@ backup feed stands in. Implausible values are ignored, and petrol.lu always has
 the final say: if its official price turns out different from what was
 announced, a correction follows. You can turn this off in the options.
 
+> [!NOTE]
 > **Not affiliated** with the GPL, petrol.lu, any other data source or the
 > Luxembourg government. Always verify the price at the pump.
+>
+> This integration was written with [Claude](https://claude.ai) (AI-assisted)
+> and is reviewed and tested by the maintainer on a live Home Assistant instance.
 
 ---
 
