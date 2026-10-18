@@ -58,7 +58,7 @@ announced, a correction follows. You can turn this off in the options.
 | **Trend** | `sensor.*_trend`: `rising` / `falling` / `stable` over a rolling window (see Options) |
 | **Next-day awareness** | `binary_sensor.*_price_change_pending`, `sensor.*_price_tomorrow`, `sensor.*_refuel_recommendation` |
 | **Events** | `letzfuel_ha_price_change_announced`, `letzfuel_ha_price_change_corrected` and `letzfuel_ha_price_changed` for automations |
-| **Notifications** | built in: one recipient per person or device, per-type priority, 6 languages, presence gate; a separate [LëtzFuel HA Blueprint](https://github.com/dabo53ck/letzfuel-ha-blueprint) for refuel reminders and your own actions and texts |
+| **Notifications** | built in: one recipient per person or device, a priority per type, 6 languages, presence gate; a separate [LëtzFuel HA Blueprint](https://github.com/dabo53ck/letzfuel-ha-blueprint) for refuel reminders and your own actions and texts |
 | **Vehicle analytics** | full-tank / refill / cost-change sensors (when a tank size is set); fuel level from a live `number` slider or read from another entity |
 | **Services** | `calculate_fill_cost`, `calculate_trip_cost` (response services), `send_notification` |
 | **History** | On setup, past prices are imported into Home Assistant long-term statistics |
@@ -82,7 +82,7 @@ Home Assistant **2026.7** or newer.
    `https://github.com/dabo53ck/letzfuel-ha-luxembourg-fuel-monitor` as an
    **Integration**).
 2. Install **LëtzFuel HA** and restart Home Assistant.
-3. **Settings → Devices & Services → Add Integration → LëtzFuel HA**.
+3. **Settings → Devices and services → Add Integration → LëtzFuel HA**.
 
 ### Manual
 
@@ -101,8 +101,8 @@ directory and restart.
 
 LëtzFuel HA sends the notifications itself: next-day price announcements (with
 corrections), "new price in effect", the refuel recommendation, a live
-countdown to midnight and a price threshold. Every type has its own priority
-(including *critical* to bypass Do Not Disturb); all but the evening
+countdown to midnight and a price threshold. Every type except the live
+countdown has its own priority (including *critical* to bypass Do Not Disturb); all but the evening
 announcement start switched off. Six languages, and an optional presence gate.
 
 **Set it up:** Settings → Devices and services → LëtzFuel HA → **Add
@@ -120,7 +120,7 @@ different notifications; each can be edited or deleted on its own. See the
 | Evening: price announced for tomorrow | a new price is published (around 18:00); a correction replaces it if the official price turns out different |
 | New price in effect | the day a new price applies, just after midnight |
 | Refuel recommendation | the recommendation changes to a state you picked |
-| Live countdown to midnight | a Lock Screen countdown while the recommendation is "Refuel today" |
+| Live countdown to midnight | a live countdown (iOS Live Activity, Android Live Update) while the recommendation is "Refuel today" |
 | Price threshold | a price drops below your target (once, until it goes above again) |
 
 - **Saving:** with a tank size set, "Refuel today" adds what a full tank saves
@@ -129,7 +129,8 @@ different notifications; each can be edited or deleted on its own. See the
   announcement) or the refuel recommendation, or the dashboard you entered.
 - **Only when home / away:** switch it on to send only while a person (or
   group) is home, or away. Without an entity of its own it uses the recipient's
-  person. Critical notifications ignore it unless you turn that off.
+  person; with neither, it has no effect. Critical notifications ignore it
+  unless you turn that off.
 - **Cleaning up:** once the new price applies, the announcement, the refuel
   recommendation and the live countdown about the old price are removed;
   "New price in effect" stays.
@@ -192,27 +193,24 @@ automation:
 
 All configuration is through the UI.
 
-**Step 1: Fuels**
-: Choose which fuels to track (Diesel, SP95/E10, SP98) and which one is your *primary*
-  fuel (used by the recommendation and vehicle sensors). The primary fuel must be
-  one of the tracked fuels.
-
-**Step 2: Vehicle (optional)**
-: Set your tank size to unlock the cost sensors, then choose where the current
-  fuel level comes from:
-  - **Manual**: a starting level here, then adjust it live from the
-    `number.*_current_fuel_level` slider (put it on a dashboard). The level
-    survives restarts, so you only nudge it after driving or refuelling.
-  - **From another entity**: pick an entity whose state is the tank fill level
-    as a percentage (0-100). The slider is not created in this mode.
-    See [Reading the fuel level from another entity](#reading-the-fuel-level-from-another-entity).
+1. **Fuels**: choose which fuels to track (Diesel, SP95/E10, SP98) and which
+   one is your *primary* fuel (used by the recommendation and vehicle sensors).
+   The primary fuel must be one of the tracked fuels.
+2. **Vehicle (optional)**: set your tank size to unlock the cost sensors, then
+   choose where the current fuel level comes from:
+   - **Manual**: a starting level here, then adjust it live from the
+     `number.*_current_fuel_level` slider (put it on a dashboard). The level
+     survives restarts, so you only nudge it after driving or refuelling.
+   - **From another entity**: pick an entity whose state is the tank fill level
+     as a percentage (0-100). The slider is not created in this mode.
+     See [Reading the fuel level from another entity](#reading-the-fuel-level-from-another-entity).
 
 > [!NOTE]
 > Prices refresh every 6 hours, plus the evening check and a refresh just after
 > midnight.
 
 **Options** (⚙️ on the integration card) let you change everything below without
-re-adding the integration. Tank size and fuel level are on the **Vehicle**
+re-adding the integration. Tank size and fuel level source are on the **Vehicle**
 page, everything else on **General**:
 
 | Setting | Default | Notes |
@@ -238,9 +236,10 @@ Sensors marked *disabled by default* can be enabled from the entity settings.
 fuel**; the other tracked fuels' copies start disabled.
 
 > [!NOTE]
-> Entity names are translated, but entity IDs are always English, whatever language Home Assistant runs in, e.g. the diesel price
-> sensor is `sensor.letzfuel_ha_diesel_price` everywhere. Entities that already
-> exist keep the ID they were created with.
+> Entity names are translated, but entity IDs are always English, whatever
+> language Home Assistant runs in, e.g. the diesel price sensor is
+> `sensor.letzfuel_ha_diesel_price` everywhere. Entities that already exist keep
+> the ID they were created with.
 
 ### Per fuel (`diesel`, `sp95_e10`, `sp98`)
 
@@ -262,8 +261,8 @@ These are the entity ID slugs; the services take `diesel` / `sp95` / `sp98`.
 | `sensor.*_last_price_update` | timestamp the current price took effect | `last_fetch_success`, `fetched_at`, `source`, `source_url` |
 | `sensor.*_days_since_last_change` *(disabled by default)* | integer days | - |
 
-`potential_saving_full_tank` is what a full tank saves or costs today versus
-tomorrow's announced price (tank size times the difference); empty without a
+`potential_saving_full_tank` is the difference between today's and tomorrow's
+announced price, as an absolute value, times the tank size; empty without a
 tank size or an announcement.
 
 ### Vehicle (created when a tank size is configured)
@@ -289,7 +288,7 @@ Typical sources (`sensor`, `number` and `input_number` entities are offered):
 - **A connected-car integration's tank sensor**: most of them expose the
   fill level as a percentage (e.g. `sensor.<car>_fuel_level`).
 - **An `input_number` helper** you keep up to date yourself or from an
-  automation (Settings → Devices & Services → Helpers → *Number*).
+  automation (Settings → Devices and services → Helpers → *Number*).
 - **A template sensor** converting an absolute-litres reading to a percentage:
 
   ```yaml
@@ -344,7 +343,8 @@ notifications are not affected.
 | `preview` | no | Send nothing, only return what would be sent |
 
 `countdown_end` only removes the live countdown. `announced` lists only the
-fuels whose price changes tomorrow.
+fuels whose price changes tomorrow. Recipient names are not case-sensitive; an
+unknown name, or no recipient at all, raises an error.
 
 Returns `{ results: [{ target, services, notification, sent, reason }] }`.
 When `sent` is false, `reason` says why: `preview`, `no_devices`,
