@@ -4,7 +4,7 @@ All notable changes to this project are documented here. The format loosely
 follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). SemVer,
 pre-release identifiers included (`0.0.1-beta`, …).
 
-## [0.2.0] - unreleased
+## [0.2.0] - 2026-10-18
 
 > [!WARNING]
 > **Breaking change for notifications.** Notifications are now built into the
