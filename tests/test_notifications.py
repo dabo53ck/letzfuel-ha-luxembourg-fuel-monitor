@@ -36,6 +36,9 @@ from custom_components.letzfuel_ha.const import (
     RECOMMENDATION_STATES,
     SUBENTRY_NOTIFICATION,
 )
+from custom_components.letzfuel_ha.diagnostics import (
+    async_get_config_entry_diagnostics,
+)
 from custom_components.letzfuel_ha.models import FuelType
 from custom_components.letzfuel_ha.notification_texts import TEXTS
 from custom_components.letzfuel_ha.notifications import (
@@ -497,6 +500,30 @@ async def test_person_brings_its_devices(
     await hass.async_block_till_done()
 
     assert len(calls) == 1
+    await _unload(hass, entry)
+
+
+async def test_diagnostics_hide_the_recipient(
+    hass: HomeAssistant, mock_petrol_lu, price_entries
+) -> None:
+    mock_petrol_lu(price_entries)
+    target = _target(
+        "device-1",
+        person=PERSON,
+        tap_dashboard_path="/lovelace/fuel",
+        presence={"enabled": True, "entity": "group.family", "mode": "home"},
+    )
+    entry = await _setup(hass, _entry(target))
+
+    diag = await async_get_config_entry_diagnostics(hass, entry)
+
+    (recipient,) = diag["notification_targets"]
+    assert recipient["title"] == "**REDACTED**"
+    data = recipient["data"]
+    for key in ("person", "devices", "tap_dashboard_path"):
+        assert data[key] == "**REDACTED**"
+    assert data["presence"]["entity"] == "**REDACTED**"
+    assert "Target 0" not in str(diag)
     await _unload(hass, entry)
 
 
