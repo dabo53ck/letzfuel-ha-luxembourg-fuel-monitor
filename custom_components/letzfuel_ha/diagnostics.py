@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from homeassistant.components.diagnostics import async_redact_data
+from homeassistant.components.diagnostics import REDACTED, async_redact_data
 from homeassistant.core import HomeAssistant
 
 from .coordinator import LuxFuelConfigEntry
@@ -16,6 +16,7 @@ _REDACT: set[str] = {
     "devices",
     "entity",
     "person",
+    "tap_dashboard_path",
 }
 
 
@@ -76,9 +77,10 @@ async def async_get_config_entry_diagnostics(
             ),
         },
         "announcement_sources": dict(coordinator.announcement_status),
+        # A recipient's title is usually a person's name.
         "notification_targets": [
             {
-                "title": sub.title,
+                "title": REDACTED,
                 "data": async_redact_data(dict(sub.data), _REDACT),
             }
             for sub in coordinator.notifier.targets

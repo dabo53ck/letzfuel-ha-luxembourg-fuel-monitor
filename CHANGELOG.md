@@ -4,6 +4,14 @@ All notable changes to this project are documented here. The format loosely
 follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). SemVer,
 pre-release identifiers included (`0.0.1-beta`, …).
 
+## [0.2.1] - unreleased
+
+### Fixed
+
+- **Diagnostics no longer show a recipient's name or tap target.** The name
+  is usually a person's name, so it is redacted along with the dashboard path,
+  like the person, devices and presence entity already were.
+
 ## [0.2.0] - 2026-10-18
 
 > [!WARNING]
