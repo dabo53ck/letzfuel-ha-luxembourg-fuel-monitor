@@ -496,7 +496,7 @@ cards:
 [MIT](LICENSE)
 
 <!-- badges -->
-[release-badge]: https://img.shields.io/github/v/release/dabo53ck/letzfuel-ha-luxembourg-fuel-monitor?include_prereleases&label=release
+[release-badge]: https://img.shields.io/github/v/release/dabo53ck/letzfuel-ha-luxembourg-fuel-monitor?label=release
 [release-url]: https://github.com/dabo53ck/letzfuel-ha-luxembourg-fuel-monitor/releases
 [hacs-badge]: https://img.shields.io/badge/HACS-Custom-41BDF5.svg
 [hacs-url]: https://github.com/hacs/integration
