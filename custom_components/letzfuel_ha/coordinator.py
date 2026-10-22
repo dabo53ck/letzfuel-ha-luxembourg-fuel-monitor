@@ -23,6 +23,7 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 from homeassistant.util import dt as dt_util
 
 from .const import (
+    ANNOUNCE_FALLBACK_FROM,
     ANNOUNCE_FEED_BROKEN_ISSUE_DAYS,
     CONF_CURRENT_LEVEL,
     CONF_LEVEL_ENTITY,
@@ -188,7 +189,9 @@ class LuxFuelCoordinator(DataUpdateCoordinator[PriceSet]):
         feed can't flip it -- only the provider can, see the correction event);
         the primary feed; the fallback feed, which is only asked while the
         primary feed is unusable (unreachable, unreadable, or disagreeing with
-        the provider about today's price). Implausible values are dropped.
+        the provider about today's price) or, from ANNOUNCE_FALLBACK_FROM, still
+        has nothing for tomorrow; then always after the primary has answered.
+        Implausible values are dropped.
         """
         if not option_value(self.config_entry, OPT_ANNOUNCEMENTS_ENABLED, True):
             self.announcement_status = {}
@@ -214,13 +217,23 @@ class LuxFuelCoordinator(DataUpdateCoordinator[PriceSet]):
             )
             result = None
 
+        fallback = self._fallback_source
         if result is not None:
             self._set_primary_healthy()
-            batches.append(self._accept(primary, result, base, today))
-            self.announcement_status[self._fallback_source.key] = {"outcome": "standby"}
+            _, kept = self._accept(primary, result, base, today)
+            batches.append((primary.key, kept))
+            ask_fallback = (
+                not kept
+                and not batches[0][1]
+                and not any(point.effective_date > today for point in history)
+                and _fallback_due()
+            )
+            if not ask_fallback:
+                self.announcement_status[fallback.key] = {"outcome": "standby"}
         else:
             self._set_primary_broken()
-            fallback = self._fallback_source
+            ask_fallback = True
+        if ask_fallback:
             fb_result = await self._async_fetch_announcements(fallback, today)
             if fb_result is not None:
                 batches.append(self._accept(fallback, fb_result, base, today))
@@ -793,6 +806,12 @@ class LuxFuelCoordinator(DataUpdateCoordinator[PriceSet]):
         if today is None or tomorrow is None:
             return None
         return round(abs(round(tomorrow - today, 4)) * self.tank_size, 2)
+
+
+def _fallback_due() -> bool:
+    """True from ANNOUNCE_FALLBACK_FROM until midnight (local time)."""
+    start = dt_util.parse_time(ANNOUNCE_FALLBACK_FROM) or time(18, 15)
+    return dt_util.now().time() >= start
 
 
 def _install_jitter_seconds(entry_id: str) -> int:

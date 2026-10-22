@@ -453,9 +453,10 @@ async def _unload(hass: HomeAssistant, entry: MockConfigEntry) -> None:
 
 
 async def test_primary_announces_and_fallback_stays_on_standby(
-    hass: HomeAssistant, mock_petrol_lu, price_entries
+    hass: HomeAssistant, mock_petrol_lu, price_entries, freezer
 ) -> None:
     """The 2026-09-25 case: the fallback's wrong Diesel is never even asked."""
+    freezer.move_to(_local(20))
     tomorrow = dt_util.now().date() + timedelta(days=1)
     mock_petrol_lu(
         price_entries,
@@ -473,6 +474,45 @@ async def test_primary_announces_and_fallback_stays_on_standby(
     assert status["live_sheet"]["outcome"] == "announced"
     assert status["live_sheet"]["latest_date"] == tomorrow.isoformat()
     assert status["backup_feed"] == {"outcome": "standby"}
+
+    await _unload(hass, entry)
+
+
+@pytest.mark.parametrize(
+    ("hour", "minute", "asked"), [(18, 14, False), (18, 15, True), (23, 50, True)]
+)
+async def test_fallback_asked_from_18_15_while_primary_has_nothing(
+    hass: HomeAssistant,
+    mock_petrol_lu,
+    price_entries,
+    aioclient_mock,
+    freezer,
+    hour: int,
+    minute: int,
+    asked: bool,
+) -> None:
+    """A healthy primary with nothing for tomorrow: the fallback joins at 18:15."""
+    freezer.move_to(_local(hour, minute))
+    tomorrow = dt_util.now().date() + timedelta(days=1)
+    mock_petrol_lu(price_entries, backup_payload=_backup(tomorrow, 1.905))
+
+    entry = await _setup(hass)
+    coordinator = entry.runtime_data
+    status = coordinator.announcement_status
+    assert status["live_sheet"]["outcome"] == "nothing_future"
+    upcoming = coordinator.fuel_prices(FuelType.DIESEL).upcoming
+    urls = [str(call[1]) for call in aioclient_mock.mock_calls]
+    backup_calls = [i for i, url in enumerate(urls) if "fuel-prices" in url]
+    if asked:
+        assert status["backup_feed"]["outcome"] == "announced"
+        assert upcoming.price_incl_vat == Decimal("1.905")
+        # the primary has answered before the fallback is asked
+        sheet_calls = [i for i, url in enumerate(urls) if "live-data" in url]
+        assert max(sheet_calls) < min(backup_calls)
+    else:
+        assert status["backup_feed"] == {"outcome": "standby"}
+        assert upcoming is None
+        assert not backup_calls
 
     await _unload(hass, entry)
 
@@ -687,8 +727,9 @@ async def test_implausible_announcement_is_ignored(
 
 
 async def test_all_announcement_sources_failing_is_non_fatal(
-    hass: HomeAssistant, mock_petrol_lu, price_entries, caplog
+    hass: HomeAssistant, mock_petrol_lu, price_entries, caplog, freezer
 ) -> None:
+    freezer.move_to(_local(10))
     mock_petrol_lu(price_entries, backup_status=502, sheet_status=500)
 
     entry = await _setup(hass)

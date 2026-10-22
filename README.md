@@ -35,10 +35,11 @@ the full history and the statistics backfill.
 petrol.lu usually adds the next day's price only late in the evening. To tell
 you about a change in time, the integration also checks a public announcement
 feed for **tomorrow's price** (nothing else is taken from it). The feed is only
-trusted while it agrees with petrol.lu on today's price; if it is unusable, a
-backup feed stands in. Implausible values are ignored, and petrol.lu always has
-the final say: if its official price turns out different from what was
-announced, a correction follows. You can turn this off in the options.
+trusted while it agrees with petrol.lu on today's price; if it is unusable, or
+still has nothing for tomorrow from 18:15, a backup feed is asked too (always
+after the feed has answered). Implausible values are ignored, and petrol.lu
+always has the final say: if its official price turns out different from what
+was announced, a correction follows. You can turn this off in the options.
 
 > [!NOTE]
 > **Not affiliated** with the GPL, petrol.lu, any other data source or the
