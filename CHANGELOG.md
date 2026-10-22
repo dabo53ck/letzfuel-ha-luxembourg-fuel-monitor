@@ -4,6 +4,15 @@ All notable changes to this project are documented here. The format loosely
 follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). SemVer,
 pre-release identifiers included (`0.0.1-beta`, …).
 
+## [0.2.2] - unreleased
+
+### Changed
+
+- **Backup feed from 18:15.** If the announcement feed works but still has
+  nothing for tomorrow from 18:15, the backup feed is asked too, so a late
+  feed no longer delays tomorrow's price. The feed is always asked first; the
+  backup only after it has answered.
+
 ## [0.2.1] - 2026-10-19
 
 ### Fixed

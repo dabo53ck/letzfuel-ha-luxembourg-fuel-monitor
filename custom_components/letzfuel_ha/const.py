@@ -17,7 +17,7 @@ DEFAULT_PROVIDER: Final = "petrol_lu"
 #: Single source of truth for the version number every price request puts in its
 #: User-Agent string (manifest.json's "version" is HA's own source of truth
 #: for the integration as a whole; keep this in sync by hand at release time).
-USER_AGENT_VERSION: Final = "0.2.1"
+USER_AGENT_VERSION: Final = "0.2.2"
 #: Sent with every request to the price sources.
 USER_AGENT: Final = (
     f"HomeAssistant-LetzFuelHA/{USER_AGENT_VERSION} "
@@ -68,6 +68,10 @@ LEGACY_OPT_UPDATE_INTERVAL_HOURS: Final = "update_interval_hours"
 #: price is known.
 EVENING_RETRY_STEP_MINUTES: Final = (3, 6)
 EVENING_RETRY_WINDOW_MINUTES: Final = 60
+#: From this local time on, a healthy announcement feed that still has nothing
+#: for tomorrow no longer keeps the backup feed on standby: each refresh asks
+#: the feed first, then the backup. Fixed, not relative to the evening check.
+ANNOUNCE_FALLBACK_FROM: Final = "18:15:00"
 #: After the last retry, keep polling until midnight while nothing has been
 #: announced yet -- each gap drawn at random from this range (minutes) so
 #: installs don't hit the sources in lockstep.
