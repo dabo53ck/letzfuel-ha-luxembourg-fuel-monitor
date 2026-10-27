@@ -43,7 +43,7 @@ from custom_components.letzfuel_ha.models import (
 )
 from custom_components.letzfuel_ha.providers.base import ProviderParseError
 
-from .helpers import sheet_json
+from .helpers import lu_midnight, sheet_json
 
 _COORD = "custom_components.letzfuel_ha.coordinator"
 
@@ -172,7 +172,7 @@ async def test_announcements_option_disables_the_backup_feed(
         price_entries,
         backup_payload={
             "id": 2132,
-            "date": f"{tomorrow.isoformat()}T00:00:00+02:00",
+            "date": lu_midnight(tomorrow),
             "98oct": 1.983,
             "95oct": 1.792,
             "diesel": 2.024,
@@ -432,7 +432,7 @@ def _sheet(day, diesel: str, sp95: str = "1.792", sp98: str = "1.983") -> dict:
 def _backup(day, diesel: float) -> dict:
     return {
         "id": 1,
-        "date": f"{day.isoformat()}T00:00:00+02:00",
+        "date": lu_midnight(day),
         "98oct": 1.983,
         "95oct": 1.792,
         "diesel": diesel,

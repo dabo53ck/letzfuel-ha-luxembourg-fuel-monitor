@@ -27,7 +27,7 @@ from custom_components.letzfuel_ha.providers.backup_feed import BACKUP_FEED_URL
 from custom_components.letzfuel_ha.providers.live_sheet import LIVE_SHEET_URL
 from custom_components.letzfuel_ha.providers.petrol_lu import SOURCE_URL
 
-from .helpers import build_petrol_lu_html, sheet_json
+from .helpers import build_petrol_lu_html, lu_midnight, sheet_json
 
 D = Decimal
 
@@ -124,7 +124,7 @@ def mock_petrol_lu(
             json=backup_payload
             or {
                 "id": 0,
-                "date": f"{dt_util.now().date().isoformat()}T00:00:00+02:00",
+                "date": lu_midnight(dt_util.now().date()),
                 "98oct": 1.983,
                 "95oct": 1.792,
                 "diesel": 1.865,

@@ -2,10 +2,17 @@
 
 from __future__ import annotations
 
-from datetime import date
+from datetime import date, datetime, time
 from decimal import Decimal
+from zoneinfo import ZoneInfo
 
 from custom_components.letzfuel_ha.models import FuelType
+
+
+def lu_midnight(day: date) -> str:
+    """Midnight of ``day`` in Luxembourg, with that day's UTC offset (CET/CEST)."""
+    return datetime.combine(day, time(0), ZoneInfo("Europe/Luxembourg")).isoformat()
+
 
 _COLUMNS = (FuelType.SP98, FuelType.SP95, FuelType.DIESEL)
 
