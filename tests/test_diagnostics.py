@@ -2,14 +2,24 @@
 
 from __future__ import annotations
 
+import pytest
 from homeassistant.core import HomeAssistant
+from homeassistant.util import dt as dt_util
 
 from custom_components.letzfuel_ha.diagnostics import (
     async_get_config_entry_diagnostics,
 )
 
 
-async def test_diagnostics(hass: HomeAssistant, init_integration_vehicle) -> None:
+@pytest.fixture
+def morning(freezer) -> None:
+    """Before 18:15, so the backup feed stays on standby."""
+    freezer.move_to(dt_util.start_of_local_day().replace(hour=10))
+
+
+async def test_diagnostics(
+    hass: HomeAssistant, morning, init_integration_vehicle
+) -> None:
     diag = await async_get_config_entry_diagnostics(hass, init_integration_vehicle)
 
     assert diag["provider"]["key"] == "petrol_lu"
