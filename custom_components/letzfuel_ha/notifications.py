@@ -18,6 +18,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.storage import Store
 from homeassistant.util import dt as dt_util
+from homeassistant.util import slugify
 
 from .analytics import refuel_recommendation
 from .const import (
@@ -662,12 +663,32 @@ class Notifier:
             for entry in er.async_entries_for_device(registry, device_id):
                 if entry.domain != "notify" or entry.platform != "mobile_app":
                     continue
-                service = f"mobile_app_{entry.entity_id.split('.', 1)[1]}"
-                if self.hass.services.has_service("notify", service):
+                if service := self._legacy_service(entry):
                     services.append(service)
-                else:
-                    _LOGGER.warning("notify.%s does not exist", service)
         return list(dict.fromkeys(services))
+
+    def _legacy_service(self, entry: er.RegistryEntry) -> str | None:
+        """The notify.mobile_app_<slug> service behind a Companion app notify entity.
+
+        mobile_app names that service after the device name the app registered
+        with (its config entry data), not after the entity ID: once the device
+        or the entity is renamed in Home Assistant, the two no longer match.
+        """
+        candidates = [f"mobile_app_{entry.entity_id.split('.', 1)[1]}"]
+        if entry.config_entry_id and (
+            app := self.hass.config_entries.async_get_entry(entry.config_entry_id)
+        ):
+            if name := app.data.get("device_name"):
+                candidates.append(f"mobile_app_{slugify(name)}")
+        for service in dict.fromkeys(candidates):
+            if self.hass.services.has_service("notify", service):
+                return service
+        _LOGGER.warning(
+            "No notify service found for %s (tried %s)",
+            entry.entity_id,
+            ", ".join(f"notify.{s}" for s in dict.fromkeys(candidates)),
+        )
+        return None
 
     # -- tap targets -------------------------------------------------------------
 
