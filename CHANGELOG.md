@@ -4,6 +4,15 @@ All notable changes to this project are documented here. The format loosely
 follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). SemVer,
 pre-release identifiers included (`0.0.1-beta`, …).
 
+## [0.2.3] - 2026-11-01
+
+### Fixed
+
+- **Notifications reach renamed Companion app devices.** The notify service
+  is now found through the device name the app registered with, not the entity
+  ID, so renaming a device or its notify entity no longer stops notifications.
+  Thanks to @Gilles198705 for finding this.
+
 ## [0.2.2] - 2026-10-27
 
 ### Changed
