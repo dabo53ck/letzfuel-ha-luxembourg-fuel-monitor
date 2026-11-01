@@ -57,7 +57,7 @@ PERSON = "person.alex"
 
 def _phone(hass: HomeAssistant, name: str = "phone") -> tuple[str, list[ServiceCall]]:
     """A Companion app device with its notify entity and a recording service."""
-    entry = MockConfigEntry(domain="mobile_app", title=name)
+    entry = MockConfigEntry(domain="mobile_app", title=name, data={"device_name": name})
     entry.add_to_hass(hass)
     device = dr.async_get(hass).async_get_or_create(
         config_entry_id=entry.entry_id, identifiers={("mobile_app", name)}, name=name
@@ -500,6 +500,53 @@ async def test_person_brings_its_devices(
     await hass.async_block_till_done()
 
     assert len(calls) == 1
+    await _unload(hass, entry)
+
+
+async def test_renamed_device_is_still_notified(
+    hass: HomeAssistant, mock_petrol_lu, price_entries
+) -> None:
+    """The service follows the registered device name, not the entity ID."""
+    device_id, calls = _phone(hass)
+    er.async_get(hass).async_update_entity(
+        "notify.phone", new_entity_id="notify.renamed_phone"
+    )
+    entry = await _setup(hass, _entry(_target(device_id)))
+
+    mock_petrol_lu(price_entries, sheet_payload=_sheet("1.905"))
+    await entry.runtime_data.async_refresh()
+    await hass.async_block_till_done()
+
+    assert len(calls) == 1
+    await _unload(hass, entry)
+
+
+@pytest.mark.parametrize(
+    ("app_data", "warning"),
+    [
+        ({"device_name": "Gone"}, "notify.mobile_app_gone does not exist"),
+        ({}, "No device name found for notify.phone"),
+    ],
+)
+async def test_no_service_for_the_device_warns(
+    hass: HomeAssistant,
+    mock_petrol_lu,
+    price_entries,
+    caplog: pytest.LogCaptureFixture,
+    app_data: dict[str, str],
+    warning: str,
+) -> None:
+    device_id, calls = _phone(hass)
+    app = hass.config_entries.async_entries("mobile_app")[0]
+    hass.config_entries.async_update_entry(app, data=app_data)
+    entry = await _setup(hass, _entry(_target(device_id)))
+
+    mock_petrol_lu(price_entries, sheet_payload=_sheet("1.905"))
+    await entry.runtime_data.async_refresh()
+    await hass.async_block_till_done()
+
+    assert not calls
+    assert warning in caplog.text
     await _unload(hass, entry)
 
 
