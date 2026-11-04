@@ -72,6 +72,8 @@ was announced, a correction follows. You can turn this off in the options.
 
 Home Assistant **2026.7** or newer.
 
+Only one instance can be added.
+
 ## Installation
 
 ### HACS (recommended)
@@ -218,7 +220,7 @@ page, everything else on **General**:
 | --- | --- | --- |
 | Evening check time | 18:00 | Extra refresh to catch the publication; while nothing has been announced yet it retries every **3-6 min** (random) for up to an hour, then every **20-30 min** (random) until midnight |
 | Fetch tomorrow's announced price | on | Also ask the announcement feed (or its backup) for the next-day price, so it shows up in the evening. Implausible values are ignored. Turn off to rely on petrol.lu alone. |
-| Trend window | 14 days | Sample window for the trend sensors |
+| Trend window | 14 days | Sample window for the trend sensors, 3 to 90 days |
 | Price display | Incl. VAT | Show prices with or without VAT; also used for the imported price history |
 | Tracked fuels / primary fuel | all / Diesel | The primary fuel must be one of the tracked fuels |
 | Tank size | - | Enables the vehicle sensors |
@@ -251,7 +253,7 @@ These are the entity ID slugs; the services take `diesel` / `sp95` / `sp98`.
 | `sensor.*_<fuel>_price` | current max price, €/L | `currency`, `fuel_type`, `effective_date`, `price_incl_vat`, `price_excl_vat`, `vat_rate`, `previous_price`, `previous_effective_date`, `price_since`, `next_price`, `next_effective_date`, `source`, `source_url` |
 | `sensor.*_<fuel>_change` | signed €/L move at last change | `current_price`, `previous_price`, `percentage_change`, `change_date`, `days_at_current_price` |
 | `sensor.*_<fuel>_trend` *(primary fuel on by default)* | `rising` / `falling` / `stable` | `trend_strength` (€/L per week), `trend_window_days`, `samples_used`, `window_start`, `window_end` |
-| `sensor.*_<fuel>_price_tomorrow` *(primary fuel on by default)* | announced next-day price or *unknown* | `effective_date`, `change_vs_today`, `direction` |
+| `sensor.*_<fuel>_price_tomorrow` *(primary fuel on by default)* | announced next-day price or *unknown* | `effective_date`, `change_vs_today`, `direction` (`up` / `down` / `unchanged`) |
 
 ### Global
 
