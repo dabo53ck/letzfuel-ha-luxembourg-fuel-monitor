@@ -2,6 +2,7 @@
   "domain": "letzfuel_ha",
   "name": "LëtzFuel HA",
   "after_dependencies": ["automation", "recorder"],
+  "categories": ["local_services"],
   "codeowners": ["@dabo53ck"],
   "config_flow": true,
   "dependencies": ["http", "repairs"],
