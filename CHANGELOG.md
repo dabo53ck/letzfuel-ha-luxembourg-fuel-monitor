@@ -4,6 +4,18 @@ All notable changes to this project are documented here. The format loosely
 follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). SemVer,
 pre-release identifiers included (`0.0.1-beta`, …).
 
+## [0.2.4] - 2026-11-04
+
+### Added
+
+- **Marketplace category.** The integration is listed under "Local services"
+  in the Marketplace that comes with Home Assistant 2026.11.
+
+### Documentation
+
+- README: the values of `direction` on the `price_tomorrow` sensor, the range
+  of the trend window (3 to 90 days) and that only one instance can be added.
+
 ## [0.2.3] - 2026-11-01
 
 ### Fixed
@@ -224,7 +236,7 @@ pre-release identifiers included (`0.0.1-beta`, …).
   fires `letzfuel_ha_price_changed` (and the "New price in effect" push)
   when the price itself differs from the previous value, not just because
   the effective date advanced. Confirmed via a real trace where Diesel sent
-  a "−0.0 ct/L" notification on a day only SP95/SP98 actually changed.
+  a "-0.0 ct/L" notification on a day only SP95/SP98 actually changed.
   Closes #10.
 
 ## [0.0.1-beta] - 2026-09-12
@@ -294,7 +306,7 @@ pre-release identifiers included (`0.0.1-beta`, …).
   doing any real work as soon as the price is found; the extra checks are
   once-a-day and lightweight.
 - **Blueprint v5 → v6: Luxembourg date format.** The date shown in the
-  "Evening: next-day price announced" message (e.g. `SP95 −2,8 ct/L →
+  "Evening: next-day price announced" message (e.g. `SP95 -2,8 ct/L →
   1,84 €/L (10/09/2026)`) is now `DD/MM/YYYY` instead of the raw
   `YYYY-MM-DD` the integration emits internally. No inputs changed; a
   re-import is enough, nothing to re-pick.
