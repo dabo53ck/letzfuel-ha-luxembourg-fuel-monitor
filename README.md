@@ -80,10 +80,8 @@ Only one instance can be added.
 
 [![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=dabo53ck&repository=letzfuel-ha-luxembourg-fuel-monitor&category=integration)
 
-1. Click the button above (or HACS → **Integrations** → menu →
-   **Custom repositories**, and add
-   `https://github.com/dabo53ck/letzfuel-ha-luxembourg-fuel-monitor` as an
-   **Integration**).
+1. Search for **LëtzFuel HA** in HACS (the **Marketplace** from Home Assistant
+   2026.11), or click the button above.
 2. Install **LëtzFuel HA** and restart Home Assistant.
 3. **Settings → Devices and services → Add Integration → LëtzFuel HA**.
 
@@ -155,8 +153,9 @@ Up to 0.1.2 the notifications came from a blueprint. Now:
 3. Once no automation uses the old blueprint, delete it under **Blueprints**.
 
 > [!IMPORTANT]
-> The old blueprint in this repository still works for now, but gets no new
-> features and will be removed in a later release.
+> The old blueprint was removed from this repository in 0.2.5. A copy you
+> imported keeps running until you turn it off, but gets no more fixes: for
+> example, it stops reaching a phone once its notify entity is renamed.
 
 <details>
 <summary>Roll your own instead</summary>
@@ -501,7 +500,7 @@ cards:
 <!-- badges -->
 [release-badge]: https://img.shields.io/github/v/release/dabo53ck/letzfuel-ha-luxembourg-fuel-monitor?label=release
 [release-url]: https://github.com/dabo53ck/letzfuel-ha-luxembourg-fuel-monitor/releases
-[hacs-badge]: https://img.shields.io/badge/HACS-Custom-41BDF5.svg
+[hacs-badge]: https://img.shields.io/badge/HACS-Default-41BDF5.svg
 [hacs-url]: https://github.com/hacs/integration
 [validate-badge]: https://github.com/dabo53ck/letzfuel-ha-luxembourg-fuel-monitor/actions/workflows/validate.yml/badge.svg
 [validate-url]: https://github.com/dabo53ck/letzfuel-ha-luxembourg-fuel-monitor/actions/workflows/validate.yml
