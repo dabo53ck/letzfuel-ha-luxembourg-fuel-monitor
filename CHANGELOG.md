@@ -4,6 +4,20 @@ All notable changes to this project are documented here. The format loosely
 follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). SemVer,
 pre-release identifiers included (`0.0.1-beta`, …).
 
+## [0.2.5] - 2026-11-24
+
+### Removed
+
+- **The old notifications blueprint.** It was replaced by the built-in
+  notifications in 0.2.0 and is no longer in this repository. A copy you
+  imported keeps running until you turn it off, but gets no more fixes; the
+  repair issue still finds it. See "Coming from the blueprint" in the README.
+
+### Documentation
+
+- README: install by searching for LëtzFuel HA in HACS or the Marketplace; the
+  HACS badge shows the default list.
+
 ## [0.2.4] - 2026-11-04
 
 ### Added
