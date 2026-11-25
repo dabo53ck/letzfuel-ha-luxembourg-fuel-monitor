@@ -47,12 +47,16 @@
         "data": {
           "evening_check_time": "Uhrzeit der Abendprüfung (erfasst die Veröffentlichung gegen 18:00; solange nichts angekündigt ist, Wiederholungen alle 3-6 Min. (zufällig) für bis zu 60 Min., danach alle 20-30 Min. bis Mitternacht)",
           "announcements_enabled": "Den für morgen angekündigten Preis abrufen",
+          "recommendation_min_delta": "Mindestdifferenz für die Tankempfehlung",
           "trend_window_days": "Trendfenster",
           "price_display": "Preisanzeige",
           "tracked_fuels": "Zu verfolgende Kraftstoffe",
           "primary_fuel": "Hauptkraftstoff",
           "history_import_enabled": "Preisverlauf in Langzeitstatistiken importieren",
           "history_import_months": "Importtiefe des Verlaufs"
+        },
+        "data_description": {
+          "recommendation_min_delta": "Kleinere Unterschiede zwischen dem heutigen und dem morgigen Preis gelten als Keine Änderung, und eine kleinere Senkung erscheint nicht als Preis heute gesunken. 0 = jede Änderung."
         }
       },
       "vehicle": {
@@ -172,6 +176,7 @@
           "refuel_today": "Heute tanken",
           "wait": "Warten",
           "no_change": "Keine Änderung",
+          "price_dropped": "Preis heute gesunken",
           "awaiting_price": "Neuen Preis abwarten"
         }
       },
@@ -353,7 +358,12 @@
                 "enabled": "Aktivieren",
                 "states": "Benachrichtigen, wenn sie wechselt zu",
                 "no_change": "Auch benachrichtigen, wenn sich nichts ändert",
+                "reminder": "Morgendliche Erinnerung nach einer Preissenkung",
+                "reminder_time": "Uhrzeit der Erinnerung",
                 "priority": "Priorität"
+              },
+              "data_description": {
+                "reminder": "Einmal am Morgen nach der Preissenkung, solange die Empfehlung Preis heute gesunken lautet (bis der Preis für morgen bekannt ist)."
               }
             },
             "countdown": {
@@ -435,7 +445,12 @@
                 "enabled": "Aktivieren",
                 "states": "Benachrichtigen, wenn sie wechselt zu",
                 "no_change": "Auch benachrichtigen, wenn sich nichts ändert",
+                "reminder": "Morgendliche Erinnerung nach einer Preissenkung",
+                "reminder_time": "Uhrzeit der Erinnerung",
                 "priority": "Priorität"
+              },
+              "data_description": {
+                "reminder": "Einmal am Morgen nach der Preissenkung, solange die Empfehlung Preis heute gesunken lautet (bis der Preis für morgen bekannt ist)."
               }
             },
             "countdown": {

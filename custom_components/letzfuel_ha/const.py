@@ -50,6 +50,7 @@ OPT_HISTORY_IMPORT_MONTHS: Final = "history_import_months"
 #: Also ask the announcement feed (and its fallback) for the next-day price
 #: (petrol.lu usually lists it only late in the evening).
 OPT_ANNOUNCEMENTS_ENABLED: Final = "announcements_enabled"
+OPT_RECOMMENDATION_MIN_DELTA: Final = "recommendation_min_delta"
 
 PRICE_DISPLAY_INCL: Final = "incl_vat"
 PRICE_DISPLAY_EXCL: Final = "excl_vat"
@@ -119,6 +120,8 @@ TREND_STABLE_THRESHOLD_EUR: Final = 0.005
 RECOMMENDATION_REFUEL_TODAY: Final = "refuel_today"
 RECOMMENDATION_WAIT: Final = "wait"
 RECOMMENDATION_NO_CHANGE: Final = "no_change"
+#: From midnight until tomorrow's price is known, when today's price dropped.
+RECOMMENDATION_PRICE_DROPPED: Final = "price_dropped"
 #: NOT "unknown" -- Home Assistant's frontend hard-codes that literal string
 #: (and "unavailable") to always render the generic core "Unknown" label,
 #: short-circuiting before any entity/enum-specific translation is even
@@ -128,8 +131,16 @@ RECOMMENDATION_STATES: Final = [
     RECOMMENDATION_REFUEL_TODAY,
     RECOMMENDATION_WAIT,
     RECOMMENDATION_NO_CHANGE,
+    RECOMMENDATION_PRICE_DROPPED,
     RECOMMENDATION_AWAITING_PRICE,
 ]
+#: Smallest change (EUR/L, incl. VAT) the recommendation acts on; below it
+#: the advice is "no change". 0 = every change counts.
+DEFAULT_RECOMMENDATION_MIN_DELTA: Final = 0.0
+#: Pushes mention a run of price drops from this many drops in a row.
+DROP_STREAK_HINT_FROM: Final = 3
+#: Default time of the reminder on the morning after a price drop.
+DEFAULT_REMINDER_TIME: Final = "07:30:00"
 
 # --- Events --------------------------------------------------------------------
 EVENT_PRICE_CHANGE_ANNOUNCED: Final = f"{DOMAIN}_price_change_announced"

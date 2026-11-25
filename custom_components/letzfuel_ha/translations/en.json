@@ -47,12 +47,16 @@
         "data": {
           "evening_check_time": "Evening check time (catches the publication around 18:00; while nothing is announced yet, retries every 3-6 min (random) for up to 60 min, then every 20-30 min until midnight)",
           "announcements_enabled": "Fetch tomorrow's announced price",
+          "recommendation_min_delta": "Minimum difference for the refuel recommendation",
           "trend_window_days": "Trend window",
           "price_display": "Price display",
           "tracked_fuels": "Fuels to track",
           "primary_fuel": "Primary fuel",
           "history_import_enabled": "Import price history into long-term statistics",
           "history_import_months": "History import depth"
+        },
+        "data_description": {
+          "recommendation_min_delta": "Smaller differences between today's and tomorrow's price count as No change, and a smaller drop does not show as Price dropped today. 0 = any change."
         }
       },
       "vehicle": {
@@ -172,6 +176,7 @@
           "refuel_today": "Refuel today",
           "wait": "Wait",
           "no_change": "No change",
+          "price_dropped": "Price dropped today",
           "awaiting_price": "Awaiting new price"
         }
       },
@@ -353,7 +358,12 @@
                 "enabled": "Enable",
                 "states": "Notify when it becomes",
                 "no_change": "Also notify when there is no change",
+                "reminder": "Morning reminder after a price drop",
+                "reminder_time": "Reminder time",
                 "priority": "Priority"
+              },
+              "data_description": {
+                "reminder": "Once on the morning after the price dropped, while the recommendation is Price dropped today (until tomorrow's price is known)."
               }
             },
             "countdown": {
@@ -435,7 +445,12 @@
                 "enabled": "Enable",
                 "states": "Notify when it becomes",
                 "no_change": "Also notify when there is no change",
+                "reminder": "Morning reminder after a price drop",
+                "reminder_time": "Reminder time",
                 "priority": "Priority"
+              },
+              "data_description": {
+                "reminder": "Once on the morning after the price dropped, while the recommendation is Price dropped today (until tomorrow's price is known)."
               }
             },
             "countdown": {

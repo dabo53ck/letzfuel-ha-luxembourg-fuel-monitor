@@ -21,7 +21,7 @@ from homeassistant.helpers.typing import StateType
 from homeassistant.util import dt as dt_util
 from homeassistant.util import slugify
 
-from .analytics import compute_trend, refuel_recommendation
+from .analytics import compute_trend, price_drop_today
 from .const import (
     CURRENCY_EURO,
     LEVEL_SOURCE_ENTITY,
@@ -196,7 +196,7 @@ def _tomorrow_attrs(
 def _recommendation_value(
     coordinator: LuxFuelCoordinator, _fuel: FuelType | None
 ) -> str:
-    return refuel_recommendation(coordinator.fuel_prices(coordinator.primary_fuel))
+    return coordinator.recommendation()
 
 
 def _recommendation_attrs(
@@ -212,12 +212,23 @@ def _recommendation_attrs(
         if tomorrow is not None and today is not None
         else None
     )
+    previous = coordinator.display_price(fp.previous)
+    drop = (
+        round(previous - today, 4)
+        if price_drop_today(fp) is not None
+        and previous is not None
+        and today is not None
+        else None
+    )
     return {
         "primary_fuel": coordinator.primary_fuel.value,
         "today_price": today,
         "tomorrow_price": tomorrow,
         "delta": delta,
         "potential_saving_full_tank": coordinator.potential_saving_full_tank(),
+        "previous_price": previous,
+        "price_drop": drop,
+        "drops_in_a_row": coordinator.drops_in_a_row(),
     }
 
 

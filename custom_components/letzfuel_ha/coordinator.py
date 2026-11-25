@@ -22,6 +22,7 @@ from homeassistant.helpers.storage import Store
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.util import dt as dt_util
 
+from .analytics import drops_in_a_row, refuel_recommendation
 from .const import (
     ANNOUNCE_FALLBACK_FROM,
     ANNOUNCE_FEED_BROKEN_ISSUE_DAYS,
@@ -36,6 +37,7 @@ from .const import (
     DEFAULT_PRICE_DISPLAY,
     DEFAULT_PRIMARY_FUEL,
     DEFAULT_PROVIDER,
+    DEFAULT_RECOMMENDATION_MIN_DELTA,
     DEFAULT_TRACKED_FUELS,
     DEFAULT_TREND_WINDOW_DAYS,
     DOMAIN,
@@ -54,6 +56,7 @@ from .const import (
     OPT_ANNOUNCEMENTS_ENABLED,
     OPT_EVENING_CHECK_TIME,
     OPT_PRICE_DISPLAY,
+    OPT_RECOMMENDATION_MIN_DELTA,
     OPT_TREND_WINDOW_DAYS,
     PRICE_DISPLAY_EXCL,
     SCHEDULE_JITTER_MAX_SECONDS,
@@ -136,6 +139,7 @@ class LuxFuelCoordinator(DataUpdateCoordinator[PriceSet]):
         self.manual_fuel_level: float | None = None
         #: Sends the built-in notifications of every recipient.
         self.notifier = Notifier(hass, self)
+        self._unsub_reminders: CALLBACK_TYPE | None = None
         #: (data, options) at setup; set in __init__.py, decides about reloads.
         self.settings_snapshot: tuple[dict[str, Any], dict[str, Any]] = ({}, {})
 
@@ -151,7 +155,16 @@ class LuxFuelCoordinator(DataUpdateCoordinator[PriceSet]):
         self._teardown_evening_schedule()
         self._teardown_midnight_schedule()
         self._teardown_level_entity_tracking()
+        if self._unsub_reminders is not None:
+            self._unsub_reminders()
+            self._unsub_reminders = None
         await super().async_shutdown()
+
+    @callback
+    def async_setup_reminders(self) -> None:
+        """Check the morning reminders of the recipients once a minute."""
+        if self._unsub_reminders is None:
+            self._unsub_reminders = self.notifier.async_start()
 
     # -- polling ---------------------------------------------------------------
 
@@ -773,6 +786,37 @@ class LuxFuelCoordinator(DataUpdateCoordinator[PriceSet]):
             option_value(self.config_entry, OPT_PRICE_DISPLAY, DEFAULT_PRICE_DISPLAY)
             != PRICE_DISPLAY_EXCL
         )
+
+    @property
+    def recommendation_min_delta(self) -> float:
+        """Smallest change (EUR/L) the refuel recommendation acts on."""
+        try:
+            return float(
+                option_value(
+                    self.config_entry,
+                    OPT_RECOMMENDATION_MIN_DELTA,
+                    DEFAULT_RECOMMENDATION_MIN_DELTA,
+                )
+                or 0
+            )
+        except TypeError, ValueError:
+            return DEFAULT_RECOMMENDATION_MIN_DELTA
+
+    def recommendation(self, price_set: PriceSet | None = None) -> str:
+        """The refuel recommendation for the primary fuel.
+
+        ``price_set`` is the one being processed, before it becomes ``data``.
+        """
+        prices = price_set or self.data
+        fp = prices.prices.get(self.primary_fuel) if prices else None
+        return refuel_recommendation(fp, self.recommendation_min_delta)
+
+    def drops_in_a_row(self, price_set: PriceSet | None = None) -> int:
+        """Price drops in a row of the primary fuel, up to today's price."""
+        prices = price_set or self.data
+        if prices is None:
+            return 0
+        return drops_in_a_row(prices.recent_history.get(self.primary_fuel, []))
 
     def fuel_prices(self, fuel: FuelType) -> FuelPrices | None:
         if self.data is None:

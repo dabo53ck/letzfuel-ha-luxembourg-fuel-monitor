@@ -4,6 +4,30 @@ All notable changes to this project are documented here. The format loosely
 follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). SemVer,
 pre-release identifiers included (`0.0.1-beta`, …).
 
+## [0.3.0] - unreleased
+
+### Added
+
+- **Price dropped.** On a day the price of your primary fuel dropped, the
+  refuel recommendation shows `price_dropped` ("Price dropped today") from just after
+  midnight until tomorrow's price is known, instead of `awaiting_price`. New
+  attributes: `previous_price`, `price_drop` and `drops_in_a_row`.
+- **Morning reminder.** The recommendation section of a recipient has a
+  reminder for the morning after a price drop, at a time you pick (default
+  07:30), once a day. It shows today's price, the drop and what a full tank
+  saves compared with the old price. "Wait" then says when the reminder comes.
+- **Drops in a row.** From three price drops in a row, "Wait" and the reminder
+  say how many.
+- **Minimum difference for the refuel recommendation** (Options, General):
+  smaller differences count as `no_change`, in both directions. Default 0,
+  which keeps the previous behaviour.
+
+### Changed
+
+- If your own automations wait for `awaiting_price` after midnight, also allow
+  `price_dropped`: on a day the price dropped the recommendation now shows that
+  instead.
+
 ## [0.2.5] - 2026-11-24
 
 ### Removed

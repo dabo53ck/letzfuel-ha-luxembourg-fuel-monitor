@@ -120,12 +120,20 @@ different notifications; each can be edited or deleted on its own. See the
 | --- | --- |
 | Evening: price announced for tomorrow | a new price is published (around 18:00); a correction replaces it if the official price turns out different |
 | New price in effect | the day a new price applies, just after midnight |
-| Refuel recommendation | the recommendation changes to a state you picked |
+| Refuel recommendation | the recommendation changes to a state you picked; optionally a reminder on the morning after the price dropped |
 | Live countdown to midnight | a live countdown (iOS Live Activity, Android Live Update) while the recommendation is "Refuel today" |
 | Price threshold | a price drops below your target (once, until it goes above again) |
 
 - **Saving:** with a tank size set, "Refuel today" adds what a full tank saves
   (*A full tank saves about 3.15 €*), and "Wait" what it saves tomorrow.
+- **Morning reminder:** switch on *Morning reminder after a price drop* in the
+  recommendation section and pick a time (default 07:30). On a day the price
+  dropped you get one reminder at that time with today's price, the drop and
+  what a full tank saves compared with the old price, as long as tomorrow's
+  price is not known yet. A "Wait" notification then says when the reminder
+  comes. After a restart past that time it still comes that day.
+- **Drops in a row:** from three price drops in a row, "Wait" and the
+  reminder also say how many.
 - **Tapping** a notification opens the fuel's price (tomorrow's price for an
   announcement) or the refuel recommendation, or the dashboard you entered.
 - **Only when home / away:** switch it on to send only while a person (or
@@ -219,6 +227,7 @@ page, everything else on **General**:
 | --- | --- | --- |
 | Evening check time | 18:00 | Extra refresh to catch the publication; while nothing has been announced yet it retries every **3-6 min** (random) for up to an hour, then every **20-30 min** (random) until midnight |
 | Fetch tomorrow's announced price | on | Also ask the announcement feed (or its backup) for the next-day price, so it shows up in the evening. Implausible values are ignored. Turn off to rely on petrol.lu alone. |
+| Minimum difference for the refuel recommendation | 0 €/L | Smaller differences between today's and tomorrow's price count as `no_change`, in both directions; a smaller drop does not show as `price_dropped`. 0 = any change |
 | Trend window | 14 days | Sample window for the trend sensors, 3 to 90 days |
 | Price display | Incl. VAT | Show prices with or without VAT; also used for the imported price history |
 | Tracked fuels / primary fuel | all / Diesel | The primary fuel must be one of the tracked fuels |
@@ -259,9 +268,15 @@ These are the entity ID slugs; the services take `diesel` / `sp95` / `sp98`.
 | Entity | State | Key attributes |
 | --- | --- | --- |
 | `binary_sensor.*_price_change_pending` | `on` when a differing next-day price is published | `affected_fuels`, `deltas`, `effective_date` |
-| `sensor.*_refuel_recommendation` | `refuel_today` / `wait` / `no_change` / `awaiting_price` | `primary_fuel`, `today_price`, `tomorrow_price`, `delta`, `potential_saving_full_tank` |
+| `sensor.*_refuel_recommendation` | `refuel_today` / `wait` / `no_change` / `price_dropped` / `awaiting_price` | `primary_fuel`, `today_price`, `tomorrow_price`, `delta`, `potential_saving_full_tank`, `previous_price`, `price_drop`, `drops_in_a_row` |
 | `sensor.*_last_price_update` | timestamp the current price took effect | `last_fetch_success`, `fetched_at`, `source`, `source_url` |
 | `sensor.*_days_since_last_change` *(disabled by default)* | integer days | - |
+
+`price_dropped` replaces `awaiting_price` on a day the price dropped (by at
+least the minimum difference), from just after midnight until tomorrow's price
+is known. `previous_price` is the price before today's, `price_drop` how much
+cheaper today's price is (only on the day it dropped), `drops_in_a_row` how
+many price changes up to today were drops.
 
 `potential_saving_full_tank` is the difference between today's and tomorrow's
 announced price, as an absolute value, times the tank size; empty without a

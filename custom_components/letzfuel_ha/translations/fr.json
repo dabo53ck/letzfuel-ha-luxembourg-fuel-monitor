@@ -47,12 +47,16 @@
         "data": {
           "evening_check_time": "Heure du contrôle du soir (capte la publication vers 18h00 ; tant que rien n'est annoncé, réessais toutes les 3 à 6 min (aléatoire) pendant 60 min au plus, puis toutes les 20 à 30 min jusqu'à minuit)",
           "announcements_enabled": "Récupérer le prix annoncé pour demain",
+          "recommendation_min_delta": "Écart minimal pour la recommandation de plein",
           "trend_window_days": "Fenêtre de tendance",
           "price_display": "Affichage du prix",
           "tracked_fuels": "Carburants à suivre",
           "primary_fuel": "Carburant principal",
           "history_import_enabled": "Importer l'historique des prix dans les statistiques long terme",
           "history_import_months": "Profondeur d'import de l'historique"
+        },
+        "data_description": {
+          "recommendation_min_delta": "Les écarts plus petits entre le prix d'aujourd'hui et celui de demain comptent comme Aucun changement, et une baisse plus petite n'apparaît pas comme Prix en baisse aujourd'hui. 0 = tout changement."
         }
       },
       "vehicle": {
@@ -172,6 +176,7 @@
           "refuel_today": "Faire le plein aujourd'hui",
           "wait": "Attendre",
           "no_change": "Pas de changement",
+          "price_dropped": "Prix en baisse aujourd'hui",
           "awaiting_price": "En attente du nouveau prix"
         }
       },
@@ -353,7 +358,12 @@
                 "enabled": "Activer",
                 "states": "Notifier quand elle devient",
                 "no_change": "Notifier aussi en l'absence de changement",
+                "reminder": "Rappel le matin après une baisse de prix",
+                "reminder_time": "Heure du rappel",
                 "priority": "Priorité"
+              },
+              "data_description": {
+                "reminder": "Une fois le matin après la baisse, tant que la recommandation est Prix en baisse aujourd'hui (jusqu'à ce que le prix de demain soit connu)."
               }
             },
             "countdown": {
@@ -435,7 +445,12 @@
                 "enabled": "Activer",
                 "states": "Notifier quand elle devient",
                 "no_change": "Notifier aussi en l'absence de changement",
+                "reminder": "Rappel le matin après une baisse de prix",
+                "reminder_time": "Heure du rappel",
                 "priority": "Priorité"
+              },
+              "data_description": {
+                "reminder": "Une fois le matin après la baisse, tant que la recommandation est Prix en baisse aujourd'hui (jusqu'à ce que le prix de demain soit connu)."
               }
             },
             "countdown": {

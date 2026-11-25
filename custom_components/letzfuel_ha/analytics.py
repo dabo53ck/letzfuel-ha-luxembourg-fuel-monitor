@@ -8,12 +8,14 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import date, timedelta
+from decimal import Decimal
 
 from homeassistant.util import dt as dt_util
 
 from .const import (
     RECOMMENDATION_AWAITING_PRICE,
     RECOMMENDATION_NO_CHANGE,
+    RECOMMENDATION_PRICE_DROPPED,
     RECOMMENDATION_REFUEL_TODAY,
     RECOMMENDATION_WAIT,
     TREND_FALLING,
@@ -86,15 +88,61 @@ def compute_trend(
     )
 
 
-def refuel_recommendation(fuel_prices: FuelPrices | None) -> str:
-    """Advise whether to refuel today based on the announced next-day price."""
+def _min_delta(value: float) -> Decimal:
+    """The minimum change as a Decimal (prices are Decimals), rounded to 0.1 ct."""
+    return Decimal(str(round(max(float(value or 0), 0.0), 3)))
+
+
+def price_drop_today(fuel_prices: FuelPrices | None) -> Decimal | None:
+    """How much cheaper (EUR/L incl. VAT) today's price is, if it started today.
+
+    None when the price did not change today or went up.
+    """
+    if fuel_prices is None or fuel_prices.previous is None:
+        return None
+    if fuel_prices.current_since != dt_util.now().date():
+        return None
+    drop = fuel_prices.previous.price_incl_vat - fuel_prices.current.price_incl_vat
+    return drop if drop > 0 else None
+
+
+def drops_in_a_row(points: list[PricePoint]) -> int:
+    """How many price changes up to today were drops, counted back from today."""
+    today = dt_util.now().date()
+    levels: list[Decimal] = []
+    for point in sorted(points, key=lambda p: p.effective_date):
+        if point.effective_date > today:
+            break
+        if not levels or point.price_incl_vat != levels[-1]:
+            levels.append(point.price_incl_vat)
+    count = 0
+    for older, newer in zip(reversed(levels[:-1]), reversed(levels[1:]), strict=True):
+        if newer >= older:
+            break
+        count += 1
+    return count
+
+
+def refuel_recommendation(
+    fuel_prices: FuelPrices | None, min_delta: float = 0.0
+) -> str:
+    """Advise whether to refuel today based on the announced next-day price.
+
+    Changes smaller than ``min_delta`` (EUR/L) count as no change. Until
+    tomorrow's price is known, a drop of today's price shows as
+    ``price_dropped``.
+    """
     if fuel_prices is None:
         return RECOMMENDATION_AWAITING_PRICE
+    threshold = _min_delta(min_delta)
     if fuel_prices.upcoming is None:
+        drop = price_drop_today(fuel_prices)
+        if drop is not None and drop >= threshold:
+            return RECOMMENDATION_PRICE_DROPPED
         return RECOMMENDATION_AWAITING_PRICE
     delta = fuel_prices.upcoming.price_incl_vat - fuel_prices.current.price_incl_vat
+    if delta == 0 or abs(delta) < threshold:
+        return RECOMMENDATION_NO_CHANGE
     if delta > 0:
         return RECOMMENDATION_REFUEL_TODAY
-    if delta < 0:
-        return RECOMMENDATION_WAIT
-    return RECOMMENDATION_NO_CHANGE
+    return RECOMMENDATION_WAIT

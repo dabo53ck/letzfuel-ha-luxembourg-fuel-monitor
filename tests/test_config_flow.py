@@ -109,6 +109,8 @@ async def test_options_flow(hass: HomeAssistant, init_integration) -> None:
     assert result["type"] is FlowResultType.CREATE_ENTRY
     assert init_integration.options[OPT_TREND_WINDOW_DAYS] == 21
     assert init_integration.options["price_display"] == "excl_vat"
+    # new options get their default, which keeps the old behaviour
+    assert init_integration.options["recommendation_min_delta"] == 0
 
 
 _BASE_OPTIONS = {

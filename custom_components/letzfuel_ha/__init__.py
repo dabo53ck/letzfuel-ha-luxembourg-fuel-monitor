@@ -60,6 +60,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: LuxFuelConfigEntry) -> b
 
     coordinator.async_setup_evening_schedule()
     coordinator.async_setup_midnight_schedule()
+    coordinator.async_setup_reminders()
     coordinator.async_setup_level_entity_tracking()
     #: What a reload is needed for; subentry changes alone don't need one.
     coordinator.settings_snapshot = _settings(entry)
