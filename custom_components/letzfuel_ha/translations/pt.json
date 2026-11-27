@@ -358,11 +358,12 @@
                 "enabled": "Ativar",
                 "states": "Notificar quando passar a",
                 "no_change": "Notificar também quando não há alteração",
+                "priority": "Prioridade",
                 "reminder": "Lembrete de manhã após uma descida de preço",
-                "reminder_time": "Hora do lembrete",
-                "priority": "Prioridade"
+                "reminder_time": "Hora do lembrete"
               },
               "data_description": {
+                "priority": "Aplica-se à recomendação de abastecimento e ao lembrete.",
                 "reminder": "Uma vez na manhã a seguir à descida, enquanto a recomendação for Preço desceu hoje (até o preço de amanhã ser conhecido)."
               }
             },
@@ -445,11 +446,12 @@
                 "enabled": "Ativar",
                 "states": "Notificar quando passar a",
                 "no_change": "Notificar também quando não há alteração",
+                "priority": "Prioridade",
                 "reminder": "Lembrete de manhã após uma descida de preço",
-                "reminder_time": "Hora do lembrete",
-                "priority": "Prioridade"
+                "reminder_time": "Hora do lembrete"
               },
               "data_description": {
+                "priority": "Aplica-se à recomendação de abastecimento e ao lembrete.",
                 "reminder": "Uma vez na manhã a seguir à descida, enquanto a recomendação for Preço desceu hoje (até o preço de amanhã ser conhecido)."
               }
             },

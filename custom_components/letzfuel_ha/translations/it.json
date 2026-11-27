@@ -47,7 +47,7 @@
         "data": {
           "evening_check_time": "Orario del controllo serale (intercetta la pubblicazione verso le 18:00; finché non è annunciato nulla, riprova ogni 3-6 min (a caso) per un massimo di 60 min, poi ogni 20-30 min fino a mezzanotte)",
           "announcements_enabled": "Recupera il prezzo annunciato per domani",
-          "recommendation_min_delta": "Differenza minima per il consiglio di rifornimento",
+          "recommendation_min_delta": "Differenza minima per la raccomandazione di rifornimento",
           "trend_window_days": "Finestra di tendenza",
           "price_display": "Visualizzazione del prezzo",
           "tracked_fuels": "Carburanti da monitorare",
@@ -358,12 +358,13 @@
                 "enabled": "Attiva",
                 "states": "Notifica quando diventa",
                 "no_change": "Notifica anche quando non cambia nulla",
+                "priority": "Priorità",
                 "reminder": "Promemoria al mattino dopo un calo di prezzo",
-                "reminder_time": "Ora del promemoria",
-                "priority": "Priorità"
+                "reminder_time": "Ora del promemoria"
               },
               "data_description": {
-                "reminder": "Una volta al mattino dopo il calo, finché il consiglio è Prezzo sceso oggi (fino a quando il prezzo di domani è noto)."
+                "priority": "Vale per la raccomandazione di rifornimento e il promemoria.",
+                "reminder": "Una volta al mattino dopo il calo, finché la raccomandazione è Prezzo sceso oggi (fino a quando il prezzo di domani è noto)."
               }
             },
             "countdown": {
@@ -445,12 +446,13 @@
                 "enabled": "Attiva",
                 "states": "Notifica quando diventa",
                 "no_change": "Notifica anche quando non cambia nulla",
+                "priority": "Priorità",
                 "reminder": "Promemoria al mattino dopo un calo di prezzo",
-                "reminder_time": "Ora del promemoria",
-                "priority": "Priorità"
+                "reminder_time": "Ora del promemoria"
               },
               "data_description": {
-                "reminder": "Una volta al mattino dopo il calo, finché il consiglio è Prezzo sceso oggi (fino a quando il prezzo di domani è noto)."
+                "priority": "Vale per la raccomandazione di rifornimento e il promemoria.",
+                "reminder": "Una volta al mattino dopo il calo, finché la raccomandazione è Prezzo sceso oggi (fino a quando il prezzo di domani è noto)."
               }
             },
             "countdown": {

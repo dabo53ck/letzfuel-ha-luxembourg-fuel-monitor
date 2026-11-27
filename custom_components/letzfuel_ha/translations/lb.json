@@ -358,11 +358,12 @@
                 "enabled": "Aktivéieren",
                 "states": "Bescheed ginn, wann se wiesselt op",
                 "no_change": "Och Bescheed ginn, wann näischt ännert",
+                "priority": "Prioritéit",
                 "reminder": "Erënnerung moies no enger Präisreduktioun",
-                "reminder_time": "Auerzäit vun der Erënnerung",
-                "priority": "Prioritéit"
+                "reminder_time": "Auerzäit vun der Erënnerung"
               },
               "data_description": {
+                "priority": "Gëllt fir d'Tankempfeelung an d'Erënnerung.",
                 "reminder": "Eemol moies no der Präisreduktioun, soulaang d'Empfeelung Präis haut gefall ass (bis de Präis vu muer bekannt ass)."
               }
             },
@@ -445,11 +446,12 @@
                 "enabled": "Aktivéieren",
                 "states": "Bescheed ginn, wann se wiesselt op",
                 "no_change": "Och Bescheed ginn, wann näischt ännert",
+                "priority": "Prioritéit",
                 "reminder": "Erënnerung moies no enger Präisreduktioun",
-                "reminder_time": "Auerzäit vun der Erënnerung",
-                "priority": "Prioritéit"
+                "reminder_time": "Auerzäit vun der Erënnerung"
               },
               "data_description": {
+                "priority": "Gëllt fir d'Tankempfeelung an d'Erënnerung.",
                 "reminder": "Eemol moies no der Präisreduktioun, soulaang d'Empfeelung Präis haut gefall ass (bis de Präis vu muer bekannt ass)."
               }
             },

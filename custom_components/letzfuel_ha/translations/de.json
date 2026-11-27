@@ -358,11 +358,12 @@
                 "enabled": "Aktivieren",
                 "states": "Benachrichtigen, wenn sie wechselt zu",
                 "no_change": "Auch benachrichtigen, wenn sich nichts ändert",
+                "priority": "Priorität",
                 "reminder": "Morgendliche Erinnerung nach einer Preissenkung",
-                "reminder_time": "Uhrzeit der Erinnerung",
-                "priority": "Priorität"
+                "reminder_time": "Uhrzeit der Erinnerung"
               },
               "data_description": {
+                "priority": "Gilt für die Tankempfehlung und die Erinnerung.",
                 "reminder": "Einmal am Morgen nach der Preissenkung, solange die Empfehlung Preis heute gesunken lautet (bis der Preis für morgen bekannt ist)."
               }
             },
@@ -445,11 +446,12 @@
                 "enabled": "Aktivieren",
                 "states": "Benachrichtigen, wenn sie wechselt zu",
                 "no_change": "Auch benachrichtigen, wenn sich nichts ändert",
+                "priority": "Priorität",
                 "reminder": "Morgendliche Erinnerung nach einer Preissenkung",
-                "reminder_time": "Uhrzeit der Erinnerung",
-                "priority": "Priorität"
+                "reminder_time": "Uhrzeit der Erinnerung"
               },
               "data_description": {
+                "priority": "Gilt für die Tankempfehlung und die Erinnerung.",
                 "reminder": "Einmal am Morgen nach der Preissenkung, solange die Empfehlung Preis heute gesunken lautet (bis der Preis für morgen bekannt ist)."
               }
             },

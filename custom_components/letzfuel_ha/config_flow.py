@@ -533,15 +533,15 @@ def _target_schema(hass: Any, data: dict[str, Any], title: str) -> vol.Schema:
                             "no_change", default=rec.get("no_change", False)
                         ): BooleanSelector(),
                         vol.Required(
+                            "priority", default=rec.get("priority", PRIORITY_NORMAL)
+                        ): _choice(_PRIORITIES, "notify_priority"),
+                        vol.Required(
                             "reminder", default=rec.get("reminder", False)
                         ): BooleanSelector(),
                         vol.Required(
                             "reminder_time",
                             default=rec.get("reminder_time", DEFAULT_REMINDER_TIME),
                         ): TimeSelector(),
-                        vol.Required(
-                            "priority", default=rec.get("priority", PRIORITY_NORMAL)
-                        ): _choice(_PRIORITIES, "notify_priority"),
                     }
                 ),
                 collapsed,

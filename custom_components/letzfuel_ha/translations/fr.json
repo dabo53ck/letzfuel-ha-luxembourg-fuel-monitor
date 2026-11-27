@@ -358,11 +358,12 @@
                 "enabled": "Activer",
                 "states": "Notifier quand elle devient",
                 "no_change": "Notifier aussi en l'absence de changement",
+                "priority": "Priorité",
                 "reminder": "Rappel le matin après une baisse de prix",
-                "reminder_time": "Heure du rappel",
-                "priority": "Priorité"
+                "reminder_time": "Heure du rappel"
               },
               "data_description": {
+                "priority": "S'applique à la recommandation de plein et au rappel.",
                 "reminder": "Une fois le matin après la baisse, tant que la recommandation est Prix en baisse aujourd'hui (jusqu'à ce que le prix de demain soit connu)."
               }
             },
@@ -445,11 +446,12 @@
                 "enabled": "Activer",
                 "states": "Notifier quand elle devient",
                 "no_change": "Notifier aussi en l'absence de changement",
+                "priority": "Priorité",
                 "reminder": "Rappel le matin après une baisse de prix",
-                "reminder_time": "Heure du rappel",
-                "priority": "Priorité"
+                "reminder_time": "Heure du rappel"
               },
               "data_description": {
+                "priority": "S'applique à la recommandation de plein et au rappel.",
                 "reminder": "Une fois le matin après la baisse, tant que la recommandation est Prix en baisse aujourd'hui (jusqu'à ce que le prix de demain soit connu)."
               }
             },

@@ -358,11 +358,12 @@
                 "enabled": "Enable",
                 "states": "Notify when it becomes",
                 "no_change": "Also notify when there is no change",
+                "priority": "Priority",
                 "reminder": "Morning reminder after a price drop",
-                "reminder_time": "Reminder time",
-                "priority": "Priority"
+                "reminder_time": "Reminder time"
               },
               "data_description": {
+                "priority": "Applies to the refuel recommendation and the reminder.",
                 "reminder": "Once on the morning after the price dropped, while the recommendation is Price dropped today (until tomorrow's price is known)."
               }
             },
@@ -445,11 +446,12 @@
                 "enabled": "Enable",
                 "states": "Notify when it becomes",
                 "no_change": "Also notify when there is no change",
+                "priority": "Priority",
                 "reminder": "Morning reminder after a price drop",
-                "reminder_time": "Reminder time",
-                "priority": "Priority"
+                "reminder_time": "Reminder time"
               },
               "data_description": {
+                "priority": "Applies to the refuel recommendation and the reminder.",
                 "reminder": "Once on the morning after the price dropped, while the recommendation is Price dropped today (until tomorrow's price is known)."
               }
             },
