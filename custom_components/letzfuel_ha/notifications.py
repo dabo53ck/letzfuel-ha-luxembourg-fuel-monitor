@@ -10,20 +10,22 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Mapping
-from datetime import timedelta
+from datetime import datetime, timedelta
 from typing import TYPE_CHECKING, Any
 
 from homeassistant.config_entries import ConfigSubentry
-from homeassistant.core import HomeAssistant
+from homeassistant.core import CALLBACK_TYPE, HomeAssistant, callback
 from homeassistant.helpers import entity_registry as er
+from homeassistant.helpers.event import async_track_time_change
 from homeassistant.helpers.storage import Store
 from homeassistant.util import dt as dt_util
 from homeassistant.util import slugify
 
-from .analytics import refuel_recommendation
 from .const import (
     BRAND_ICON_URL,
+    DEFAULT_REMINDER_TIME,
     DOMAIN,
+    DROP_STREAK_HINT_FROM,
     FUEL_CHOICE_PRIMARY,
     NOTIFY_ANNOUNCED,
     NOTIFY_COUNTDOWN,
@@ -40,6 +42,7 @@ from .const import (
     PRIORITY_ELEVATED,
     RECOMMENDATION_AWAITING_PRICE,
     RECOMMENDATION_NO_CHANGE,
+    RECOMMENDATION_PRICE_DROPPED,
     RECOMMENDATION_REFUEL_TODAY,
     RECOMMENDATION_WAIT,
     SEND_COUNTDOWN_END,
@@ -87,6 +90,21 @@ def texts(language: str) -> Mapping[str, Any]:
 
 
 # -- formatting (pure) --------------------------------------------------------
+
+
+#: The recommendation states of a new day, before tomorrow's price is known.
+_NEW_DAY = (RECOMMENDATION_AWAITING_PRICE, RECOMMENDATION_PRICE_DROPPED)
+
+
+def reminder_time(section: Mapping[str, Any]):
+    """When the morning reminder of a recommendation section is due."""
+    return dt_util.parse_time(
+        section.get("reminder_time") or DEFAULT_REMINDER_TIME
+    ) or dt_util.parse_time(DEFAULT_REMINDER_TIME)
+
+
+def _money(value: float, t: Mapping[str, Any]) -> str:
+    return f"{value:.2f}".replace(".", t["decimal"])
 
 
 def _price(value: float, decimal: str) -> str:
@@ -325,7 +343,7 @@ class Notifier:
         """Recommendation, live countdown and threshold after each update."""
         coordinator = self.coordinator
         primary = coordinator.primary_fuel
-        recommendation = refuel_recommendation(price_set.prices.get(primary))
+        recommendation = coordinator.recommendation(price_set)
         known = {target.subentry_id for target in self.targets}
         changed = False
         for stale in set(self._state) - known:
@@ -344,6 +362,50 @@ class Notifier:
                 changed = True
             changed |= await self._threshold(target, state, price_set, primary)
 
+        if changed:
+            await self._store.async_save(self._state)
+
+    @callback
+    def async_start(self) -> CALLBACK_TYPE:
+        """Check the morning reminders once a minute; returns the unsubscribe."""
+        return async_track_time_change(self.hass, self.async_check_reminders, second=0)
+
+    async def async_check_reminders(self, now: datetime | None = None) -> None:
+        """Remind once a day, from the set time on, while the price dropped today.
+
+        Only while the recommendation is "price dropped", i.e. until tomorrow's
+        price is announced. A time that already passed (restart, new setting)
+        still sends that day.
+        """
+        price_set = self.coordinator.data
+        if price_set is None:
+            return
+        if self.coordinator.recommendation(price_set) != RECOMMENDATION_PRICE_DROPPED:
+            return
+        local = dt_util.as_local(now or dt_util.now())
+        today = local.date().isoformat()
+        changed = False
+        for target in self.targets:
+            rec = target.data.get(NOTIFY_RECOMMENDATION, {})
+            if not (rec.get("enabled") and rec.get("reminder")):
+                continue
+            at = reminder_time(rec)
+            if local.time() < at:
+                continue
+            state = self._state.setdefault(target.subentry_id, {})
+            if state.get("reminded") == today:
+                continue
+            state["reminded"] = today
+            changed = True
+            t = texts(target.data.get(NOTIFY_LANGUAGE, "en"))
+            await self._send(
+                target,
+                t["rec_title"],
+                self._rec_lines(t, RECOMMENDATION_PRICE_DROPPED, price_set, target),
+                TAG_RECOMMENDATION,
+                rec,
+                self._entity_tap(target, self._rec_entity()),
+            )
         if changed:
             await self._store.async_save(self._state)
 
@@ -406,10 +468,10 @@ class Notifier:
         fuels = {"fuels": section.get("fuels", [FUEL_CHOICE_PRIMARY])}
 
         if kind == NOTIFY_RECOMMENDATION:
-            current = refuel_recommendation(price_set.prices.get(primary))
+            current = self.coordinator.recommendation(price_set)
             return message(
                 t["rec_title"],
-                self._rec_lines(t, current),
+                self._rec_lines(t, current, price_set, target),
                 TAG_RECOMMENDATION,
                 priority,
                 self._entity_tap(target, self._rec_entity()),
@@ -498,15 +560,12 @@ class Notifier:
             await self._send(
                 target,
                 t["rec_title"],
-                self._rec_lines(t, current, price_set),
+                self._rec_lines(t, current, price_set, target),
                 TAG_RECOMMENDATION,
                 rec,
                 self._entity_tap(target, self._rec_entity()),
             )
-        if (
-            current == RECOMMENDATION_AWAITING_PRICE
-            and previous != RECOMMENDATION_AWAITING_PRICE
-        ):
+        if current in _NEW_DAY and previous not in _NEW_DAY:
             # The new price applies (normally just after midnight): the
             # recommendation for the old one is stale.
             await self._deliver(target, clear(TAG_RECOMMENDATION))
@@ -587,19 +646,59 @@ class Notifier:
         return changed
 
     def _rec_lines(
-        self, t: Mapping[str, Any], current: str, price_set: PriceSet | None = None
+        self,
+        t: Mapping[str, Any],
+        current: str,
+        price_set: PriceSet | None = None,
+        target: ConfigSubentry | None = None,
     ) -> list[str]:
-        """The recommendation, plus what a full tank saves when refuelling today."""
+        """The recommendation and what goes with it.
+
+        What a full tank saves; for "price dropped" today's price and the
+        drop; a run of drops; for "wait" when the reminder comes.
+        """
+        coordinator = self.coordinator
         lines = [t["rec_states"].get(current, current)]
-        saving = self.coordinator.potential_saving_full_tank(price_set)
-        if saving and current in (RECOMMENDATION_REFUEL_TODAY, RECOMMENDATION_WAIT):
-            amount = f"{saving:.2f}".replace(".", t["decimal"])
-            key = (
-                "rec_saving"
-                if current == RECOMMENDATION_REFUEL_TODAY
-                else "rec_saving_wait"
-            )
-            lines.append(t[key].format(saving=amount))
+        streak = coordinator.drops_in_a_row(price_set)
+        if current == RECOMMENDATION_PRICE_DROPPED:
+            prices = price_set or coordinator.data
+            primary = coordinator.primary_fuel
+            fp = prices.prices.get(primary) if prices else None
+            new = coordinator.display_price(fp.current) if fp else None
+            old = coordinator.display_price(fp.previous) if fp else None
+            if new is not None and old is not None:
+                delta = new - old
+                lines.append(
+                    f"{_fuel_name(primary.value)}: {_price(new, t['decimal'])}"
+                    f" €/L ({_sign(delta)}{_cents(delta, t['decimal'])} ct/L)"
+                )
+                if coordinator.tank_size:
+                    saving = round((old - new) * coordinator.tank_size, 2)
+                    lines.append(
+                        t["rec_saving_dropped"].format(saving=_money(saving, t))
+                    )
+        else:
+            saving = coordinator.potential_saving_full_tank(price_set)
+            if saving and current in (RECOMMENDATION_REFUEL_TODAY, RECOMMENDATION_WAIT):
+                key = (
+                    "rec_saving"
+                    if current == RECOMMENDATION_REFUEL_TODAY
+                    else "rec_saving_wait"
+                )
+                lines.append(t[key].format(saving=_money(saving, t)))
+        if current == RECOMMENDATION_WAIT:
+            streak += 1  # tomorrow's drop counts too
+        if current in (RECOMMENDATION_WAIT, RECOMMENDATION_PRICE_DROPPED) and (
+            streak >= DROP_STREAK_HINT_FROM
+        ):
+            lines.append(t["rec_streak"].format(count=streak))
+        if current == RECOMMENDATION_WAIT and target is not None:
+            rec = target.data.get(NOTIFY_RECOMMENDATION, {})
+            if rec.get("enabled") and rec.get("reminder"):
+                at = reminder_time(rec)
+                lines.append(
+                    t["rec_remind"].format(time=f"{at.hour:02d}:{at.minute:02d}")
+                )
         return lines
 
     # -- delivery --------------------------------------------------------------

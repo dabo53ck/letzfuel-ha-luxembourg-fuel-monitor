@@ -161,6 +161,19 @@ def _sheet(diesel: str) -> dict:
     )
 
 
+def _falling(today: str = "1.865") -> list:
+    """Diesel fell three times in a row, the last time today."""
+    day = dt_util.now().date()
+    others = {
+        FuelType.SP95: (D("1.792"), D("1.531")),
+        FuelType.SP98: (D("1.983"), D("1.695")),
+    }
+    return [
+        (day - timedelta(days=d), {FuelType.DIESEL: (D(p), D(p)), **others})
+        for d, p in ((20, "1.950"), (8, "1.900"), (3, "1.880"), (0, today))
+    ]
+
+
 def _tomorrow() -> str:
     return (dt_util.now().date() + timedelta(days=1)).strftime("%d/%m/%Y")
 
@@ -728,6 +741,8 @@ async def test_add_and_edit_a_target(hass: HomeAssistant, mock_petrol_lu) -> Non
     (subentry,) = entry.subentries.values()
     assert subentry.title == "Phone"
     assert subentry.data["devices"] == [device_id]
+    assert subentry.data["recommendation"]["reminder"] is False
+    assert subentry.data["recommendation"]["reminder_time"] == "07:30:00"
     # adding a target doesn't reload the integration
     assert entry.runtime_data is coordinator
 
@@ -861,4 +876,121 @@ async def test_reload_after_start_logs_no_error(
     await hass.async_block_till_done()
 
     assert not [r for r in caplog.records if r.levelno >= logging.ERROR]
+    await _unload(hass, entry)
+
+
+# -- price dropped and the morning reminder ------------------------------------
+
+
+def _reminder_target(device_id: str, **rec: Any) -> dict[str, Any]:
+    return _target(
+        device_id,
+        announced=_section(False),
+        recommendation={
+            "enabled": True,
+            "states": ["wait"],
+            "no_change": False,
+            "priority": "normal",
+            "reminder": True,
+            "reminder_time": "07:30:00",
+            **rec,
+        },
+    )
+
+
+async def _setup_with_tank(hass: HomeAssistant, entry: MockConfigEntry) -> None:
+    entry.add_to_hass(hass)
+    hass.config_entries.async_update_entry(
+        entry, options={**entry.options, CONF_TANK_SIZE: 50}
+    )
+    assert await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+
+
+async def test_wait_announces_the_reminder_and_the_run(
+    hass: HomeAssistant, mock_petrol_lu
+) -> None:
+    device_id, calls = _phone(hass)
+    mock_petrol_lu(_falling())
+    entry = _entry(_reminder_target(device_id))
+    await _setup_with_tank(hass, entry)
+    mock_petrol_lu(_falling(), sheet_payload=_sheet("1.825"))
+    await entry.runtime_data.async_refresh()
+    await hass.async_block_till_done()
+
+    assert [c.data["message"] for c in calls] == [
+        "Wait\nA full tank tomorrow saves about 2.00 €"
+        "\nPrice drops in a row: 4\nReminder tomorrow at 07:30"
+    ]
+    await _unload(hass, entry)
+
+
+async def test_morning_reminder_after_a_drop(
+    hass: HomeAssistant, mock_petrol_lu
+) -> None:
+    device_id, calls = _phone(hass)
+    mock_petrol_lu(_falling())
+    entry = _entry(_reminder_target(device_id))
+    await _setup_with_tank(hass, entry)
+    state = hass.states.get("sensor.letzfuel_ha_refuel_recommendation")
+    assert state.state == "price_dropped"
+    assert state.attributes["today_price"] == 1.865
+    assert state.attributes["previous_price"] == 1.88
+    assert state.attributes["price_drop"] == 0.015
+    assert state.attributes["drops_in_a_row"] == 3
+    assert state.attributes["tomorrow_price"] is None
+    calls.clear()
+    notifier = entry.runtime_data.notifier
+    morning = dt_util.now().replace(hour=7, minute=0, second=0, microsecond=0)
+
+    await notifier.async_check_reminders(morning)
+    assert calls == []  # not yet
+
+    await notifier.async_check_reminders(morning.replace(minute=31))
+    await notifier.async_check_reminders(morning.replace(hour=9))
+    assert len(calls) == 1  # once a day
+    assert calls[0].data["data"]["tag"] == "letzfuel_recommendation"
+    # 1.880 -> 1.865 on 50 L
+    assert calls[0].data["message"] == (
+        "Price dropped today\nDIESEL: 1.865 €/L (-1.5 ct/L)"
+        "\nA full tank saves about 0.75 € compared with the old price"
+        "\nPrice drops in a row: 3"
+    )
+
+    # still once after a restart
+    await hass.config_entries.async_reload(entry.entry_id)
+    await hass.async_block_till_done()
+    await entry.runtime_data.notifier.async_check_reminders(morning.replace(hour=10))
+    assert len(calls) == 1
+    await _unload(hass, entry)
+
+
+@pytest.mark.parametrize(
+    "rec",
+    [{"reminder": False}, {"enabled": False}],
+)
+async def test_no_reminder_when_off(
+    hass: HomeAssistant, mock_petrol_lu, rec: dict[str, Any]
+) -> None:
+    device_id, calls = _phone(hass)
+    mock_petrol_lu(_falling())
+    entry = _entry(_reminder_target(device_id, **rec))
+    await _setup_with_tank(hass, entry)
+    calls.clear()
+    morning = dt_util.now().replace(hour=8, minute=0, second=0, microsecond=0)
+    await entry.runtime_data.notifier.async_check_reminders(morning)
+    assert calls == []
+    await _unload(hass, entry)
+
+
+async def test_no_reminder_without_a_drop(
+    hass: HomeAssistant, mock_petrol_lu, price_entries
+) -> None:
+    device_id, calls = _phone(hass)
+    entry = _entry(_reminder_target(device_id))
+    await _setup_with_tank(hass, entry)
+    calls.clear()
+    morning = dt_util.now().replace(hour=8, minute=0, second=0, microsecond=0)
+    await entry.runtime_data.notifier.async_check_reminders(morning)
+    assert calls == []
     await _unload(hass, entry)

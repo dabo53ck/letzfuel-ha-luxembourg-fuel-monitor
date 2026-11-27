@@ -47,12 +47,16 @@
         "data": {
           "evening_check_time": "Auerzäit vum Owescheck (fänkt d'Verëffentlechung géint 18:00 of; soulaang näischt ugekënnegt ass, probéiert all 3-6 Min. (zoufälleg) fir bis zu 60 Min., duerno all 20-30 Min. bis Mëtternuecht)",
           "announcements_enabled": "De muer ugekënnegte Präis ofruffen",
+          "recommendation_min_delta": "Mindestdifferenz fir d'Tankempfeelung",
           "trend_window_days": "Trendfënster",
           "price_display": "Präisduerstellung",
           "tracked_fuels": "Pëtrolszorten, déi ze verfollege sinn",
           "primary_fuel": "Haaptpëtrol",
           "history_import_enabled": "Präishistorie an d'Laangzäitstatistike importéieren",
           "history_import_months": "Importdéift vum Historique"
+        },
+        "data_description": {
+          "recommendation_min_delta": "Méi kleng Ënnerscheeder tëscht dem haitegen an dem Präis vu muer zielen als Keng Ännerung, an eng méi kleng Reduktioun gëtt net als Präis haut gefall gewisen. 0 = all Ännerung."
         }
       },
       "vehicle": {
@@ -172,6 +176,7 @@
           "refuel_today": "Haut tanken",
           "wait": "Waarden",
           "no_change": "Keng Ännerung",
+          "price_dropped": "Präis haut gefall",
           "awaiting_price": "Waarden op en neie Präis"
         }
       },
@@ -353,7 +358,13 @@
                 "enabled": "Aktivéieren",
                 "states": "Bescheed ginn, wann se wiesselt op",
                 "no_change": "Och Bescheed ginn, wann näischt ännert",
-                "priority": "Prioritéit"
+                "priority": "Prioritéit",
+                "reminder": "Erënnerung moies no enger Präisreduktioun",
+                "reminder_time": "Auerzäit vun der Erënnerung"
+              },
+              "data_description": {
+                "priority": "Gëllt fir d'Tankempfeelung an d'Erënnerung.",
+                "reminder": "Eemol moies no der Präisreduktioun, soulaang d'Empfeelung Präis haut gefall ass (bis de Präis vu muer bekannt ass)."
               }
             },
             "countdown": {
@@ -435,7 +446,13 @@
                 "enabled": "Aktivéieren",
                 "states": "Bescheed ginn, wann se wiesselt op",
                 "no_change": "Och Bescheed ginn, wann näischt ännert",
-                "priority": "Prioritéit"
+                "priority": "Prioritéit",
+                "reminder": "Erënnerung moies no enger Präisreduktioun",
+                "reminder_time": "Auerzäit vun der Erënnerung"
+              },
+              "data_description": {
+                "priority": "Gëllt fir d'Tankempfeelung an d'Erënnerung.",
+                "reminder": "Eemol moies no der Präisreduktioun, soulaang d'Empfeelung Präis haut gefall ass (bis de Präis vu muer bekannt ass)."
               }
             },
             "countdown": {

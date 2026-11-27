@@ -45,6 +45,8 @@ from .const import (
     DEFAULT_PRICE_DISPLAY,
     DEFAULT_PRIMARY_FUEL,
     DEFAULT_PROVIDER,
+    DEFAULT_RECOMMENDATION_MIN_DELTA,
+    DEFAULT_REMINDER_TIME,
     DEFAULT_TRACKED_FUELS,
     DEFAULT_TREND_WINDOW_DAYS,
     DOMAIN,
@@ -70,6 +72,7 @@ from .const import (
     OPT_HISTORY_IMPORT_ENABLED,
     OPT_HISTORY_IMPORT_MONTHS,
     OPT_PRICE_DISPLAY,
+    OPT_RECOMMENDATION_MIN_DELTA,
     OPT_TREND_WINDOW_DAYS,
     PRICE_DISPLAY_EXCL,
     PRICE_DISPLAY_INCL,
@@ -295,6 +298,20 @@ class LuxFuelOptionsFlow(OptionsFlow):
                     default=self._get(OPT_ANNOUNCEMENTS_ENABLED, True),
                 ): BooleanSelector(),
                 vol.Required(
+                    OPT_RECOMMENDATION_MIN_DELTA,
+                    default=self._get(
+                        OPT_RECOMMENDATION_MIN_DELTA, DEFAULT_RECOMMENDATION_MIN_DELTA
+                    ),
+                ): NumberSelector(
+                    NumberSelectorConfig(
+                        min=0,
+                        max=0.5,
+                        step=0.001,
+                        unit_of_measurement="€/L",
+                        mode=NumberSelectorMode.BOX,
+                    )
+                ),
+                vol.Required(
                     OPT_TREND_WINDOW_DAYS,
                     default=self._get(OPT_TREND_WINDOW_DAYS, DEFAULT_TREND_WINDOW_DAYS),
                 ): NumberSelector(
@@ -518,6 +535,13 @@ def _target_schema(hass: Any, data: dict[str, Any], title: str) -> vol.Schema:
                         vol.Required(
                             "priority", default=rec.get("priority", PRIORITY_NORMAL)
                         ): _choice(_PRIORITIES, "notify_priority"),
+                        vol.Required(
+                            "reminder", default=rec.get("reminder", False)
+                        ): BooleanSelector(),
+                        vol.Required(
+                            "reminder_time",
+                            default=rec.get("reminder_time", DEFAULT_REMINDER_TIME),
+                        ): TimeSelector(),
                     }
                 ),
                 collapsed,

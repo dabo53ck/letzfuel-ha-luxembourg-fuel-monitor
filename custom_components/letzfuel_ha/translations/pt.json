@@ -47,12 +47,16 @@
         "data": {
           "evening_check_time": "Hora da verificação noturna (apanha a publicação por volta das 18h00; enquanto nada for anunciado, tenta novamente a cada 3-6 min (aleatório) até 60 min e, a seguir, a cada 20-30 min até à meia-noite)",
           "announcements_enabled": "Obter o preço anunciado para amanhã",
+          "recommendation_min_delta": "Diferença mínima para a recomendação de abastecimento",
           "trend_window_days": "Janela de tendência",
           "price_display": "Apresentação do preço",
           "tracked_fuels": "Combustíveis a monitorizar",
           "primary_fuel": "Combustível principal",
           "history_import_enabled": "Importar o histórico de preços para as estatísticas de longo prazo",
           "history_import_months": "Profundidade da importação do histórico"
+        },
+        "data_description": {
+          "recommendation_min_delta": "Diferenças menores entre o preço de hoje e o de amanhã contam como Sem alteração, e uma descida menor não aparece como Preço desceu hoje. 0 = qualquer alteração."
         }
       },
       "vehicle": {
@@ -172,6 +176,7 @@
           "refuel_today": "Abastecer hoje",
           "wait": "Aguardar",
           "no_change": "Sem alteração",
+          "price_dropped": "Preço desceu hoje",
           "awaiting_price": "A aguardar novo preço"
         }
       },
@@ -353,7 +358,13 @@
                 "enabled": "Ativar",
                 "states": "Notificar quando passar a",
                 "no_change": "Notificar também quando não há alteração",
-                "priority": "Prioridade"
+                "priority": "Prioridade",
+                "reminder": "Lembrete de manhã após uma descida de preço",
+                "reminder_time": "Hora do lembrete"
+              },
+              "data_description": {
+                "priority": "Aplica-se à recomendação de abastecimento e ao lembrete.",
+                "reminder": "Uma vez na manhã a seguir à descida, enquanto a recomendação for Preço desceu hoje (até o preço de amanhã ser conhecido)."
               }
             },
             "countdown": {
@@ -435,7 +446,13 @@
                 "enabled": "Ativar",
                 "states": "Notificar quando passar a",
                 "no_change": "Notificar também quando não há alteração",
-                "priority": "Prioridade"
+                "priority": "Prioridade",
+                "reminder": "Lembrete de manhã após uma descida de preço",
+                "reminder_time": "Hora do lembrete"
+              },
+              "data_description": {
+                "priority": "Aplica-se à recomendação de abastecimento e ao lembrete.",
+                "reminder": "Uma vez na manhã a seguir à descida, enquanto a recomendação for Preço desceu hoje (até o preço de amanhã ser conhecido)."
               }
             },
             "countdown": {
